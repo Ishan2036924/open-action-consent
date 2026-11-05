@@ -1,6 +1,7 @@
 // Keys, digests and the JWS envelope (RFC 7515 compact). Header = exactly {alg, kid, typ}, JCS-canonical; payload =
 // JCS-canonical JSON; a token whose bytes are not the canonical form of what they parse to is refused.
-// Algorithms: EdDSA (Ed25519, RFC 8037) and ES256 (P-256, raw r||s). kid = the RFC 7638 JWK thumbprint.
+// Algorithms: EdDSA (Ed25519, RFC 8037) and ES256 (P-256, raw r||s, low-S only). kid = the RFC 7638 JWK thumbprint.
+// Every trusted key belongs to exactly one issuer, and a token's `iss` must be its key's issuer.
 
 import * as crypto from "node:crypto";
 import { OACError } from "./errors.ts";
@@ -75,27 +76,44 @@ export function generate(alg = "EdDSA"): SigningKey {
   throw new OACError("bad_alg", alg);
 }
 
-/** Public keys a verifier trusts for one role (a person's signer, or one executor), looked up by kid. */
+/** Public keys a verifier trusts, grouped by issuer: {iss: [jwk, ...]}. A kid maps to one key and one issuer. */
 export class KeySet {
-  private keys = new Map<string, Jwk & { kid: string }>();
-  constructor(jwks: Iterable<Jwk>) {
-    for (const jwk of jwks) {
-      const kid = thumbprint(jwk);
-      if (jwk.kid !== undefined && jwk.kid !== kid) throw new OACError("malformed", "kid is not the key's thumbprint");
-      this.keys.set(kid, { ...jwk, kid });
+  private keys = new Map<string, [Jwk & { kid: string }, string]>();
+  constructor(byIssuer: Record<string, Jwk[]>) {
+    if (byIssuer === null || typeof byIssuer !== "object" || Array.isArray(byIssuer)) {
+      throw new OACError("malformed", "keys are grouped by issuer: {iss: [jwk, ...]}");
+    }
+    for (const [iss, jwks] of Object.entries(byIssuer)) {
+      for (const jwk of jwks) {
+        const kid = thumbprint(jwk);
+        if (jwk.kid !== undefined && jwk.kid !== kid) throw new OACError("malformed", "kid is not the key's thumbprint");
+        const prev = this.keys.get(kid);
+        if (prev && prev[1] !== iss) throw new OACError("malformed", "one key cannot belong to two issuers");
+        this.keys.set(kid, [{ ...jwk, kid }, iss]);
+      }
     }
   }
   get(kid: string): (Jwk & { kid: string }) | undefined {
-    return this.keys.get(kid);
+    return this.keys.get(kid)?.[0];
+  }
+  issuer(kid: string): string | undefined {
+    return this.keys.get(kid)?.[1];
   }
 }
+
+const HALF_N = P256_ORDER / 2n;
+const big = (b: Uint8Array) => BigInt("0x" + (Buffer.from(b).toString("hex") || "0"));
 
 export function sign(payload: Record<string, unknown>, key: SigningKey, typ: string): string {
   const header = { alg: key.alg, kid: key.jwk.kid, typ };
   const input = b64url(canonicalBytes(header)) + "." + b64url(canonicalBytes(payload));
-  const sig = key.alg === "EdDSA"
+  let sig = key.alg === "EdDSA"
     ? crypto.sign(null, enc.encode(input), key.private)
     : crypto.sign("sha256", enc.encode(input), { key: key.private, dsaEncoding: "ieee-p1363" });
+  if (key.alg === "ES256" && big(sig.subarray(32)) > HALF_N) { // low-S: the other spelling of the same signature
+    const s = (P256_ORDER - big(sig.subarray(32))).toString(16).padStart(64, "0");
+    sig = Buffer.concat([sig.subarray(0, 32), Buffer.from(s, "hex")]);
+  }
   return input + "." + b64url(sig);
 }
 
@@ -109,6 +127,7 @@ function checkSig(jwk: Jwk, alg: string, data: Uint8Array, sig: Uint8Array): voi
     } else {
       if (jwk.kty !== "EC" || jwk.crv !== "P-256") throw new OACError("bad_alg", "key is not P-256");
       if (sig.length !== 64) throw new OACError("bad_signature", "ES256 signature must be 64 bytes");
+      if (big(sig.subarray(32)) > HALF_N) throw new OACError("bad_signature", "ES256 signature must be low-S");
       const pub = crypto.createPublicKey({ key: { kty: "EC", crv: "P-256", x: jwk.x, y: jwk.y }, format: "jwk" });
       ok = crypto.verify("sha256", data, { key: pub, dsaEncoding: "ieee-p1363" }, sig);
     }
@@ -128,7 +147,7 @@ function canonicalPart(part: string): Json {
 
 /** Check the envelope and signature; return the payload. Field checks are the caller's. */
 export function verify(token: string, keys: KeySet, typ: string): Record<string, any> {
-  if (typeof token !== "string") throw new OACError("malformed", "token must be a string");
+  if (typeof token !== "string" || !/^[\x00-\x7f]*$/.test(token)) throw new OACError("malformed", "token must be an ASCII string");
   const parts = token.split(".");
   if (parts.length !== 3) throw new OACError("malformed", "a compact JWS has three parts");
   const header = canonicalPart(parts[0]) as Record<string, any>;
@@ -142,10 +161,12 @@ export function verify(token: string, keys: KeySet, typ: string): Record<string,
   checkSig(jwk, header.alg, enc.encode(parts[0] + "." + parts[1]), b64urlDecode(parts[2]));
   const payload = canonicalPart(parts[1]);
   if (payload === null || typeof payload !== "object" || Array.isArray(payload)) throw new OACError("malformed", "payload must be an object");
+  if ((payload as Record<string, any>).iss !== keys.issuer(header.kid)) throw new OACError("wrong_issuer", "the token names another issuer than its key's");
   return payload as Record<string, any>;
 }
 
 /** The digest a later object uses to name a signed token (receipt chains, undo requests). */
 export function tokenDigest(token: string): string {
+  if (typeof token !== "string" || !/^[\x00-\x7f]*$/.test(token)) throw new OACError("malformed", "token must be an ASCII string");
   return digestBytes(enc.encode(token));
 }

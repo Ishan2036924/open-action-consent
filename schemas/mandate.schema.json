@@ -3,43 +3,160 @@
   "$id": "urn:oac:0.1:mandate",
   "title": "OAC v0.1 Mandate (JWS payload, typ oac-mandate+jws)",
   "description": "A standing, bounded, expiring permission for one holder. Covers tier C only; never tier D; never waives the taint floor. Rules beyond the schema: exp - iat <= 30 days; a pay tool needs amount.per_call_minor, amount.per_day_minor and payees; a tool that sends to people needs recipients; a loosening replacement needs fresh proof of the person.",
-  "type": "object", "additionalProperties": false,
-  "required": ["oac", "type", "id", "iss", "sub", "holder", "goal", "tools", "bounds", "iat", "exp", "signer"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "oac",
+    "type",
+    "id",
+    "iss",
+    "sub",
+    "holder",
+    "goal",
+    "tools",
+    "bounds",
+    "iat",
+    "exp",
+    "signer"
+  ],
   "properties": {
-    "oac": {"$ref": "urn:oac:0.1:common#/$defs/version"},
-    "type": {"const": "mandate"},
-    "id": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "iss": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "sub": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "holder": {
-      "type": "object", "additionalProperties": false, "required": ["type", "id"],
-      "properties": {"type": {"enum": ["agent", "client", "run"]}, "id": {"$ref": "urn:oac:0.1:common#/$defs/id"}}
+    "oac": {
+      "$ref": "urn:oac:0.1:common#/$defs/version"
     },
-    "goal": {"type": "string", "minLength": 1, "maxLength": 300},
-    "tools": {"type": "array", "minItems": 1, "maxItems": 32, "uniqueItems": true, "items": {"$ref": "urn:oac:0.1:common#/$defs/tool"}},
-    "bounds": {
-      "type": "object", "additionalProperties": false, "required": ["calls"],
+    "type": {
+      "const": "mandate"
+    },
+    "id": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "iss": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "sub": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "holder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
       "properties": {
-        "calls": {
-          "type": "object", "additionalProperties": false, "required": ["per_day"],
-          "properties": {"per_day": {"type": "integer", "minimum": 1, "maximum": 10000}, "per_run": {"type": "integer", "minimum": 1, "maximum": 1000}}
+        "type": {
+          "enum": [
+            "agent",
+            "client",
+            "run"
+          ]
         },
-        "amount": {
-          "type": "object", "additionalProperties": false, "required": ["currency"], "minProperties": 2,
-          "properties": {
-            "currency": {"$ref": "urn:oac:0.1:common#/$defs/currency"},
-            "per_call_minor": {"$ref": "urn:oac:0.1:common#/$defs/minor"},
-            "per_day_minor": {"$ref": "urn:oac:0.1:common#/$defs/minor"}
-          }
-        },
-        "recipients": {"type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": {"type": "string", "pattern": "^([^@\\s]{1,64}@[^@\\s]{1,190}|@[^@\\s]{1,190})$"}},
-        "payees": {"type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 200}},
-        "sites": {"type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": {"$ref": "urn:oac:0.1:common#/$defs/host"}}
+        "id": {
+          "$ref": "urn:oac:0.1:common#/$defs/id"
+        }
       }
     },
-    "iat": {"$ref": "urn:oac:0.1:common#/$defs/time"},
-    "exp": {"$ref": "urn:oac:0.1:common#/$defs/time"},
-    "signer": {"$ref": "urn:oac:0.1:common#/$defs/signer"},
-    "supersedes": {"$ref": "urn:oac:0.1:common#/$defs/id"}
+    "goal": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "urn:oac:0.1:common#/$defs/tool"
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "calls"
+      ],
+      "properties": {
+        "calls": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "per_day"
+          ],
+          "properties": {
+            "per_day": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "per_run": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          }
+        },
+        "amount": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "currency"
+          ],
+          "minProperties": 2,
+          "properties": {
+            "currency": {
+              "$ref": "urn:oac:0.1:common#/$defs/currency"
+            },
+            "per_call_minor": {
+              "$ref": "urn:oac:0.1:common#/$defs/minor"
+            },
+            "per_day_minor": {
+              "$ref": "urn:oac:0.1:common#/$defs/minor"
+            }
+          }
+        },
+        "recipients": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^([A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]{1,64})?@[A-Za-z0-9]([A-Za-z0-9.-]{0,188}[A-Za-z0-9])?$"
+          }
+        },
+        "payees": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "sites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "urn:oac:0.1:common#/$defs/host"
+          }
+        }
+      }
+    },
+    "iat": {
+      "$ref": "urn:oac:0.1:common#/$defs/time"
+    },
+    "exp": {
+      "$ref": "urn:oac:0.1:common#/$defs/time"
+    },
+    "signer": {
+      "$ref": "urn:oac:0.1:common#/$defs/signer"
+    },
+    "supersedes": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    }
   }
 }

@@ -87,7 +87,9 @@ The client retries the same call with the elicitation result and the echoed stat
 ```
 
 `accept` only means the person opened the page. The server MUST find the signed Consent for this preview, run the
-checks of spec 6.3 against the arguments in this retry, and only then run the tool. If no valid Consent exists yet,
+checks of spec 6.3 against the arguments in this retry (with `sub` from its own authentication of the caller), and
+only then run the tool. A Consent arriving from the signer MUST be verified when it arrives, and a stored valid
+Consent MUST NOT be replaced by a later post, so a stray or hostile post cannot block the person's approval. If no valid Consent exists yet,
 it answers with another `input_required` result; if the person declined, with a tool error and no action.
 
 A client that is itself the person's signer (for example a wallet app holding a device key the model cannot reach)
@@ -105,19 +107,32 @@ way; which signers it trusts is its own policy (spec 3.3).
 
 Tier B results carry a receipt too, with the native undo token. Tier A results MAY.
 
-## 4. Mandates
+## 4. Mandates and taint
 
 An agent holding a Mandate attaches it to the call: `_meta["com.atlasiw/oac-mandate"]: "<compact JWS>"`, or the
 executor looks up Mandates it holds for the authenticated caller. The executor runs spec 7.3 and counts the use in
 the same transaction as the action. Any failure falls back to 3.1 (ask the person); `tainted` always does.
 
+Taint (spec section 4) is decided by the host application that runs the agent and sees what entered the run, never
+by the model. The host states it on each call:
+
+```json
+{"_meta": {"com.atlasiw/oac-run": {"run": "<host run id>", "tainted": false}}}
+```
+
+The executor MAY trust this only from a host it has authenticated and reviewed (a first-party app, an MCP client it
+registered); it MUST treat a missing, unauthenticated or unknown statement as `tainted: true`. A model can write tool
+arguments but not `_meta`, and the executor never reads taint from arguments. The executor numbers runs for
+`per_run` limits itself (for example inside `requestState`); the host's run id is only a hint.
+
 ## 5. Undo
 
 The server exposes one tool, `oac_undo`, whose arguments are `{"request": "<undo JWS>", "receipt": "<receipt JWS>"}`.
 Its own profile is `effect: write`, `undo: none`, so it is tier C; the signed undo request is its authority in place of
-a Consent (receipt `authority.kind: "undo"`). The executor runs spec 8.3 and returns the undo receipt in
-`_meta["com.atlasiw/oac-receipt"]`. A `compensate` undo needs a Consent
-for the compensating action first, obtained as in 3.1.
+a Consent (receipt `authority.kind: "undo"`). The executor runs spec 8.3, keeps the set of receipts it has undone,
+and returns the undo receipt in `_meta["com.atlasiw/oac-receipt"]`. A `compensate` undo is a call to the compensating
+tool (for example `cancel_booking` with `undoes: <receipt digest>`) that goes through 3.1 like any tier C call; its
+undo request names that Consent.
 
 ## 6. Without the extension
 

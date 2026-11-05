@@ -19,7 +19,7 @@ from server import EXECUTOR, EXT, Server  # noqa: E402
 PERSON = "person:demo"
 SIGNER = "https://signer.example"
 signer_key = generate()  # held by the person's signer; the "model" below never touches it
-server = Server(person=PERSON, signer_keys=[signer_key.jwk])
+server = Server(person=PERSON, signers={SIGNER: [signer_key.jwk]})
 CAPS = {"elicitation": {"url": {}}, "extensions": {EXT: {"version": "0.1"}}}
 _id = 0
 
@@ -41,8 +41,10 @@ def consent_page(preview_id: str) -> None:
     """The person's signer: shows the Preview, proves the person is there, signs, posts to the executor."""
     p = server.preview_for_page(preview_id)
     print(f"    consent page shows: {p['summary']} | fields {p['fields']} | undo: {p['undo']['kind']}")
-    server.receive_consent(make_consent(key=signer_key, iss=SIGNER, sub=PERSON, aud=EXECUTOR, previews=[p], now=int(time.time())))
-    print("    person taps Approve; the signer posts the signed Consent to the executor")
+    junk = make_consent(key=generate(), iss=SIGNER, sub=PERSON, aud=EXECUTOR, previews=[p], now=int(time.time()))
+    print(f"    a stray post with an untrusted key arrives first -> kept: {server.receive_consent(junk)}")
+    kept = server.receive_consent(make_consent(key=signer_key, iss=SIGNER, sub=PERSON, aud=EXECUTOR, previews=[p], now=int(time.time())))
+    print(f"    person taps Approve; the signer posts the signed Consent to the executor -> kept: {kept}")
 
 
 disc = call("server/discover")["result"]
@@ -62,7 +64,7 @@ say("attack 1", f"model retries with party 20 instead of 2 -> {attack['content']
 
 done = call("tools/call", retry)["result"]
 receipt = done["_meta"][EXT + "-receipt"]
-say("book 2/2", f"{done['content'][0]['text']} Receipt tier {verify(receipt, KeySet([server.key.jwk]), 'oac-receipt+jws')['tier']}")
+say("book 2/2", f"{done['content'][0]['text']} Receipt tier {verify(receipt, KeySet({EXECUTOR: [server.key.jwk]}), 'oac-receipt+jws')['tier']}")
 
 again = call("tools/call", retry)["result"]
 say("attack 2", f"the same approval replayed -> {again['content'][0]['text']}")
@@ -76,6 +78,9 @@ say("task", f"{task['content'][0]['text']} (tier B: ran at once, receipt has an 
 undo_req = make_undo(key=signer_key, iss=SIGNER, sub=PERSON, aud=EXECUTOR, receipt_token=task_receipt, mode="native", now=int(time.time()))
 undone = call("tools/call", {"name": "oac_undo", "arguments": {"request": undo_req, "receipt": task_receipt}})["result"]
 say("undo", f"{undone['content'][0]['text']} tasks now {list(server.tasks.values())}")
+undo_again = make_undo(key=signer_key, iss=SIGNER, sub=PERSON, aud=EXECUTOR, receipt_token=task_receipt, mode="native", now=int(time.time()))
+twice = call("tools/call", {"name": "oac_undo", "arguments": {"request": undo_again, "receipt": task_receipt}})["result"]
+say("attack 3", f"a second undo of the same task, with a fresh signed request -> {twice['content'][0]['text']}")
 
-chain = verify_chain(server.receipts, keys=KeySet([server.key.jwk]), executor=EXECUTOR)
+chain = verify_chain(server.receipts, keys=KeySet({EXECUTOR: [server.key.jwk]}), executor=EXECUTOR)
 say("audit", f"receipt chain verifies offline: {len(chain)} receipts, " + ", ".join(f"#{r['seq']} {r['tool']}/{r['authority']['kind']}" for r in chain))

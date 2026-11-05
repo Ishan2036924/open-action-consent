@@ -13,6 +13,7 @@ from typing import Any
 from oac.errors import OACError
 
 MAX_SAFE = 2**53 - 1
+MAX_DEPTH = 64  # arrays and objects nested deeper than this are refused
 
 
 def _string(s: str) -> str:
@@ -23,7 +24,7 @@ def _string(s: str) -> str:
     return json.dumps(s, ensure_ascii=False)
 
 
-def _enc(v: Any, out: list[str]) -> None:
+def _enc(v: Any, out: list[str], depth: int = 0) -> None:
     if v is None:
         out.append("null")
     elif v is True:
@@ -38,23 +39,26 @@ def _enc(v: Any, out: list[str]) -> None:
         raise OACError("malformed", "non-integer numbers are not allowed")
     elif isinstance(v, str):
         out.append(_string(v))
+    elif isinstance(v, (list, tuple, dict)) and depth >= MAX_DEPTH:
+        raise OACError("malformed", "nested too deeply")
     elif isinstance(v, (list, tuple)):
         out.append("[")
         for i, x in enumerate(v):
             if i:
                 out.append(",")
-            _enc(x, out)
+            _enc(x, out, depth + 1)
         out.append("]")
     elif isinstance(v, dict):
         if not all(isinstance(k, str) for k in v):
             raise OACError("malformed", "object keys must be strings")
+        keys = {k: _string(k) for k in v}  # Unicode check before sorting
         out.append("{")
         for i, k in enumerate(sorted(v, key=lambda k: k.encode("utf-16-be"))):
             if i:
                 out.append(",")
-            out.append(_string(k))
+            out.append(keys[k])
             out.append(":")
-            _enc(v[k], out)
+            _enc(v[k], out, depth + 1)
         out.append("}")
     else:
         raise OACError("malformed", f"type {type(v).__name__} cannot be canonicalized")
@@ -96,6 +100,8 @@ def parse(data: str | bytes) -> Any:
         )
     except OACError:
         raise
+    except RecursionError as e:
+        raise OACError("malformed", "nested too deeply") from e
     except (ValueError, UnicodeDecodeError) as e:
         raise OACError("malformed", "not JSON") from e
     canonical(value)  # range and Unicode checks

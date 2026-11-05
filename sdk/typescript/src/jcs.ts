@@ -5,13 +5,14 @@
 import { OACError } from "./errors.ts";
 
 export type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
+export const MAX_DEPTH = 64; // arrays and objects nested deeper than this are refused
 
 function str(s: string): string {
   if (!s.isWellFormed()) throw new OACError("malformed", "string is not valid Unicode");
   return JSON.stringify(s);
 }
 
-export function canonical(v: unknown): string {
+export function canonical(v: unknown, depth = 0): string {
   if (v === null) return "null";
   if (v === true) return "true";
   if (v === false) return "false";
@@ -21,10 +22,12 @@ export function canonical(v: unknown): string {
     return String(v === 0 ? 0 : v);
   }
   if (typeof v === "string") return str(v);
-  if (Array.isArray(v)) return "[" + v.map(canonical).join(",") + "]";
+  if (typeof v === "object" && depth >= MAX_DEPTH) throw new OACError("malformed", "nested too deeply");
+  if (Array.isArray(v)) return "[" + v.map((x) => canonical(x, depth + 1)).join(",") + "]";
   if (typeof v === "object") {
     const o = v as Record<string, unknown>;
-    return "{" + Object.keys(o).sort().map((k) => str(k) + ":" + canonical(o[k])).join(",") + "}";
+    const keys = Object.keys(o).map((k) => [k, str(k)] as const); // Unicode check before sorting
+    return "{" + keys.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([k, s]) => s + ":" + canonical(o[k], depth + 1)).join(",") + "}";
   }
   throw new OACError("malformed", `type ${typeof v} cannot be canonicalized`);
 }
@@ -40,22 +43,26 @@ const ESC: Record<string, string> = { '"': '"', "\\": "\\", "/": "/", b: "\b", f
 export function parse(input: string | Uint8Array): Json {
   let text: string;
   try {
-    text = typeof input === "string" ? input : new TextDecoder("utf-8", { fatal: true }).decode(input);
+    text = typeof input === "string" ? input : new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(input);
   } catch {
     throw new OACError("malformed", "not UTF-8");
   }
-  let i = 0;
+  let i = 0, depth = 0;
   const bad = (why: string): never => { throw new OACError("malformed", why); };
   const ws = () => { while (i < text.length && WS.has(text[i])) i++; };
   const value = (): Json => {
     ws();
     const c = text[i];
+    if (c === "{" || c === "[") {
+      depth++;
+      if (depth > MAX_DEPTH) bad("nested too deeply");
+    }
     if (c === "{") {
       i++;
       const entries: [string, Json][] = [];
       const seen = new Set<string>();
       ws();
-      if (text[i] === "}") { i++; return Object.fromEntries(entries); }
+      if (text[i] === "}") { i++; depth--; return Object.fromEntries(entries); }
       for (;;) {
         ws();
         if (text[i] !== '"') bad("expected a key");
@@ -67,7 +74,7 @@ export function parse(input: string | Uint8Array): Json {
         entries.push([k, value()]);
         ws();
         if (text[i] === ",") { i++; continue; }
-        if (text[i] === "}") { i++; return Object.fromEntries(entries); }
+        if (text[i] === "}") { i++; depth--; return Object.fromEntries(entries); }
         bad("expected , or }");
       }
     }
@@ -75,12 +82,12 @@ export function parse(input: string | Uint8Array): Json {
       i++;
       const out: Json[] = [];
       ws();
-      if (text[i] === "]") { i++; return out; }
+      if (text[i] === "]") { i++; depth--; return out; }
       for (;;) {
         out.push(value());
         ws();
         if (text[i] === ",") { i++; continue; }
-        if (text[i] === "]") { i++; return out; }
+        if (text[i] === "]") { i++; depth--; return out; }
         bad("expected , or ]");
       }
     }

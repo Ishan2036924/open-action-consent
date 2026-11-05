@@ -7,21 +7,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -52,7 +62,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "ok": true
@@ -63,21 +75,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "pay_order",
      "args": {
@@ -103,13 +125,18 @@
       "amount_minor": "amount_minor",
       "currency": "currency",
       "payee": "merchant"
-     }
+     },
+     "other_args": [
+      "items"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "ok": true
@@ -120,21 +147,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "send_email",
      "args": {
@@ -158,13 +195,18 @@
      "binds": {
       "to": "to",
       "title": "subject"
-     }
+     },
+     "other_args": [
+      "body"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "ok": true
@@ -175,21 +217,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -220,7 +272,9 @@
      "type": "agent",
      "id": "other-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "holder_mismatch"
@@ -231,21 +285,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -276,7 +340,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1794528000
+    "sub": "person:7f3a",
+    "now": 1794528000,
+    "tainted": false
    },
    "expect": {
     "error": "expired"
@@ -287,21 +353,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NjUxMTYwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.C7UHtwCK2b0K3Lqusr1KsnI29Ub6Z5q-rYdle2I07ZSGckp6oXex5VHMpGQowd5dQB9YxcGQR_8vXpL_7weZAg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -332,7 +408,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "lifetime_too_long"
@@ -343,21 +421,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "add_task",
      "args": {
@@ -382,7 +470,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "tool_not_covered"
@@ -393,21 +483,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "solve_captcha",
      "args": {
@@ -424,13 +524,18 @@
       "window_s": 0
      },
      "tier_floor": "D",
-     "binds": {}
+     "binds": {},
+     "other_args": [
+      "page"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "tier_d"
@@ -441,21 +546,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -486,6 +601,7 @@
      "type": "agent",
      "id": "lunch-bot"
     },
+    "sub": "person:7f3a",
     "now": 1793836800,
     "tainted": true
    },
@@ -498,21 +614,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIlN3ZWV0Z3JlZW4iXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.YA9M_XcXqckIdp10WSSBNJTUPUbjPaLKsp1_BxfsNAJu2vyGT5nYVMMlVchh-OSj397QG8j9u7O-RxUHa6b3DA",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "pay_order",
      "args": {
@@ -538,13 +664,18 @@
       "amount_minor": "amount_minor",
       "currency": "currency",
       "payee": "merchant"
-     }
+     },
+     "other_args": [
+      "items"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "pay_without_caps"
@@ -555,21 +686,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "send_email",
      "args": {
@@ -593,13 +734,18 @@
      "binds": {
       "to": "to",
       "title": "subject"
-     }
+     },
+     "other_args": [
+      "body"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "recipient_not_allowed"
@@ -610,21 +756,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PCQd93O8dHWXejrEwXpfEBe0xgxtVEP_bKVmrpfD4EZXXDzHIK1Ka6zDlw-4IOC3pFSIHmompRU0zDNTTJqIDQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "send_email",
      "args": {
@@ -648,13 +804,18 @@
      "binds": {
       "to": "to",
       "title": "subject"
-     }
+     },
+     "other_args": [
+      "body"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "recipient_not_allowed"
@@ -665,21 +826,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "pay_order",
      "args": {
@@ -705,13 +876,18 @@
       "amount_minor": "amount_minor",
       "currency": "currency",
       "payee": "merchant"
-     }
+     },
+     "other_args": [
+      "items"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "payee_not_allowed"
@@ -722,21 +898,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -767,7 +953,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "site_not_allowed"
@@ -778,21 +966,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "pay_order",
      "args": {
@@ -818,13 +1016,18 @@
       "amount_minor": "amount_minor",
       "currency": "currency",
       "payee": "merchant"
-     }
+     },
+     "other_args": [
+      "items"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "currency_mismatch"
@@ -835,21 +1038,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "pay_order",
      "args": {
@@ -875,13 +1088,18 @@
       "amount_minor": "amount_minor",
       "currency": "currency",
       "payee": "merchant"
-     }
+     },
+     "other_args": [
+      "items"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "over_amount"
@@ -892,21 +1110,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "pay_order",
      "args": {
@@ -932,13 +1160,18 @@
       "amount_minor": "amount_minor",
       "currency": "currency",
       "payee": "merchant"
-     }
+     },
+     "other_args": [
+      "items"
+     ]
     },
     "holder": {
      "type": "agent",
      "id": "lunch-bot"
     },
+    "sub": "person:7f3a",
     "now": 1793836800,
+    "tainted": false,
     "usage": {
      "amount_today_minor": 4000
     }
@@ -952,21 +1185,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -997,7 +1240,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
+    "sub": "person:7f3a",
     "now": 1793836800,
+    "tainted": false,
     "usage": {
      "calls_today": 5
     }
@@ -1011,21 +1256,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1LCJwZXJfcnVuIjoxfSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.9uJSZjcWldoJNyaIebdDXVmm9G_FKzSnQx3uItFPiZ5hQkuJFRWTvsMBMnyf7E1xaZOicuyzvLiuY7WsYwc3Cg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -1056,7 +1311,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
+    "sub": "person:7f3a",
     "now": 1793836800,
+    "tainted": false,
     "usage": {
      "calls_this_run": 1
     }
@@ -1070,21 +1327,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.CTLdPDeedkjFIx9IZu2DJbUR4zgKAbxY2STTefGIx7QsZvjaeRiZe6cW4LTUnhC6-DgiIpDYPsfsh7D3qgaoAw",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -1115,7 +1382,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "bad_signature"
@@ -1126,21 +1395,31 @@
    "op": "check_mandate",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.a5DcaOf-74e1nQwXBVdC7T1eNt2MxZmnDe4kMJpmY1U3-d3R5zDfgXRsqTpUc4X0Kc0puSDrFOWzNrc4-rOmAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "action": {
      "tool": "book_table",
      "args": {
@@ -1171,7 +1450,9 @@
      "type": "agent",
      "id": "lunch-bot"
     },
-    "now": 1793836800
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
    },
    "expect": {
     "error": "bad_type"
@@ -1845,6 +2126,1254 @@
      "holder",
      "sites"
     ]
+   }
+  },
+  {
+   "name": "a recipient list where there was none (none meant nobody)",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "sites": [
+       "nobu.example"
+      ],
+      "recipients": [
+       "@gmail.com"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "recipients"
+    ]
+   }
+  },
+  {
+   "name": "the same signer kind is not loosening",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": []
+   }
+  },
+  {
+   "name": "device to custodial is loosening",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "device"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "signer"
+    ]
+   }
+  },
+  {
+   "name": "another issuer",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://wallet.example",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "iss"
+    ]
+   }
+  },
+  {
+   "name": "dropping one payee is narrowing",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": []
+   }
+  },
+  {
+   "name": "two addresses hidden in one recipient",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "send_email",
+     "args": {
+      "to": [
+       "boss@evil.test, sam@example.com"
+      ],
+      "subject": "Re: plan 1",
+      "body": "Sounds good."
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     },
+     "other_args": [
+      "body"
+     ]
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a display name hides the real address",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "send_email",
+     "args": {
+      "to": [
+       "Sam <boss@evil.test>"
+      ],
+      "subject": "Re: plan 1",
+      "body": "Sounds good."
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     },
+     "other_args": [
+      "body"
+     ]
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a header break in an address",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "send_email",
+     "args": {
+      "to": [
+       "boss@evil.test\r\nBcc: x@example.com"
+      ],
+      "subject": "Re: plan 1",
+      "body": "Sounds good."
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     },
+     "other_args": [
+      "body"
+     ]
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "two @ signs in an address",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "send_email",
+     "args": {
+      "to": [
+       "boss@evil.test@example.com"
+      ],
+      "subject": "Re: plan 1",
+      "body": "Sounds good."
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     },
+     "other_args": [
+      "body"
+     ]
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "model adds an undeclared bcc",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "send_email",
+     "args": {
+      "to": [
+       "sam1@example.com"
+      ],
+      "subject": "Re: plan 1",
+      "body": "Sounds good.",
+      "bcc": [
+       "boss@evil.test"
+      ]
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     },
+     "other_args": [
+      "body"
+     ]
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "undeclared_argument"
+   }
+  },
+  {
+   "name": "a payment that leaves out its amount",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "pay_order",
+     "args": {
+      "currency": "USD",
+      "merchant": "Sweetgreen"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     },
+     "other_args": [
+      "items"
+     ]
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "the executor acts for someone else",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:other",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "subject_mismatch"
+   }
+  },
+  {
+   "name": "revoked or superseded",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false,
+    "revoked": [
+     "md_lunch_1"
+    ]
+   },
+   "expect": {
+    "error": "revoked"
+   }
+  },
+  {
+   "name": "usage counts that are not numbers",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false,
+    "usage": {
+     "calls_today": null
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "pay mandate without a payee list",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicmVjaXBpZW50cyI6WyJAZXhhbXBsZS5jb20iXSwic2l0ZXMiOlsibm9idS5leGFtcGxlIl19LCJleHAiOjE3OTQ0MzgwMDAsImdvYWwiOiJCb29rIGFuZCBwYXkgZm9yIGx1bmNoIG9uIHdlZWtkYXlzLCB1cCB0byAkMjUuIiwiaG9sZGVyIjp7ImlkIjoibHVuY2gtYm90IiwidHlwZSI6ImFnZW50In0sImlhdCI6MTc5MzgzMzIwMCwiaWQiOiJtZF9sdW5jaF8xIiwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidG9vbHMiOlsiYm9va190YWJsZSIsInBheV9vcmRlciIsInNlbmRfZW1haWwiLCJzb2x2ZV9jYXB0Y2hhIl0sInR5cGUiOiJtYW5kYXRlIn0.NgsEPKmq3sTsxktxSeqpq1SVHMr3i8NsC0oLFLDLkhVaAtIszo8dfHpn036dmRDZNK283MJsFoUkF4JVZaDvCQ",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "pay_order",
+     "args": {
+      "amount_minor": 1800,
+      "currency": "USD",
+      "merchant": "Sweetgreen",
+      "items": [
+       "bowl"
+      ]
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     },
+     "other_args": [
+      "items"
+     ]
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "pay_without_caps"
+   }
+  },
+  {
+   "name": "a trusted signer's key signs in another signer's name",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImtzMFZJenpqUUIwZi12Z1NOUFJRVkFZRVMwRjhlVU5KS0w3VUdhZE9JZWsiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.xhkiNEML_KBM9pqHqbWv3j7rFBvYW3w7CpL30rgrCoelAEn59yQk7uRGEa_8G8LuraGvIDTDU-zFWQ6wyPPTDQ",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "sub": "person:7f3a",
+    "now": 1793836800,
+    "tainted": false
+   },
+   "expect": {
+    "error": "wrong_issuer"
    }
   }
  ]

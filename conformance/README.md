@@ -18,11 +18,13 @@ op-specific value. Ops:
 | `tier` | `profile`, `policy_floor`, `tainted`, `hint` | `{"tier": "A".."D"}` |
 | `profile` | `profile` | ok / error |
 | `binding` | `preview`, `action`, `profile` | ok / error |
-| `verify_consent` | `token`, `keys`, `executor`, `previews`, `actions`, `profiles`, `now`, `seen_nonces`, `policy_floor`, `tainted` | ok / error |
-| `check_mandate` | `token`, `keys`, `action`, `profile`, `holder`, `now`, `usage`, `tainted` | ok / error |
+| `verify_consent` | `token`, `keys`, `executor`, `sub`, `previews`, `actions`, `profiles`, `now`, `seen_nonces`, `policy_floor`, `tainted` | ok / error |
+| `check_mandate` | `token`, `keys`, `action`, `profile`, `holder`, `sub`, `now`, `tainted`, `usage`, `revoked` | ok / error |
 | `loosens` | `old`, `new` (mandate payloads) | `{"reasons": [sorted]}` |
 | `verify_chain` | `tokens`, `keys`, `executor`, `sub` | ok / error |
-| `check_undo` | `token`, `keys`, `executor`, `receipt_token`, `receipt_keys`, `now`, `seen_nonces` | ok / error |
+| `check_undo` | `token`, `keys`, `executor`, `receipt_token`, `receipt_keys`, `now`, `seen_nonces`, `undone`, `compensation` | ok / error |
+
+`keys` are grouped by issuer: `{"<iss>": [<public JWK>, ...]}`. Vector files are read with the strict parser.
 
 Test keys: `key` labels map to `sha-256("oac-v0.1 test key: " + label)` as the Ed25519 seed (ES256: that value
 mod (n - 1) + 1). They are public on purpose; never use them for anything real.

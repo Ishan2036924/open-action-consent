@@ -2,29 +2,105 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:oac:0.1:preview",
   "title": "OAC v0.1 Preview",
-  "description": "What the executor shows the person before a yes. Built by the executor from the action itself, never by a model. Hashed (JCS + sha-256) into the Consent. Rules beyond the schema: iat < exp <= iat + 900; every field equals its bound argument; undo equals the profile's.",
-  "type": "object", "additionalProperties": false,
-  "required": ["oac", "type", "id", "executor", "sub", "tool", "action", "summary", "fields", "undo", "iat", "exp"],
+  "description": "What the executor shows the person before a yes. Built by the executor from the action itself, never by a model. Hashed (JCS + sha-256) into the Consent. Rules beyond the schema: iat < exp <= iat + 900; every field equals its bound argument and details equal the other arguments; undo equals the profile's.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "oac",
+    "type",
+    "id",
+    "executor",
+    "sub",
+    "tool",
+    "action",
+    "summary",
+    "fields",
+    "undo",
+    "iat",
+    "exp"
+  ],
   "properties": {
-    "oac": {"$ref": "urn:oac:0.1:common#/$defs/version"},
-    "type": {"const": "preview"},
-    "id": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "executor": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "sub": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "tool": {"$ref": "urn:oac:0.1:common#/$defs/tool"},
-    "action": {"$ref": "urn:oac:0.1:common#/$defs/digest", "description": "sha-256 of JCS({tool, args})"},
-    "summary": {"type": "string", "minLength": 1, "maxLength": 500},
-    "fields": {"$ref": "urn:oac:0.1:common#/$defs/fields"},
-    "undo": {"$ref": "urn:oac:0.1:common#/$defs/undo"},
+    "oac": {
+      "$ref": "urn:oac:0.1:common#/$defs/version"
+    },
+    "type": {
+      "const": "preview"
+    },
+    "id": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "executor": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "sub": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "tool": {
+      "$ref": "urn:oac:0.1:common#/$defs/tool"
+    },
+    "action": {
+      "$ref": "urn:oac:0.1:common#/$defs/digest",
+      "description": "sha-256 of JCS({tool, args})"
+    },
+    "summary": {
+      "allOf": [
+        {
+          "$ref": "urn:oac:0.1:common#/$defs/text"
+        }
+      ],
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "fields": {
+      "$ref": "urn:oac:0.1:common#/$defs/fields"
+    },
+    "undo": {
+      "$ref": "urn:oac:0.1:common#/$defs/undo"
+    },
     "cancel_policy": {
-      "type": "object", "additionalProperties": false, "required": ["text"],
-      "properties": {"text": {"type": "string", "minLength": 1, "maxLength": 2000}, "source": {"type": "string", "minLength": 1, "maxLength": 2048}}
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      }
     },
     "evidence": {
-      "type": "object", "additionalProperties": false, "minProperties": 1,
-      "properties": {"screenshot": {"$ref": "urn:oac:0.1:common#/$defs/digest"}, "dom": {"$ref": "urn:oac:0.1:common#/$defs/digest"}}
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "screenshot": {
+          "$ref": "urn:oac:0.1:common#/$defs/digest"
+        },
+        "dom": {
+          "$ref": "urn:oac:0.1:common#/$defs/digest"
+        }
+      }
     },
-    "iat": {"$ref": "urn:oac:0.1:common#/$defs/time"},
-    "exp": {"$ref": "urn:oac:0.1:common#/$defs/time"}
+    "iat": {
+      "$ref": "urn:oac:0.1:common#/$defs/time"
+    },
+    "exp": {
+      "$ref": "urn:oac:0.1:common#/$defs/time"
+    },
+    "details": {
+      "description": "The values of the profile's other_args present in the action, unchanged.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+      }
+    }
   }
 }

@@ -7,22 +7,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -89,7 +100,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -119,7 +133,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -143,7 +160,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -156,23 +193,34 @@
    "name": "valid: one yes for a batch of three emails",
    "op": "verify_consent",
    "input": {
-    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjFBdExzNHJTaTdwaVJTN1Qta0VITVVncXQxQXB2Wk45N1pFaVljMmNyUk0iLCJwcmV2aWV3Ijoic2hhLTI1NjpVTjkwWVUxeW9WZ2UtUVNsTHhsZG9BaVFBS09ObUlORGNtRVpma3dIZW1VIn0seyJhY3Rpb24iOiJzaGEtMjU2OjFYcVlBUERzQWJnX2lUTEJpTTNXeXRFOEtwcnJ1T3RBWGZLd3hiWGhGS1UiLCJwcmV2aWV3Ijoic2hhLTI1Njo2VnF3eE5KMFMza1o4V1loMzhRZ3NaMkVTeEZZQmhUT092ZTYtXzdocW5ZIn0seyJhY3Rpb24iOiJzaGEtMjU2OnFjT1lBUnZyN19PcHE0aDdQd2plcm4zc2x0U3dZeWNRem11NFU5cTNsaGsiLCJwcmV2aWV3Ijoic2hhLTI1NjpvTFZHLTZFbXpNY1FDcEd3REd1NFJYOEVBOWV3NE5qaFpoV3VXdXBiczdRIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMiIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.43rXWI_lCuvZhIg3D124DxpkJEOsTeAuyMxJtCOaZvouZjATLmo8t4WG9PEg_EA81VhLrlSH4xCsvCdU74dhAA",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjFBdExzNHJTaTdwaVJTN1Qta0VITVVncXQxQXB2Wk45N1pFaVljMmNyUk0iLCJwcmV2aWV3Ijoic2hhLTI1NjplUTBTSVZhUWtDbFZfYmZGR2VnWXpIQzFrYUpocGZ3UXEyM212YmFMbk5JIn0seyJhY3Rpb24iOiJzaGEtMjU2OjFYcVlBUERzQWJnX2lUTEJpTTNXeXRFOEtwcnJ1T3RBWGZLd3hiWGhGS1UiLCJwcmV2aWV3Ijoic2hhLTI1Njo5QU5kSG15WWNrdWo4YktBcDZyeWJsRVhZU2dIckUzWU5YUU04Tmh2bnlVIn0seyJhY3Rpb24iOiJzaGEtMjU2OnFjT1lBUnZyN19PcHE0aDdQd2plcm4zc2x0U3dZeWNRem11NFU5cTNsaGsiLCJwcmV2aWV3Ijoic2hhLTI1NjowRFlsTC1oTmtBTmxqLVQyWTVrNDFvcmtTaUxWYnVnSUNlaHRxbHR3SEIwIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMiIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.9w5B6SYDczVcX_gJbPtaknfgy3fm1JLhZYnoUMuT0QO9qhEe_693l83Gt0fjbWK9iHhH11v9zMXSxBBKwIBGDQ",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -192,6 +240,9 @@
       "undo": {
        "kind": "none",
        "window_s": 0
+      },
+      "details": {
+       "body": "Sounds good."
       },
       "iat": 1793836770,
       "exp": 1793837370
@@ -215,6 +266,9 @@
        "kind": "none",
        "window_s": 0
       },
+      "details": {
+       "body": "Sounds good."
+      },
       "iat": 1793836770,
       "exp": 1793837370
      },
@@ -236,6 +290,9 @@
       "undo": {
        "kind": "none",
        "window_s": 0
+      },
+      "details": {
+       "body": "Sounds good."
       },
       "iat": 1793836770,
       "exp": 1793837370
@@ -304,7 +361,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -334,7 +394,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -358,7 +421,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -371,23 +454,34 @@
    "name": "valid: payment matches the preview",
    "op": "verify_consent",
    "input": {
-    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjptUFBBX2ZRNWJxNTIwVkpMUmhpNlJoampLNWpRcHN2dXIycmhmalZKbWNJIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMyIsIm9hYyI6IjAuMSIsInBheW1lbnQiOnsiYW1vdW50X21pbm9yIjoxODAwLCJjdXJyZW5jeSI6IlVTRCIsInBheWVlIjoiU3dlZXRncmVlbiIsInJhaWwiOiJzdHJpcGVfbGluayIsInJlZiI6ImxzcnFfdGVzdF8xMjMifSwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0eXBlIjoiY29uc2VudCJ9.IQraJP-I8iAsi3dBrAU5-AiUOXMzptaGPeaYsm12gq_5EYatEpFnIt3hHfuejVyzdhAz5_oqb1Hcj5g2-9dmCg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjowbU9HUGM1Y05BNW9nSGJLdDN5UHo5d0hJeUJ6NlFWT0JpQlpURHF5dUFjIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMyIsIm9hYyI6IjAuMSIsInBheW1lbnQiOnsiYW1vdW50X21pbm9yIjoxODAwLCJjdXJyZW5jeSI6IlVTRCIsInBheWVlIjoiU3dlZXRncmVlbiIsInJhaWwiOiJzdHJpcGVfbGluayIsInJlZiI6ImxzcnFfdGVzdF8xMjMifSwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0eXBlIjoiY29uc2VudCJ9.ruzd5ZkyMaLFeV_Jwbi4zvNBO_FzpNbgnVucsAaIM01q5RIQ8_boqLJHxf_YfwDza0NtXUyZugEQ3aYfEOFcCA",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -406,6 +500,11 @@
       "undo": {
        "kind": "compensate",
        "window_s": 604800
+      },
+      "details": {
+       "items": [
+        "bowl"
+       ]
       },
       "iat": 1793836770,
       "exp": 1793837370
@@ -455,7 +554,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -485,7 +587,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -509,7 +614,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -522,23 +647,34 @@
    "name": "valid: device key (ES256 passkey-style)",
    "op": "verify_consent",
    "input": {
-    "token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImpxQmxPUTdRcld6MUFVQldSRG5qOUpsUi1pWmxJWmtPdkV5dlFWb0ZoZWsiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiZGV2aWNlIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.owcToxbNSyt_ecT-flyCMbaKvtg4omNo13vZjiSSGRvtF9bsfBcfphnjxaKP9ogjko8m7Ai0mcsXn9breV_A7Q",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImpxQmxPUTdRcld6MUFVQldSRG5qOUpsUi1pWmxJWmtPdkV5dlFWb0ZoZWsiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiZGV2aWNlIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.ISv1_9KwA1YTGiIwkn1btjFl5WjI_BYODUMKjSE_Rapihh4PFcTDLQPCMCkUT3S93-nq8ub8og31734HtyRSaA",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -605,7 +741,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -635,7 +774,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -659,7 +801,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -673,22 +835,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -755,7 +928,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -785,7 +961,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -809,7 +988,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800,
@@ -824,22 +1023,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.R6Eosesl6WfbwiOB663to9jC96Swnc0AWDBUDp6uITIEPv8BgENeJyDJsejBR_aii9iJhBXdCHbkmUGGnMPmDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -906,7 +1116,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -936,7 +1149,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -960,7 +1176,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -974,22 +1210,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IjlMdU4zR2liZ1JmX3lRamZoNkVZcmZObl9mSHlGdmJ0bTNMSV9VeWVmaWMiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.nxHQhptw-rlMjI5zNm-6SAfOxhUyGrBnantxzlQky3zyRLV07EJRiTDDEnwQcxRQ2DGsRsAbakwjET1oNHXyCg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -1056,7 +1303,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -1086,7 +1336,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -1110,7 +1363,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -1124,22 +1397,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.vuexaB9rinqb5JxQuen7DxOf2Y9_ocuPIn77WvUejJG0ZZEBYPIP_0mIMVLNHLieMKJCQCHQExEa0Q73siZmAw",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -1206,7 +1490,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -1236,7 +1523,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -1260,7 +1550,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -1274,22 +1584,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJub25lIiwia2lkIjoiSEhMSmFpMl9DVHJEWHFBb1V3ekxGS0V4N3B2M1BFdE1TQkJIeWlKVUtrWSIsInR5cCI6Im9hYy1jb25zZW50K2p3cyJ9.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -1356,7 +1677,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -1386,7 +1710,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -1410,7 +1737,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -1424,22 +1771,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.ewogImF1ZCI6ICJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLAogImV4cCI6IDE3OTM4MzcwODAsCiAiaWF0IjogMTc5MzgzNjc4MCwKICJpc3MiOiAiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsCiAiaXRlbXMiOiBbCiAgewogICAiYWN0aW9uIjogInNoYS0yNTY6cE1oUm8wZnd3cHFaS3lTd3k1ZVJvQUpuYnY4c0xwZVJGTW4waDY3cmJIMCIsCiAgICJwcmV2aWV3IjogInNoYS0yNTY6M25PQUo5cnd3MlExWExmdDlTVjJwMmdpZTN3Z1c1Qm9pQVFNSkNLMl9BZyIKICB9CiBdLAogImp0aSI6ICJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsCiAib2FjIjogIjAuMSIsCiAic2lnbmVyIjogewogICJraW5kIjogImN1c3RvZGlhbCIKIH0sCiAic3ViIjogInBlcnNvbjo3ZjNhIiwKICJ0eXBlIjogImNvbnNlbnQiCn0.1ggBGPelx-ORE4iiO2tcnG_Z-D_6lyUy7V24a-yZZ66SClKsSy0IGaAzIkziTNZaqiwqlrjJxSVySdz-RrdqCQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -1506,7 +1864,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -1536,7 +1897,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -1560,7 +1924,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -1574,22 +1958,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4Mzc2MDAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -1656,7 +2051,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -1686,7 +2084,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -1710,7 +2111,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -1724,22 +2145,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsieCJdLCJraWQiOiJISExKYWkyX0NUckRYcUFvVXd6TEZLRXg3cHYzUEV0TVNCQkh5aUpVS2tZIiwidHlwIjoib2FjLWNvbnNlbnQrandzIn0.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.hvjUvzEJxf8AnSZz474IBel-78zmeevwKr6MSYqSU4UMIG9U5Kbyc7bMhhUrtCNhSsR1BqByjVL95w8Gxmq7Aw",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -1806,7 +2238,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -1836,7 +2271,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -1860,7 +2298,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -1874,22 +2332,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQiLCJ6IjoxLjV9.BVGi9zCQ2unLAVYLZXrOjv0urDUh_SkEsFllnSqDHmozKleJa-DvCb8c4YJjRtX2gcvfK5-bMpYmr6g08Fm2Aw",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -1956,7 +2425,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -1986,7 +2458,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -2010,7 +2485,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -2024,22 +2519,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQiLCJhdWQiOiJ4In0.zcdYpWAur3uhlJEIpOB1cIGx1kFxan0nIrn2KUZjR1xgu_DpKuL95yOnErFqEH3SictPfvY0a-8zEMMk9BIuBw",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -2106,7 +2612,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -2136,7 +2645,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -2160,7 +2672,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -2174,22 +2706,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -2256,7 +2799,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -2286,7 +2832,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -2310,7 +2859,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -2324,22 +2893,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL290aGVyLmV4YW1wbGUvb2FjIiwiZXhwIjoxNzkzODM3MDgwLCJpYXQiOjE3OTM4MzY3ODAsImlzcyI6Imh0dHBzOi8vYXRsYXMuZXhhbXBsZS9zaWduZXIiLCJpdGVtcyI6W3siYWN0aW9uIjoic2hhLTI1NjpwTWhSbzBmd3dwcVpLeVN3eTVlUm9BSm5idjhzTHBlUkZNbjBoNjdyYkgwIiwicHJldmlldyI6InNoYS0yNTY6M25PQUo5cnd3MlExWExmdDlTVjJwMmdpZTN3Z1c1Qm9pQVFNSkNLMl9BZyJ9XSwianRpIjoibl9jb25zZW50XzAwMDAwMDAwMDEiLCJvYWMiOiIwLjEiLCJzaWduZXIiOnsia2luZCI6ImN1c3RvZGlhbCJ9LCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJjb25zZW50In0._afSRrrf2BZMWbtr0OeCEVxEr4trjYmdmHx_TmhSxGV50bPxjfMTfbAN_CokbD-kWeIBz_ofTOGL4kkZ_404Ag",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -2406,7 +2986,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -2436,7 +3019,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -2460,7 +3046,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -2474,22 +3080,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -2556,7 +3173,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -2586,7 +3206,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -2610,7 +3233,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793837200
@@ -2624,22 +3267,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcyMDAsImlhdCI6MTc5MzgzNjkyMCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.YuGlIKolSrdDCUPRa8W2EaM-AyPx17QnHwabQFhUV5ONgH9iwyCcb24leTO3mHRTwNxA-Rm_EMqqpmUZ6tvwBg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -2706,7 +3360,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -2736,7 +3393,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -2760,7 +3420,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -2774,22 +3454,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4NDAzODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.9q1DGqf-hBn0NbtABUJTKZwp-qOhFoS6F7rZKkQyJqUVJlIBOP4wQ9y7PoknaF-SpFQzZOwdm0HNTizwTePpDg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -2856,7 +3547,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -2886,7 +3580,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -2910,7 +3607,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -2924,22 +3641,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -3006,7 +3734,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -3036,7 +3767,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -3060,7 +3794,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -3074,22 +3828,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -3156,7 +3921,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -3186,7 +3954,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -3210,7 +3981,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -3224,22 +4015,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OmlGLWItd3djMF9ydFIwT1RlS2hUUEFlMTJRS05EZVlqb3FzRHBBVUhkRXMiLCJwcmV2aWV3Ijoic2hhLTI1NjpMNjNRSVQtTnNUSjZTOEZFUGRIZXJDZFVxVHU5eWFPYWNDN2ZDWk5HcnpFIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.SZ-GJ1oluKaTyMUU-MCVspohN3l8bLz1H0jD0g7L7HnZylp_icMeXEerWWmaHLg40qc89mvrsSpCCzUtngolBQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -3306,7 +4108,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -3336,7 +4141,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -3360,7 +4168,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -3374,22 +4202,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpibW9VOUFqUjZOdkUwTjN5MHEzRk85TjdmTi1xOVF6T2FiZExvWkg4aTZrIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNiIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.PJguT_hXFXgFDfH41NSkevCRQHbLXXu2LlSeIaL-b9iOumMqPaGiLcmdIZ-E4UIWGgDvuwhZCXjlsLxkXIg8Bg",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -3456,7 +4295,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -3486,7 +4328,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -3510,7 +4355,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -3524,22 +4389,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpmVVFjb3ZOa3JWejJBTURmTkJ3MS0xeENEVjUxeURaMzhrMnVFRWRTX0RnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNyIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.hQHz-A3oZ6N-libx30RyHn4AjUkEALtwT-WlyB6OwFzlno8PRgHVTlS7IZF49ON_RtvJJdEFSE8wEDsmL4lMAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -3606,7 +4482,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -3636,7 +4515,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -3660,7 +4542,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -3674,22 +4576,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpvUVFiS3hOZmg2UWtCUEYzZ2ZCRjBsbHpOZ3loS09mX1ZDdEIzbTBLa1BRIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwOCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.JgjOfvAio2-q1rJYJAO73FqiKL4I6mdT3wH17ih5sZZ1JaDnBS_D5m9DAozj04nij8zjBmPj6iZlUHfCgo3XAA",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -3756,7 +4669,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -3786,7 +4702,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -3810,7 +4729,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -3824,22 +4763,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -3881,6 +4831,9 @@
       "undo": {
        "kind": "none",
        "window_s": 0
+      },
+      "details": {
+       "body": "Sounds good."
       },
       "iat": 1793836770,
       "exp": 1793837370
@@ -3938,7 +4891,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -3968,7 +4924,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -3992,7 +4951,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -4006,22 +4985,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -4071,7 +5061,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -4101,7 +5094,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -4125,7 +5121,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -4138,23 +5154,34 @@
    "name": "tier D never runs, even with a yes",
    "op": "verify_consent",
    "input": {
-    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjdkZUQ3aVpLWWV6dU1Obi15SklJOE9KTjNZV29YYlZMa3kzQjYydTc4UmsiLCJwcmV2aWV3Ijoic2hhLTI1NjpZZjhLMkU3aWQ1WWo5MGl4cmY4QndtbnhEU21iSG1zYWlsM2VMajY3QW1VIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwOSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.cyPoj7vmQNpGAUGDcpbRLl0Vo6_ysf2Wm-ltarnfLuhEFS5XaQLO3VuqxzMBys8OSyxgx1kTqmBjRVRZrlSWBQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjdkZUQ3aVpLWWV6dU1Obi15SklJOE9KTjNZV29YYlZMa3kzQjYydTc4UmsiLCJwcmV2aWV3Ijoic2hhLTI1NjpwMzRIUkFsNGZnVXIzcE4zMWIyVzlWbDZnRTFRT1l1SXVQU1I3YWZETTVBIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwOSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.axPWjMI53KLOnPDXPnS1NEdVyyGKQ3w-TXBkukqC-JWY5Qwp-bTM7NroM3zXfE2skF79vz9Sgy63GEvb6mWfDw",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -4169,6 +5196,9 @@
       "undo": {
        "kind": "none",
        "window_s": 0
+      },
+      "details": {
+       "page": "https://x.example"
       },
       "iat": 1793836770,
       "exp": 1793837370
@@ -4213,7 +5243,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -4243,7 +5276,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -4267,7 +5303,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -4280,23 +5336,34 @@
    "name": "pay without a payment reference",
    "op": "verify_consent",
    "input": {
-    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjptUFBBX2ZRNWJxNTIwVkpMUmhpNlJoampLNWpRcHN2dXIycmhmalZKbWNJIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxMCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.kXo6a45mUwvvs0DG5PklyO5SPqHRooVzn2eJ6Cjl-cLhnR073OSef_Iwa6OW9d70JXmX2ijn-LY7jrs9eu5KCQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjowbU9HUGM1Y05BNW9nSGJLdDN5UHo5d0hJeUJ6NlFWT0JpQlpURHF5dUFjIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxMCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.pM8kH8uRalwMkSIB2YpAuzCqkcUKA9U1wkV8cXIzvOmlOeC-vDkUgbBx-iapSXxuuGBQyIDtJ1HkCv5Bb98iBQ",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -4315,6 +5382,11 @@
       "undo": {
        "kind": "compensate",
        "window_s": 604800
+      },
+      "details": {
+       "items": [
+        "bowl"
+       ]
       },
       "iat": 1793836770,
       "exp": 1793837370
@@ -4364,7 +5436,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -4394,7 +5469,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -4418,7 +5496,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -4431,23 +5529,34 @@
    "name": "payment amount differs from the preview",
    "op": "verify_consent",
    "input": {
-    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjptUFBBX2ZRNWJxNTIwVkpMUmhpNlJoampLNWpRcHN2dXIycmhmalZKbWNJIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxMSIsIm9hYyI6IjAuMSIsInBheW1lbnQiOnsiYW1vdW50X21pbm9yIjoxODAwMCwiY3VycmVuY3kiOiJVU0QiLCJwYXllZSI6IlN3ZWV0Z3JlZW4iLCJyYWlsIjoic3RyaXBlX2xpbmsiLCJyZWYiOiJsc3JxX3Rlc3RfMTIzIn0sInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.JovzMpD0jRRtAVaxmRu-US2snKU6h3TcLU4yW8U1UvbWCVEhTBL08GHlb66qxqTloFsVZp_PgXaFkoJejeivDA",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjowbU9HUGM1Y05BNW9nSGJLdDN5UHo5d0hJeUJ6NlFWT0JpQlpURHF5dUFjIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxMSIsIm9hYyI6IjAuMSIsInBheW1lbnQiOnsiYW1vdW50X21pbm9yIjoxODAwMCwiY3VycmVuY3kiOiJVU0QiLCJwYXllZSI6IlN3ZWV0Z3JlZW4iLCJyYWlsIjoic3RyaXBlX2xpbmsiLCJyZWYiOiJsc3JxX3Rlc3RfMTIzIn0sInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.vuqqnUnJcSwbdKAWIPzzYbfZsV1LQlC_q9khzrZOtnmDwsoRKNwdcDer1aVmmfb318MHH4C437H5Wv4RAZsIAQ",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -4466,6 +5575,11 @@
       "undo": {
        "kind": "compensate",
        "window_s": 604800
+      },
+      "details": {
+       "items": [
+        "bowl"
+       ]
       },
       "iat": 1793836770,
       "exp": 1793837370
@@ -4515,7 +5629,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -4545,7 +5662,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -4569,7 +5689,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800
@@ -4583,22 +5723,33 @@
    "op": "verify_consent",
    "input": {
     "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
-    "keys": [
-     {
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
-      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
-     },
-     {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
-      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
-      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
-     }
-    ],
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
     "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
     "previews": [
      {
       "oac": "0.1",
@@ -4665,7 +5816,10 @@
       "binds": {
        "to": "to",
        "title": "subject"
-      }
+      },
+      "other_args": [
+       "body"
+      ]
      },
      "add_task": {
       "oac": "0.1",
@@ -4695,7 +5849,10 @@
        "amount_minor": "amount_minor",
        "currency": "currency",
        "payee": "merchant"
-      }
+      },
+      "other_args": [
+       "items"
+      ]
      },
      "read_calendar": {
       "oac": "0.1",
@@ -4719,7 +5876,27 @@
        "window_s": 0
       },
       "tier_floor": "D",
-      "binds": {}
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
      }
     },
     "now": 1793836800,
@@ -4729,6 +5906,2124 @@
    },
    "expect": {
     "error": "replay"
+   }
+  },
+  {
+   "name": "valid: a second trusted signer signs as itself",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImtzMFZJenpqUUIwZi12Z1NOUFJRVkFZRVMwRjhlVU5KS0w3VUdhZE9JZWsiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly93YWxsZXQuZXhhbXBsZSIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxMiIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.eIt8GxU_QfhQZ-VpsBKKVKvCO2midbALf9SNnkb1WidS4Uc56QfeZi6T0yFQ5GnVrzhGWLKZ9zUv2z1UAWyjCA",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "a trusted signer's key signs in another signer's name",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImtzMFZJenpqUUIwZi12Z1NOUFJRVkFZRVMwRjhlVU5KS0w3VUdhZE9JZWsiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxMyIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.HAvwzKaQ0SAR_jTi_tz4a5PRgI9lDeTJuG2Txa0BMtZoaRa4jaKmjbP9kMur8x7o90z1ti1T38Y_IBCR6WEcDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "wrong_issuer"
+   }
+  },
+  {
+   "name": "the executor acts for someone else",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:other",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "subject_mismatch"
+   }
+  },
+  {
+   "name": "ES256 high-S twin of a valid signature",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImpxQmxPUTdRcld6MUFVQldSRG5qOUpsUi1pWmxJWmtPdkV5dlFWb0ZoZWsiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxNCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiZGV2aWNlIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.nx-VWybACcOVjAlgdILtr9GZUBJnZ0L9eCt7rpj9H4_z3vFchId4ARTKTOFX-bru_GeEiYfZRiMTSCV5ibCrZg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "bad_signature"
+   }
+  },
+  {
+   "name": "model adds an argument the profile does not declare (bcc)",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OlNPU3lTenlsaGIwdjJLQ2hfdlMtOVRkY0U0LVNwTFFqTjhoOTFQS2NOYUkiLCJwcmV2aWV3Ijoic2hhLTI1NjpwaUYtaF9sMUd5NzFuM0szdld4VnMyTWZVTDBidE5JRklWZG9JOXRLRTd3In1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxNSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.WI8ouvd39jleOtWUMgQ_TwsJdPSHH10pC_wD13K5DvOGhFycxErkw9uC45xJlUVcJN4cnB5kZWnHcbF905xVAw",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_send_email",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "send_email",
+      "action": "sha-256:SOSySzylhb0v2KCh_vS-9TdcE4-SpLQjN8h91PKcNaI",
+      "summary": "Email sam1@example.com: Re: plan 1",
+      "fields": {
+       "to": [
+        "sam1@example.com"
+       ],
+       "title": "Re: plan 1"
+      },
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "details": {
+       "body": "Sounds good."
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "send_email",
+      "args": {
+       "to": [
+        "sam1@example.com"
+       ],
+       "subject": "Re: plan 1",
+       "body": "Sounds good.",
+       "bcc": [
+        "boss@evil.test"
+       ]
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "undeclared_argument"
+   }
+  },
+  {
+   "name": "details shown differ from the arguments that run",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnZYZjJvZFExM041eVdyNjVvd2VnUjlWR0FJMzZnMlhkU1pJaWJEZ0FXRzAiLCJwcmV2aWV3Ijoic2hhLTI1NjpPSUdCU1A2N0ZqWVdQclpQWml0ZWFNQlRwaXJqZ2VIWTQydGZMTW8wbjZzIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxNiIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.gJkuAnqnBLSQFvSMBWt5I-FqKQF42MP7jSzRTYOh1dr7ynVrHc47tiCjC2cYk0L8RQu3sOv_XmKZAgdSg01uDw",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_send_email",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "send_email",
+      "action": "sha-256:vXf2odQ13N5yWr65owegR9VGAI36g2XdSZIibDgAWG0",
+      "summary": "Email sam1@example.com: Re: plan 1",
+      "fields": {
+       "to": [
+        "sam1@example.com"
+       ],
+       "title": "Re: plan 1"
+      },
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "details": {
+       "body": "Sounds good."
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "send_email",
+      "args": {
+       "to": [
+        "sam1@example.com"
+       ],
+       "subject": "Re: plan 1",
+       "body": "Please wire $500 to the account below."
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "binding_mismatch"
+   }
+  },
+  {
+   "name": "two addresses hidden in one recipient",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2Oi03bHNJbmVQOEpiMHE3U3ZkWUtrZmFqZmVXa29EMGVaLW1nT2c2UHNtcm8iLCJwcmV2aWV3Ijoic2hhLTI1Njo2MDVqODd1clFmNG1EaWlza1N2empLZEl4VVZoYVJXMloxOWN0cjltMzFvIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxNyIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.7C2a4xqaBWBUt92qTCzgE1Eqr9A_mH8nNa2dC8sZODUJDheGhXayuHOCR9HDVPkhQDaN6Ky3wVNlmVLYuXhPAA",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_send_email",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "send_email",
+      "action": "sha-256:-7lsIneP8Jb0q7SvdYKkfajfeWkoD0eZ-mgOg6Psmro",
+      "summary": "Email sam1@example.com: Re: plan 1",
+      "fields": {
+       "to": [
+        "sam1@example.com, boss@evil.test"
+       ],
+       "title": "Re: plan 1"
+      },
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "details": {
+       "body": "Sounds good."
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "send_email",
+      "args": {
+       "to": [
+        "sam1@example.com, boss@evil.test"
+       ],
+       "subject": "Re: plan 1",
+       "body": "Sounds good."
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a direction-override character in a shown field",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpyNlNwc1F0dG93YVlpS2l2ZGV0a1oxNzdqd1VzLXJMWktHLWFZMDVvdm1BIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxOCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.vRcGkjvl0B4DsQYM-plKDDT47eLWRPE-xYPQ334M_mhk_wEnS-pjOiQVLncSjZ28McYEOikEgUygkkGAesGUDg",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu ‮Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "the tool's profile is invalid (send without recipients bound)",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjFYcVlBUERzQWJnX2lUTEJpTTNXeXRFOEtwcnJ1T3RBWGZLd3hiWGhGS1UiLCJwcmV2aWV3Ijoic2hhLTI1NjpvcGFtVDNhbl9nR2hHQkk5YUpmZ25xQUItMGNvWXI3azdoMlJ2QUo4QjhFIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxOSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.4NPFu2hqZYFeC0r3POW8DcVuC3kvGtbIdqsM0VT9EYYnmUdpRMosnQNuam9xXzpbozt_aTGExwrCrZI1cx4bDA",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_send_email",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "send_email",
+      "action": "sha-256:1XqYAPDsAbg_iTLBiM3WytE8KprruOtAXfKwxbXhFKU",
+      "summary": "Email sam1@example.com: Re: plan 1",
+      "fields": {
+       "to": [
+        "sam1@example.com"
+       ],
+       "title": "Re: plan 1"
+      },
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "details": {
+       "body": "Sounds good."
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "send_email",
+      "args": {
+       "to": [
+        "sam1@example.com"
+       ],
+       "subject": "Re: plan 1",
+       "body": "Sounds good."
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "payment given but nothing pays",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAyMCIsIm9hYyI6IjAuMSIsInBheW1lbnQiOnsiYW1vdW50X21pbm9yIjoxODAwLCJjdXJyZW5jeSI6IlVTRCIsInBheWVlIjoiU3dlZXRncmVlbiIsInJhaWwiOiJzdHJpcGVfbGluayIsInJlZiI6ImxzcnFfdGVzdF8xMjMifSwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0eXBlIjoiY29uc2VudCJ9.xppabM3xB925D1te0sETnMnqNpDmDdhbV0RG7PxWuUjU0TE_O3gscCO6S_40tP0nXMGyHB9Kwz-gWApValnxDw",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "payment_mismatch"
+   }
+  },
+  {
+   "name": "two paying items in one yes",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjowbU9HUGM1Y05BNW9nSGJLdDN5UHo5d0hJeUJ6NlFWT0JpQlpURHF5dUFjIn0seyJhY3Rpb24iOiJzaGEtMjU2OlhidnRnZVVXZmJ6R2szNHRYVHZHUlhzV2pvSmI1ZjkwWWlrY1lXRXppeXciLCJwcmV2aWV3Ijoic2hhLTI1NjpKclV1SGY4YVhySktTU1l0NFJZM2xKM0N5RHcyelFkcDJxWjZqN1NFdWdnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAyMSIsIm9hYyI6IjAuMSIsInBheW1lbnQiOnsiYW1vdW50X21pbm9yIjoxODAwLCJjdXJyZW5jeSI6IlVTRCIsInBheWVlIjoiU3dlZXRncmVlbiIsInJhaWwiOiJzdHJpcGVfbGluayIsInJlZiI6ImxzcnFfdGVzdF8xMjMifSwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0eXBlIjoiY29uc2VudCJ9.-x2mzqmQuU3OIsHip8aiRDi40Yjlq_dI091jNklulb0K6VVpMWhVvaCcdqH7-shoOWYzMQKEaD48abReHzNhAA",
+    "keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "sub": "person:7f3a",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_pay_order",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "pay_order",
+      "action": "sha-256:2ib1rAlh4mx3VXyCnSUnmQG9Lk6R7MU-8bzpjdBq_eo",
+      "summary": "Pay Sweetgreen $18.00 for 1 bowl. Refund within 7 days.",
+      "fields": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "payee": "Sweetgreen"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "details": {
+       "items": [
+        "bowl"
+       ]
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     },
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_pay_2",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "pay_order",
+      "action": "sha-256:XbvtgeUWfbzGk34tXTvGRXsWjoJb5f90YikcYWEziyw",
+      "summary": "Pay Sweetgreen $18.00 for 1 salad.",
+      "fields": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "payee": "Sweetgreen"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "details": {
+       "items": [
+        "salad"
+       ]
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "pay_order",
+      "args": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "merchant": "Sweetgreen",
+       "items": [
+        "bowl"
+       ]
+      }
+     },
+     {
+      "tool": "pay_order",
+      "args": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "merchant": "Sweetgreen",
+       "items": [
+        "salad"
+       ]
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      },
+      "other_args": [
+       "body"
+      ]
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      },
+      "other_args": [
+       "items"
+      ]
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {},
+      "other_args": [
+       "page"
+      ]
+     },
+     "cancel_booking": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "cancel_booking",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant"
+      },
+      "other_args": [
+       "undoes"
+      ]
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "malformed"
    }
   }
  ]

@@ -2,56 +2,238 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:oac:0.1:common",
   "title": "OAC v0.1 shared definitions",
-  "description": "Every OAC number is an integer (money in minor units, time in unix seconds) within +-(2^53 - 1). Every signed object is a JWS (RFC 7515 compact) whose header is exactly {alg, kid, typ} and whose header and payload are RFC 8785 (JCS) canonical JSON.",
+  "description": "Every OAC number is an integer (money in minor units, time in unix seconds) within +-(2^53 - 1). Every signed object is a JWS (RFC 7515 compact) whose header is exactly {alg, kid, typ} and whose header and payload are RFC 8785 (JCS) canonical JSON. Every argument of an action is declared by its tool's Action Profile.",
   "$defs": {
-    "version": {"const": "0.1"},
-    "id": {"type": "string", "pattern": "^[\\x21-\\x7e]{1,256}$"},
-    "tool": {"type": "string", "pattern": "^[A-Za-z0-9_.:/-]{1,128}$"},
-    "digest": {"type": "string", "pattern": "^sha-256:[A-Za-z0-9_-]{43}$"},
-    "nonce": {"type": "string", "pattern": "^[A-Za-z0-9_-]{16,128}$"},
-    "time": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
-    "minor": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
-    "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
-    "host": {"type": "string", "pattern": "^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$"},
-    "tier": {"enum": ["A", "B", "C", "D"]},
+    "version": {
+      "const": "0.1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[\\x21-\\x7e]{1,256}$"
+    },
+    "tool": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:/-]{1,128}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha-256:[A-Za-z0-9_-]{43}$"
+    },
+    "nonce": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{16,128}$"
+    },
+    "time": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "minor": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "host": {
+      "type": "string",
+      "pattern": "^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$"
+    },
+    "tier": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
     "signer": {
-      "type": "object", "additionalProperties": false, "required": ["kind"],
-      "properties": {"kind": {"enum": ["custodial", "device"]}}
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "custodial",
+            "device"
+          ]
+        }
+      }
     },
     "undo": {
-      "type": "object", "additionalProperties": false, "required": ["kind", "window_s"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "window_s"
+      ],
       "properties": {
-        "kind": {"enum": ["native", "compensate", "none"]},
-        "window_s": {"type": "integer", "minimum": 0, "maximum": 31622400},
-        "note": {"type": "string", "minLength": 1, "maxLength": 200}
+        "kind": {
+          "enum": [
+            "native",
+            "compensate",
+            "none"
+          ]
+        },
+        "window_s": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31622400
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
       },
       "allOf": [
-        {"if": {"properties": {"kind": {"const": "none"}}}, "then": {"properties": {"window_s": {"const": 0}}}},
-        {"if": {"properties": {"kind": {"enum": ["native", "compensate"]}}}, "then": {"properties": {"window_s": {"minimum": 60}}}}
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "none"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "window_s": {
+                "const": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "native",
+                  "compensate"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "window_s": {
+                "minimum": 60
+              }
+            }
+          }
+        }
       ]
     },
     "fields": {
-      "type": "object", "additionalProperties": false,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "title": {"type": "string", "minLength": 1, "maxLength": 200},
-        "to": {"type": "array", "minItems": 1, "maxItems": 50, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 254}},
-        "when": {"type": "string", "minLength": 1, "maxLength": 64},
-        "amount_minor": {"$ref": "#/$defs/minor"},
-        "currency": {"$ref": "#/$defs/currency"},
-        "payee": {"type": "string", "minLength": 1, "maxLength": 200},
-        "site": {"$ref": "#/$defs/host"},
-        "count": {"type": "integer", "minimum": 0, "maximum": 9007199254740991}
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/text"
+            }
+          ],
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "to": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/email"
+          }
+        },
+        "when": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/text"
+            }
+          ],
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "amount_minor": {
+          "$ref": "#/$defs/minor"
+        },
+        "currency": {
+          "$ref": "#/$defs/currency"
+        },
+        "payee": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/text"
+            }
+          ],
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "site": {
+          "$ref": "#/$defs/host"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
       }
     },
     "payment": {
-      "type": "object", "additionalProperties": false, "required": ["rail", "ref", "amount_minor", "currency", "payee"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rail",
+        "ref",
+        "amount_minor",
+        "currency",
+        "payee"
+      ],
       "properties": {
-        "rail": {"enum": ["stripe_link", "ap2", "vi", "other"]},
-        "ref": {"type": "string", "minLength": 1, "maxLength": 256},
-        "amount_minor": {"$ref": "#/$defs/minor"},
-        "currency": {"$ref": "#/$defs/currency"},
-        "payee": {"type": "string", "minLength": 1, "maxLength": 200}
+        "rail": {
+          "enum": [
+            "stripe_link",
+            "ap2",
+            "vi",
+            "other"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "amount_minor": {
+          "$ref": "#/$defs/minor"
+        },
+        "currency": {
+          "$ref": "#/$defs/currency"
+        },
+        "payee": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
       }
+    },
+    "text": {
+      "type": "string",
+      "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u200b-\\u200f\\u2028-\\u202e\\u2060-\\u2064\\u2066-\\u2069\\ufeff]*$",
+      "description": "Text a person reads: no control, bidi-override or zero-width characters."
+    },
+    "email": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}@[A-Za-z0-9]([A-Za-z0-9.-]{0,188}[A-Za-z0-9])?$",
+      "description": "One bare ASCII address: no display name, no list."
+    },
+    "arg": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
     }
   }
 }

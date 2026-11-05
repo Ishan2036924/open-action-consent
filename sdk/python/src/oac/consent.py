@@ -4,6 +4,7 @@ it runs the actions; checks run in the spec's order and the first failure is the
 from __future__ import annotations
 
 import secrets
+import threading
 from collections.abc import Mapping, Sequence
 from typing import Any, Protocol
 
@@ -19,22 +20,26 @@ SKEW_S = 60  # clocks may differ this much
 
 
 class NonceStore(Protocol):
-    def seen(self, jti: str) -> bool: ...
-
-    def use(self, jti: str, exp: int) -> None: ...
+    def use_once(self, jti: str, exp: int) -> bool:
+        """Record jti until exp and return True, or return False if it was already recorded. Must be atomic: two
+        callers with the same jti can never both get True."""
+        ...
 
 
 class MemoryNonces:
-    """In-memory nonce store for tests and examples. Production stores keep each jti until its exp has passed."""
+    """In-memory nonce store for tests and examples. Production stores do an atomic insert-if-absent (a unique key)
+    and keep each jti until its exp has passed."""
 
     def __init__(self, seen: Sequence[str] = ()) -> None:
         self._seen: dict[str, int] = {j: 0 for j in seen}
+        self._lock = threading.Lock()
 
-    def seen(self, jti: str) -> bool:
-        return jti in self._seen
-
-    def use(self, jti: str, exp: int) -> None:
-        self._seen[jti] = exp
+    def use_once(self, jti: str, exp: int) -> bool:
+        with self._lock:
+            if jti in self._seen:
+                return False
+            self._seen[jti] = exp
+            return True
 
 
 def new_nonce() -> str:
@@ -95,6 +100,7 @@ def verify_consent(
     *,
     keys: KeySet,
     executor: str,
+    sub: str,
     previews: Sequence[Mapping[str, Any]],
     actions: Sequence[Mapping[str, Any]],
     profiles: Mapping[str, Mapping[str, Any]],
@@ -103,10 +109,13 @@ def verify_consent(
     policy_floor: str = "A",
     tainted: bool = False,
 ) -> dict[str, Any]:
+    """`sub` is the person this executor is acting for (from its own sign-in), never taken from the token."""
     p = verify(token, keys, TYP)
     shapes.consent(p)
     if p["aud"] != executor:
         raise OACError("wrong_audience")
+    if p["sub"] != sub:
+        raise OACError("subject_mismatch", "the consent is another person's")
     check_time(p, now, MAX_S)
     if len(p["items"]) != len(previews) or len(previews) != len(actions):
         raise OACError("preview_mismatch", "one preview and one action per item")
@@ -126,6 +135,7 @@ def verify_consent(
         profile = profiles.get(action["tool"])
         if profile is None:
             raise OACError("unknown_tool")
+        shapes.profile(profile)
         check_binding(preview, action, profile)
         if tier_for(profile, policy_floor=policy_floor, tainted=tainted) == "D":
             raise OACError("tier_d")
@@ -136,7 +146,6 @@ def verify_consent(
             _payment(p, preview)
     if pays == 0 and "payment" in p:
         raise OACError("payment_mismatch", "payment given but no item pays")
-    if nonces.seen(p["jti"]):
+    if not nonces.use_once(p["jti"], p["exp"]):
         raise OACError("replay")
-    nonces.use(p["jti"], p["exp"])
     return p

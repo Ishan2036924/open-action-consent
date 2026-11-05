@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from oac import shapes
+from oac.errors import OACError
 
 ORDER = "ABCD"
 
@@ -35,6 +36,6 @@ def tier_for(
     if hint is not None:
         tiers.append(hint)
     for t in tiers:
-        if t not in ORDER:
-            raise ValueError(f"unknown tier {t!r}")
+        if t not in ("A", "B", "C", "D"):
+            raise OACError("malformed", f"unknown tier {t!r}")
     return higher(*tiers)

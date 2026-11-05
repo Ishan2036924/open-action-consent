@@ -6,6 +6,7 @@ import { OACError } from "./errors.ts";
 import { KeySet, sign, tokenDigest, verify, type SigningKey } from "./jws.ts";
 import { checkTime, MAX_S, newNonce, type NonceStore } from "./consent.ts";
 import { checkSemantics, TYP as RECEIPT_TYP } from "./receipts.ts";
+import { actionDigest } from "./preview.ts";
 
 export const TYP = "oac-undo+jws";
 
@@ -23,6 +24,7 @@ export function makeUndo(o: {
 
 export function checkUndo(token: string, o: {
   keys: KeySet; executor: string; receiptToken: string; receiptKeys: KeySet; now: number; nonces: NonceStore;
+  undone?: Iterable<string>; compensation?: { consent?: Record<string, any>; action?: Record<string, any> } | null;
 }): Record<string, any> {
   const p = verify(token, o.keys, TYP);
   shapes.undoRequest(p);
@@ -37,8 +39,16 @@ export function checkUndo(token: string, o: {
   if (r.outcome !== "ok" || r.undo.kind === "none") throw new OACError("not_reversible");
   if (r.undo.kind !== p.mode) throw new OACError("undo_mode_mismatch");
   if (o.now > r.undo.until) throw new OACError("undo_window_closed");
-  if (p.mode === "compensate" && !("consent" in p)) throw new OACError("malformed", "a compensating undo names the consent for its new action");
-  if (o.nonces.seen(p.jti)) throw new OACError("replay");
-  o.nonces.use(p.jti, p.exp);
+  if (new Set(o.undone ?? []).has(p.receipt)) throw new OACError("already_undone");
+  if (p.mode === "compensate") {
+    if (!Object.hasOwn(p, "consent")) throw new OACError("malformed", "a compensating undo names the consent for its new action");
+    const consent = o.compensation?.consent, act = o.compensation?.action;
+    const isObj = (x: unknown): x is Record<string, any> => x !== null && typeof x === "object" && !Array.isArray(x);
+    if (!isObj(consent) || !isObj(act) || consent.jti !== p.consent || consent.sub !== p.sub || !isObj(act.args)
+      || act.args.undoes !== p.receipt || !(consent.items ?? []).map((i: any) => i.action).includes(actionDigest(act))) {
+      throw new OACError("compensation_mismatch", "the compensating consent does not cover undoing this receipt");
+    }
+  }
+  if (!o.nonces.useOnce(p.jti, p.exp)) throw new OACError("replay");
   return p;
 }

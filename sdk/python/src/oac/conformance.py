@@ -4,7 +4,6 @@ TypeScript SDK runs the same files."""
 
 from __future__ import annotations
 
-import json
 import sys
 from collections.abc import Callable, Mapping
 from pathlib import Path
@@ -28,6 +27,7 @@ def _consent(i: Mapping[str, Any]) -> Any:
         i["token"],
         keys=KeySet(i["keys"]),
         executor=i["executor"],
+        sub=i["sub"],
         previews=i["previews"],
         actions=i["actions"],
         profiles=i["profiles"],
@@ -46,9 +46,11 @@ def _mandate(i: Mapping[str, Any]) -> Any:
         action=i["action"],
         profile=i["profile"],
         holder=i["holder"],
+        sub=i["sub"],
         now=i["now"],
+        tainted=i["tainted"],
         usage=i.get("usage"),
-        tainted=i.get("tainted", False),
+        revoked=i.get("revoked", []),
     )
     return {"ok": True}
 
@@ -67,6 +69,8 @@ def _undo(i: Mapping[str, Any]) -> Any:
         receipt_keys=KeySet(i["receipt_keys"]),
         now=i["now"],
         nonces=MemoryNonces(i.get("seen_nonces", [])),
+        undone=i.get("undone", []),
+        compensation=i.get("compensation"),
     )
     return {"ok": True}
 
@@ -109,7 +113,7 @@ def run_case(case: Mapping[str, Any]) -> Any:
 def run(directory: Path) -> tuple[int, list[str]]:
     total, failures = 0, []
     for path in sorted(directory.glob("*.json")):
-        for case in json.loads(path.read_text())["cases"]:
+        for case in parse(path.read_bytes())["cases"]:  # the strict parser, as for anything off the wire
             total += 1
             got = run_case(case)
             if got != case["expect"]:

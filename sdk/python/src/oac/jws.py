@@ -2,7 +2,9 @@
 
 Header = exactly {alg, kid, typ}, itself JCS-canonical. Payload = JCS-canonical JSON. A verifier refuses a token whose
 header or payload bytes are not the canonical form of what they parse to, so one object has one encoding.
-Algorithms: EdDSA (Ed25519, RFC 8037) and ES256 (P-256, raw r||s). kid = the RFC 7638 JWK thumbprint."""
+Algorithms: EdDSA (Ed25519, RFC 8037) and ES256 (P-256, raw r||s, low-S only so one payload has one signature).
+kid = the RFC 7638 JWK thumbprint. Every trusted key belongs to exactly one issuer, and a token's `iss` must be its
+key's issuer."""
 
 from __future__ import annotations
 
@@ -106,25 +108,38 @@ def generate(alg: str = "EdDSA") -> SigningKey:
 
 
 class KeySet:
-    """Public keys a verifier trusts for one role (a person's signer, or one executor), looked up by kid."""
+    """Public keys a verifier trusts, grouped by the issuer each belongs to: {iss: [jwk, ...]}. A kid maps to one
+    key and one issuer; a token signed by that key must name that issuer."""
 
-    def __init__(self, jwks: Iterable[Mapping[str, Any]]) -> None:
-        self._keys: dict[str, dict[str, Any]] = {}
-        for jwk in jwks:
-            j = dict(jwk)
-            kid = thumbprint(j)
-            if j.get("kid", kid) != kid:
-                raise OACError("malformed", "kid is not the key's thumbprint")
-            self._keys[kid] = {**j, "kid": kid}
+    def __init__(self, by_issuer: Mapping[str, Iterable[Mapping[str, Any]]]) -> None:
+        self._keys: dict[str, tuple[dict[str, Any], str]] = {}
+        if not isinstance(by_issuer, Mapping):
+            raise OACError("malformed", "keys are grouped by issuer: {iss: [jwk, ...]}")
+        for iss, jwks in by_issuer.items():
+            for jwk in jwks:
+                j = dict(jwk)
+                kid = thumbprint(j)
+                if j.get("kid", kid) != kid:
+                    raise OACError("malformed", "kid is not the key's thumbprint")
+                if kid in self._keys and self._keys[kid][1] != iss:
+                    raise OACError("malformed", "one key cannot belong to two issuers")
+                self._keys[kid] = ({**j, "kid": kid}, iss)
 
     def get(self, kid: str) -> dict[str, Any] | None:
-        return self._keys.get(kid)
+        hit = self._keys.get(kid)
+        return hit[0] if hit else None
+
+    def issuer(self, kid: str) -> str | None:
+        hit = self._keys.get(kid)
+        return hit[1] if hit else None
 
 
 def _signature(key: SigningKey, data: bytes) -> bytes:
     if key.alg == "EdDSA":
         return key.private.sign(data)
     r, s = decode_dss_signature(key.private.sign(data, ec.ECDSA(hashes.SHA256())))
+    if s > _P256_ORDER // 2:  # low-S: the other spelling of the same signature
+        s = _P256_ORDER - s
     return r.to_bytes(32, "big") + s.to_bytes(32, "big")
 
 
@@ -145,6 +160,8 @@ def _check_sig(jwk: Mapping[str, Any], alg: str, data: bytes, sig: bytes) -> Non
                 raise OACError("bad_alg", "key is not P-256")
             if len(sig) != 64:
                 raise OACError("bad_signature", "ES256 signature must be 64 bytes")
+            if int.from_bytes(sig[32:], "big") > _P256_ORDER // 2:
+                raise OACError("bad_signature", "ES256 signature must be low-S")
             pub = ec.EllipticCurvePublicNumbers(
                 int.from_bytes(b64url_decode(jwk["x"]), "big"),
                 int.from_bytes(b64url_decode(jwk["y"]), "big"),
@@ -168,8 +185,8 @@ def _canonical_part(part: str) -> Any:
 
 def verify(token: str, keys: KeySet, typ: str) -> dict[str, Any]:
     """Check the envelope and signature; return the payload. Field checks are the caller's (consent, mandate...)."""
-    if not isinstance(token, str):
-        raise OACError("malformed", "token must be a string")
+    if not isinstance(token, str) or not token.isascii():
+        raise OACError("malformed", "token must be an ASCII string")
     parts = token.split(".")
     if len(parts) != 3:
         raise OACError("malformed", "a compact JWS has three parts")
@@ -187,9 +204,13 @@ def verify(token: str, keys: KeySet, typ: str) -> dict[str, Any]:
     payload = _canonical_part(parts[1])
     if not isinstance(payload, dict):
         raise OACError("malformed", "payload must be an object")
+    if payload.get("iss") != keys.issuer(header["kid"]):
+        raise OACError("wrong_issuer", "the token names another issuer than its key's")
     return payload
 
 
 def token_digest(token: str) -> str:
     """The digest a later object uses to name a signed token (receipt chains, undo requests)."""
+    if not isinstance(token, str) or not token.isascii():
+        raise OACError("malformed", "token must be an ASCII string")
     return digest_bytes(token.encode("ascii"))

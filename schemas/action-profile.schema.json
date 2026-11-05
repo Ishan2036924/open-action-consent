@@ -2,21 +2,116 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:oac:0.1:action-profile",
   "title": "OAC v0.1 Action Profile",
-  "description": "Published by a tool's author (in MCP: the tool's _meta). Says what the tool does, whether and how it can be undone, its lowest tier, and which arguments the Preview must show. Unsigned; the executor's policy may only raise its tier. Rule beyond the schema: a read declares undo none.",
-  "type": "object", "additionalProperties": false,
-  "required": ["oac", "type", "tool", "effect", "undo", "tier_floor"],
+  "description": "Published by a tool's author (in MCP: the tool's _meta). Says what the tool does, whether and how it can be undone, its lowest tier, and how every argument is shown: bound to a Preview field, or listed in other_args (shown unchanged). Unsigned; the executor's policy may only raise its tier. Rules beyond the schema: a read declares undo none; no argument is declared twice.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "oac",
+    "type",
+    "tool",
+    "effect",
+    "undo",
+    "tier_floor"
+  ],
   "properties": {
-    "oac": {"$ref": "urn:oac:0.1:common#/$defs/version"},
-    "type": {"const": "action-profile"},
-    "tool": {"$ref": "urn:oac:0.1:common#/$defs/tool"},
-    "effect": {"enum": ["read", "write", "send", "pay", "delete"]},
-    "undo": {"$ref": "urn:oac:0.1:common#/$defs/undo"},
-    "tier_floor": {"$ref": "urn:oac:0.1:common#/$defs/tier"},
+    "oac": {
+      "$ref": "urn:oac:0.1:common#/$defs/version"
+    },
+    "type": {
+      "const": "action-profile"
+    },
+    "tool": {
+      "$ref": "urn:oac:0.1:common#/$defs/tool"
+    },
+    "effect": {
+      "enum": [
+        "read",
+        "write",
+        "send",
+        "pay",
+        "delete"
+      ]
+    },
+    "undo": {
+      "$ref": "urn:oac:0.1:common#/$defs/undo"
+    },
+    "tier_floor": {
+      "$ref": "urn:oac:0.1:common#/$defs/tier"
+    },
     "binds": {
       "description": "Preview field -> argument name. Every field a Preview shows must be bound here.",
       "type": "object",
-      "propertyNames": {"enum": ["title", "to", "when", "amount_minor", "currency", "payee", "site", "count"]},
-      "additionalProperties": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"}
+      "propertyNames": {
+        "enum": [
+          "title",
+          "to",
+          "when",
+          "amount_minor",
+          "currency",
+          "payee",
+          "site",
+          "count"
+        ]
+      },
+      "additionalProperties": {
+        "$ref": "urn:oac:0.1:common#/$defs/arg"
+      }
+    },
+    "other_args": {
+      "description": "Arguments that are not bound to a field; the Preview shows them unchanged in details. An argument not in binds or other_args is refused.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "urn:oac:0.1:common#/$defs/arg"
+      }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "effect": {
+            "const": "pay"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "binds"
+        ],
+        "properties": {
+          "binds": {
+            "required": [
+              "amount_minor",
+              "currency",
+              "payee"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "effect": {
+            "const": "send"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "binds"
+        ],
+        "properties": {
+          "binds": {
+            "required": [
+              "to"
+            ]
+          }
+        }
+      }
+    }
+  ]
 }

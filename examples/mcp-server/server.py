@@ -35,6 +35,7 @@ from oac import (  # noqa: E402
     parse,
     tier_for,
     token_digest,
+    verify,
     verify_consent,
 )
 from oac.jcs import canonical_bytes  # noqa: E402
@@ -55,6 +56,7 @@ PROFILES = {
     "add_task": profile("add_task", "write", "native", 600, {"title": "title"}),
     "oac_undo": profile("oac_undo", "write", "none", 0, {}),
 }
+PROFILES["oac_undo"]["other_args"] = ["request", "receipt"]
 SCHEMAS = {
     "book_table": {"type": "object", "required": ["restaurant", "time", "party"],
                    "properties": {"restaurant": {"type": "string"}, "time": {"type": "string"}, "party": {"type": "integer"}}},
@@ -65,10 +67,11 @@ SCHEMAS = {
 
 
 class Server:
-    def __init__(self, *, person: str, signer_keys: list[dict[str, Any]]) -> None:
+    def __init__(self, *, person: str, signers: dict[str, list[dict[str, Any]]]) -> None:
         self.person = person  # stdio has no sign-in; a real server takes the principal from MCP authorization
         self.key = generate()
-        self.signer_keys = KeySet(signer_keys)
+        self.signer_keys = KeySet(signers)  # {signer iss: [public JWK]}
+        self.own_keys = KeySet({EXECUTOR: [self.key.jwk]})
         self.state_secret = secrets.token_bytes(32)
         self.previews: dict[str, dict[str, Any]] = {}  # preview id -> preview
         self.consents: dict[str, str] = {}  # preview digest -> consent token
@@ -76,15 +79,28 @@ class Server:
         self.receipts: list[str] = []
         self.tasks: dict[str, str] = {}
         self.undo_tokens: dict[str, str] = {}  # undo token -> task id
+        self.undone: set[str] = set()  # token digests of receipts already undone
 
     # ---- consent page stand-in (server-to-server, never through the MCP client or the model)
     def preview_for_page(self, preview_id: str) -> dict[str, Any]:
         return self.previews[preview_id]
 
-    def receive_consent(self, token: str) -> None:
-        payload = parse(b64url_decode(token.split(".")[1]))
-        for item in payload["items"]:
-            self.consents[item["preview"]] = token
+    def receive_consent(self, token: str) -> bool:
+        """Keep a Consent only if a trusted signer signed it, for this person and this executor, over a pending
+        preview; never replace one already kept (so a stray post cannot block the person's approval)."""
+        try:
+            payload = verify(token, self.signer_keys, "oac-consent+jws")
+        except OACError:
+            return False
+        if payload.get("aud") != EXECUTOR or payload.get("sub") != self.person:
+            return False
+        pending = {digest(p) for p in self.previews.values()}
+        kept = False
+        for item in payload.get("items", []):
+            if item.get("preview") in pending and item["preview"] not in self.consents:
+                self.consents[item["preview"]] = token
+                kept = True
+        return kept
 
     # ---- helpers
     def _state(self, fields: dict[str, Any]) -> str:
@@ -144,7 +160,8 @@ class Server:
         if token is None:
             return self._refused("No signed approval has arrived yet. Nothing was booked.")
         try:
-            consent = verify_consent(token, keys=self.signer_keys, executor=EXECUTOR, previews=[self.previews[st["preview_id"]]],
+            consent = verify_consent(token, keys=self.signer_keys, executor=EXECUTOR, sub=self.person,
+                                     previews=[self.previews[st["preview_id"]]],
                                      actions=[action], profiles=PROFILES, now=now, nonces=self.nonces)
         except OACError as e:
             return self._refused(f"Refused ({e.code}). Nothing was booked.")
@@ -164,11 +181,14 @@ class Server:
     def _undo(self, params: dict[str, Any]) -> dict[str, Any]:
         args = params["arguments"]
         try:
+            r = verify(args["receipt"], self.own_keys, "oac-receipt+jws")
+            if r["undo"]["kind"] != "native":
+                return self._refused("This example only undoes native actions; a cancel goes through its own approval.")
             req = check_undo(args["request"], keys=self.signer_keys, executor=EXECUTOR, receipt_token=args["receipt"],
-                             receipt_keys=KeySet([self.key.jwk]), now=int(time.time()), nonces=self.nonces)
+                             receipt_keys=self.own_keys, now=int(time.time()), nonces=self.nonces, undone=self.undone)
         except OACError as e:
             return self._refused(f"Undo refused ({e.code}).")
-        r = parse(b64url_decode(args["receipt"].split(".")[1]))
+        self.undone.add(req["receipt"])
         self.tasks.pop(self.undo_tokens.pop(r["undo"]["token"]), None)
         receipt = self._receipt(r["tool"], r["tier"], {"kind": "undo", "ref": req["jti"]}, {"tool": "oac_undo", "args": {}},
                                 {"undone": True}, {"kind": "none"}, undoes=req["receipt"])
@@ -209,8 +229,8 @@ class Server:
 
 
 def main() -> None:  # stdio: one JSON-RPC message per line
-    config = json.loads(Path(sys.argv[1]).read_text()) if len(sys.argv) > 1 else {"person": "person:demo", "signer_keys": []}
-    server = Server(person=config["person"], signer_keys=config["signer_keys"])
+    config = json.loads(Path(sys.argv[1]).read_text()) if len(sys.argv) > 1 else {"person": "person:demo", "signers": {}}
+    server = Server(person=config["person"], signers=config["signers"])
     for line in sys.stdin:
         if line.strip():
             print(json.dumps(server.handle(json.loads(line))), flush=True)

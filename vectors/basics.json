@@ -77,18 +77,6 @@
    }
   },
   {
-   "name": "integer beyond 2^53-1 is refused",
-   "op": "jcs",
-   "input": {
-    "value": {
-     "n": 9007199254740992
-    }
-   },
-   "expect": {
-    "error": "malformed"
-   }
-  },
-  {
    "name": "duplicate key is refused",
    "op": "parse",
    "input": {
@@ -156,6 +144,56 @@
    },
    "expect": {
     "canonical": "{\"a\":[1],\"b\":2}"
+   }
+  },
+  {
+   "name": "integer beyond 2^53-1 is refused",
+   "op": "parse",
+   "input": {
+    "text": "{\"n\":9007199254740992}"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "64 levels of nesting are fine",
+   "op": "parse",
+   "input": {
+    "text": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+   },
+   "expect": {
+    "canonical": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+   }
+  },
+  {
+   "name": "65 levels of nesting are refused",
+   "op": "parse",
+   "input": {
+    "text": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a key that is a lone surrogate is refused",
+   "op": "parse",
+   "input": {
+    "text": "{\"\\ud800\":1}"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a byte-order mark is refused",
+   "op": "parse",
+   "input": {
+    "text": "﻿{}"
+   },
+   "expect": {
+    "error": "malformed"
    }
   },
   {
@@ -277,7 +315,10 @@
      "binds": {
       "to": "to",
       "title": "subject"
-     }
+     },
+     "other_args": [
+      "body"
+     ]
     }
    },
    "expect": {
@@ -302,7 +343,10 @@
       "amount_minor": "amount_minor",
       "currency": "currency",
       "payee": "merchant"
-     }
+     },
+     "other_args": [
+      "items"
+     ]
     }
    },
    "expect": {
@@ -323,7 +367,10 @@
       "window_s": 0
      },
      "tier_floor": "D",
-     "binds": {}
+     "binds": {},
+     "other_args": [
+      "page"
+     ]
     }
    },
    "expect": {
@@ -450,6 +497,72 @@
    }
   },
   {
+   "name": "tier name 'CD' is refused",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "read_calendar",
+     "effect": "read",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {}
+    },
+    "hint": "CD"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "tier name '' is refused",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "read_calendar",
+     "effect": "read",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {}
+    },
+    "hint": ""
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "tier name 'c' is refused",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "read_calendar",
+     "effect": "read",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {}
+    },
+    "hint": "c"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
    "name": "a valid profile",
    "op": "profile",
    "input": {
@@ -513,7 +626,10 @@
      "binds": {
       "to": "to",
       "title": "subject"
-     }
+     },
+     "other_args": [
+      "body"
+     ]
     }
    },
    "expect": {
@@ -607,6 +723,111 @@
       "title": "title"
      },
      "trust_me": true
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a field named like a JavaScript built-in",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     },
+     "constructor": 1
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a pay tool that does not bind the amount",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "currency": "currency",
+      "payee": "merchant"
+     },
+     "other_args": [
+      "items"
+     ]
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a send tool that does not bind recipients",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "subject"
+     },
+     "other_args": [
+      "body"
+     ]
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "an argument both bound and listed as other",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     },
+     "other_args": [
+      "body",
+      "to"
+     ]
     }
    },
    "expect": {

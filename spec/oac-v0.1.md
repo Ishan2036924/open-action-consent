@@ -37,8 +37,11 @@ that the agent could have produced.
 ### 3.1 JSON
 
 All objects are JSON. Numbers MUST be integers between -(2^53 - 1) and 2^53 - 1: money is in minor units with an ISO
-4217 `currency`; times are unix seconds. Parsers MUST refuse duplicate object keys, fractions, exponents, NaN and
-Infinity (`malformed`).
+4217 `currency`; times are unix seconds. Parsers MUST refuse duplicate object keys, fractions, exponents, NaN,
+Infinity, a byte-order mark, invalid Unicode (including lone surrogates, in keys too) and nesting deeper than 64
+arrays or objects (`malformed`). Implementations MUST parse everything they receive (tokens, Previews, actions,
+profiles) with such a strict parser; a lenient parser can read `2.0` as `2` and so judge a different value than the
+signer did.
 
 ### 3.2 Canonical form and digests
 
@@ -55,8 +58,9 @@ The **action** is `{"tool": <name>, "args": <object>}` and its digest is `digest
 
 Consent, Mandate, Receipt and Undo request are JWS compact serializations (RFC 7515):
 
-- the protected header is exactly `{"alg", "kid", "typ"}`, canonical;
-- `alg` is `EdDSA` (Ed25519, RFC 8037) or `ES256` (P-256, signature as raw r||s);
+- the token is ASCII; the protected header is exactly `{"alg", "kid", "typ"}`, canonical;
+- `alg` is `EdDSA` (Ed25519, RFC 8037) or `ES256` (P-256, signature as raw r||s with s at most n/2, so that one
+  payload has exactly one valid signature and one `token_digest`);
 - `kid` is the RFC 7638 thumbprint of the signing key's public JWK;
 - `typ` is `oac-consent+jws`, `oac-mandate+jws`, `oac-receipt+jws` or `oac-undo+jws`, and a verifier MUST check
   it, so that no object can pass for another;
@@ -65,9 +69,15 @@ Consent, Mandate, Receipt and Undo request are JWS compact serializations (RFC 7
 A verifier MUST refuse a token whose header or payload is not byte-for-byte the canonical form of what it parses to
 (`not_canonical`). Base64url MUST be unpadded with zero pad bits.
 
-Key sets: a verifier obtains, from a source it trusts, the public keys of the signer it expects (for Consents,
-Mandates and Undo requests) and of the executor (for Receipts), and looks a token's key up by `kid`. OAC 0.1 does not
-define key discovery. An executor MAY publish its keys at the same place as its Web Bot Auth key directory.
+Envelope checks, in order: three parts, ASCII, base64url (`malformed`); header canonical (`not_canonical`) and
+exactly those members (`malformed`); `typ` (`bad_type`); `alg` (`bad_alg`); `kid` known (`unknown_key`); key type
+matches `alg` (`bad_alg`); signature (`bad_signature`); payload canonical object (`not_canonical`, `malformed`);
+the payload's `iss` is the issuer the key belongs to (`wrong_issuer`).
+
+Key sets: a verifier holds, from a source it trusts, public keys **grouped by issuer**: each key belongs to exactly
+one issuer (a person's signer, or one executor). A token signed by a key MUST name that key's issuer as `iss`, so a
+second trusted signer can never sign in the first one's name. OAC 0.1 does not define key discovery. An executor MAY
+publish its keys at the same place as its Web Bot Auth key directory.
 
 ### 3.4 Signer kinds
 
@@ -102,26 +112,43 @@ tier = max(implied(profile), profile.tier_floor, executor policy floor,
            any hint)
 ```
 
-A run is **tainted** when text from outside the person's own words or data (a web page, an email, a shared document)
-has entered it. A hint (for example from a model) MAY raise the tier; because the result is a maximum, it can never
-lower it.
+Tier names are exactly `A`, `B`, `C`, `D`; anything else is `malformed`. A hint (for example from a model) MAY raise
+the tier; because the result is a maximum, it can never lower it.
+
+**Taint.** A run is tainted when text from outside the person's own words or data (a web page, an email, a shared
+document, an unreviewed tool's output) has entered it. Taint MUST be decided by the host runtime that sees what
+entered the run, never by the model or the agent, which an injection can steer. An executor that cannot get a
+taint decision from a host it trusts MUST treat the run as tainted. In practice: a Mandate is usable only where the
+host vouches for the run (section 7.2); everywhere else the person is asked.
 
 ## 5. Action Profile
 
 Published by a tool's author (in MCP, in the tool's `_meta`; section 10). Schema: `schemas/action-profile.schema.json`.
 
 ```json
-{"oac":"0.1","type":"action-profile","tool":"book_table","effect":"write",
- "undo":{"kind":"compensate","window_s":86400},"tier_floor":"A",
- "binds":{"payee":"restaurant","when":"time","count":"party","site":"site"}}
+{"oac":"0.1","type":"action-profile","tool":"send_email","effect":"send",
+ "undo":{"kind":"none","window_s":0},"tier_floor":"A",
+ "binds":{"to":"to","title":"subject"},"other_args":["body"]}
 ```
 
 - `effect`: `read`, `write`, `send`, `pay` or `delete`.
 - `undo.kind`: `native` (the executor restores the prior state), `compensate` (a new action puts it right but cannot
   hide that it happened: a cancel, a refund), `none` (cannot be taken back). `none` has `window_s` 0; the others at
   least 60. A `read` declares `none`.
-- `binds` maps Preview fields to argument names. Preview fields are: `title`, `to` (list of addresses), `when`,
-  `amount_minor`, `currency`, `payee`, `site`, `count`.
+- `binds` maps Preview fields to argument names. Preview fields are: `title`, `when`, `payee` (display text),
+  `to` (a list of single bare addresses), `amount_minor`, `currency`, `site`, `count`.
+- `other_args` lists every other argument the tool takes. The Preview shows them unchanged in `details`.
+
+Rules:
+
+1. **Every argument is declared.** An action whose arguments include a name that is neither bound nor in
+   `other_args` MUST be refused (`undeclared_argument`). So an agent cannot add a `bcc` the person never sees.
+2. No argument is declared twice.
+3. A `pay` tool MUST bind `amount_minor`, `currency` and `payee`, and its actions MUST carry all three. A `send`
+   tool MUST bind `to`, and its actions MUST carry it. A send tool carries every recipient in that one argument.
+4. Bound argument values MUST be valid field values (`malformed`): `to` entries are one ASCII `local@domain` each
+   (no display names, no lists, no line breaks); display text has no control, bidi-override or zero-width
+   characters.
 
 Profiles are claims by the tool's author. An executor MUST treat a profile from an unreviewed source as untrusted
 and SHOULD apply a policy floor of C to its writes.
@@ -133,24 +160,25 @@ and SHOULD apply a policy floor of C to its writes.
 Schema: `schemas/preview.schema.json`.
 
 ```json
-{"oac":"0.1","type":"preview","id":"pv_book_table","executor":"https://shop.example/oac","sub":"person:7f3a",
- "tool":"book_table","action":"sha-256:...","summary":"Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people.",
- "fields":{"payee":"Nobu Boston","when":"2026-11-06T19:30-05:00","count":2,"site":"nobu.example"},
- "undo":{"kind":"compensate","window_s":86400},
- "cancel_policy":{"text":"Free cancellation until 24 h before.","source":"https://nobu.example/policy"},
- "iat":1793836770,"exp":1793837370}
+{"oac":"0.1","type":"preview","id":"pv_send_email","executor":"https://mail.example/oac","sub":"person:7f3a",
+ "tool":"send_email","action":"sha-256:...","summary":"Email sam@example.com: Lunch Friday?",
+ "fields":{"to":["sam@example.com"],"title":"Lunch Friday?"},
+ "details":{"body":"Does 1 pm work?"},
+ "undo":{"kind":"none","window_s":0},"iat":1793836770,"exp":1793837370}
 ```
 
 Rules:
 
 1. The executor MUST build the Preview from the action it will run. `fields` MUST contain exactly the bound
-   arguments that are present, each equal to its argument; `undo` MUST equal the profile's.
-2. `summary` is free text for humans. It SHOULD be produced by executor code, not a model, and MUST NOT contradict
-   `fields`. Verifiers cannot check it; that is why `fields` exist.
+   arguments that are present, each equal to its argument; `details` MUST contain exactly the `other_args` that are
+   present, unchanged (omitted when empty); `undo` MUST equal the profile's.
+2. `summary` is free text for humans, with no control, bidi-override or zero-width characters. It SHOULD be produced
+   by executor code, not a model, and MUST NOT contradict `fields`. Verifiers cannot check it; that is why `fields`
+   and `details` exist.
 3. `exp` is after `iat` and at most 900 seconds later.
 4. `evidence` MAY carry digests of a screenshot and of the page DOM the person saw (browser agents).
-5. The client MUST show the person at least `summary`, every field, the undo kind, and `cancel_policy` when present.
-   An undo kind of `none` MUST be shown before the yes, not after.
+5. The client MUST show the person `summary`, every field, every detail, the undo kind, and `cancel_policy` when
+   present, escaping anything it renders. An undo kind of `none` MUST be shown before the yes, not after.
 
 ### 6.2 Consent
 
@@ -170,11 +198,11 @@ Schema: `schemas/consent.schema.json`. Signed by the person's signer, `typ` `oac
 
 ### 6.3 Verifying a Consent
 
-The executor MUST run these checks in this order and report the first failure's code:
+The executor knows, from its own authentication, the person it acts for (`sub`). It MUST run these checks in
+this order and report the first failure's code:
 
-1. Envelope (3.3): `malformed`, `not_canonical`, `bad_type`, `bad_alg`, `unknown_key`, `bad_signature`; then the
-   payload's fields (`malformed`).
-2. `aud` is this executor: `wrong_audience`.
+1. Envelope (3.3), then the payload's fields (`malformed`).
+2. `aud` is this executor: `wrong_audience`. `sub` is the person this executor acts for: `subject_mismatch`.
 3. Time: `iat` not more than 60 s in the future (`not_yet_valid`); now before `exp` (`expired`); `exp - iat` within
    900 and positive (`lifetime_too_long`).
 4. As many previews and actions as items: `preview_mismatch`.
@@ -185,13 +213,15 @@ The executor MUST run these checks in this order and report the first failure's 
    4. `preview.sub` equals the Consent's `sub`: `subject_mismatch`;
    5. `preview.executor` is this executor: `executor_mismatch`;
    6. now before `preview.exp`: `preview_expired`;
-   7. a profile is known for the tool: `unknown_tool`;
-   8. binding (6.1 rule 1): `binding_mismatch`;
-   9. tier is not D: `tier_d`;
-   10. for a `pay` effect: section 9 (`payment_missing`, `payment_mismatch`); a second paying item is `malformed`.
+   7. a profile is known for the tool (`unknown_tool`) and is valid (`malformed`);
+   8. every argument is declared and valid (section 5 rules 1, 3, 4): `undeclared_argument`, `malformed`;
+   9. binding (6.1 rule 1): `binding_mismatch`;
+   10. tier is not D: `tier_d`;
+   11. for a `pay` effect: section 9 (`payment_missing`, `payment_mismatch`); a second paying item is `malformed`.
 6. `payment` present but no item pays: `payment_mismatch`.
-7. `jti` not seen before: `replay`. Only now is the `jti` recorded, until `exp`; a refused Consent does not use up
-   its nonce.
+7. `jti` not seen before: `replay`. Recording the `jti` (until `exp`) and checking it MUST be one atomic step
+   (insert-if-absent), so that parallel retries of one Consent run at most once. It happens last, so a refused
+   Consent does not use up its nonce.
 
 A valid Consent authorizes exactly the listed actions, once each, at this executor, before `exp`.
 
@@ -214,40 +244,53 @@ Schema: `schemas/mandate.schema.json`. Signed by the person's signer, `typ` `oac
 
 ### 7.2 What a Mandate can and cannot do
 
-A Mandate stands in for a Consent on tier C. It MUST NOT cover tier D. It MUST NOT be used in a tainted run: the
-person is asked instead (`tainted`). A `pay` tool needs `amount.per_call_minor`, `amount.per_day_minor` and `payees`.
-A tool bound to `to` needs `recipients`.
+A Mandate stands in for a Consent on tier C. It MUST NOT cover tier D. It MUST NOT be used in a tainted run, and
+a run is tainted unless a host the executor trusts says otherwise (section 4): the person is asked instead
+(`tainted`). A `pay` tool needs `amount.per_call_minor`, `amount.per_day_minor` and `payees`. A tool that binds `to`
+needs `recipients`; no list means nobody.
 
 ### 7.3 Checking a Mandate for one action
 
-In this order:
+The executor knows from its own authentication the caller (`holder`) and the person (`sub`), and keeps its own
+use counters. In this order:
 
 1. Envelope and fields, as 6.3 step 1.
-2. `holder` equals the caller the executor has authenticated: `holder_mismatch`.
-3. Time, as 6.3 step 3, with a maximum lifetime of 30 days.
-4. The action's fields are valid (`malformed`); the tool is in `tools` and is the profile's tool: `tool_not_covered`.
-5. Tier is not D: `tier_d`. The run is not tainted: `tainted`.
-6. Every bound argument present has a valid field value: `malformed`.
-7. `pay` without both amount caps and `payees`: `pay_without_caps`.
-8. Each `to` address matches `recipients` (missing list = no match): `recipient_not_allowed`.
-9. `payee` in `payees` when the list exists: `payee_not_allowed`. `site` in `sites` when the list exists:
-   `site_not_allowed`.
-10. If the action carries `amount_minor`: the Mandate has `amount` (`over_amount`), the currency equals
-    (`currency_mismatch`), within `per_call_minor` (`over_amount`), and today's total plus this one within
-    `per_day_minor` (`over_daily_amount`).
-11. Today's calls plus one within `per_day`, and this run's within `per_run`: `over_calls`.
+2. `holder` equals the authenticated caller: `holder_mismatch`. `sub` equals the person: `subject_mismatch`.
+3. The id is not revoked and not superseded (7.4): `revoked`.
+4. Time, as 6.3 step 3, with a maximum lifetime of 30 days.
+5. The action's fields are valid (`malformed`); the tool is in `tools` and is the profile's tool:
+   `tool_not_covered`; the profile is valid (`malformed`).
+6. Tier is not D: `tier_d`. The run is not tainted: `tainted`.
+7. Every argument is declared and valid (section 5): `undeclared_argument`, `malformed`. Usage counters are
+   non-negative integers (`malformed`).
+8. `pay` without both amount caps and `payees`: `pay_without_caps`.
+9. If the tool binds `to`: the Mandate has `recipients` and every address matches one entry, an exact address or
+   `@domain` compared with the whole domain, case-insensitively: `recipient_not_allowed`.
+10. `payee` in `payees` when the list exists: `payee_not_allowed`. `site` in `sites` when the list exists:
+    `site_not_allowed`.
+11. If the action carries `amount_minor`: the Mandate has `amount` (`over_amount`), the currency equals
+    (`currency_mismatch`), within `per_call_minor` (`over_amount`), and the last 24 hours' total plus this one
+    within `per_day_minor` (`over_daily_amount`).
+12. Calls in the last 24 hours plus one within `per_day`, and this run's within `per_run`: `over_calls`.
 
-The executor MUST count uses atomically with the action (one transaction, or an equivalent lock), so two parallel
-calls cannot both pass a limit.
+"Day" is a rolling 24-hour window. A run is numbered by the executor (for example inside its integrity-protected
+request state), never by the agent, which could otherwise start a new run to reset `per_run`. The executor MUST
+count uses atomically with the action (one transaction, or an equivalent lock), so two parallel calls cannot both
+pass a limit.
 
 ### 7.4 Replacing a Mandate
 
-A Mandate is revoked by its signer; revocation is final. A replacement names the old one in `supersedes`. A
-replacement **loosens** when, compared with the old one, it has another holder or subject, a new tool, a later
-expiry, a higher or removed count or amount cap, another currency, an amount where there was none, or a new or
-removed recipient, payee or site list entry. The signer MUST NOT sign a loosening replacement without a fresh proof
-that the person is present (a new sign-in, a device signature). Narrowing needs no fresh proof. The SDKs' `loosens`
-function returns the list of reasons.
+A Mandate is revoked by its signer; revocation is final. A replacement names the old one in `supersedes`, and the
+old one is then revoked. The executor MUST learn revocations from the signer (OAC 0.1 does not fix the format; a
+signed status list is expected) and MUST refuse a revoked or superseded id (`revoked`). Without this, narrowing a
+Mandate would change nothing: the holder still has the old token.
+
+A replacement **loosens** when, compared with the old one, it has another holder, subject or issuer; a device signer
+replaced by a custodial one; a new tool; a later expiry; a higher or removed count or amount cap; another currency;
+an amount where there was none; a recipient list where there was none, or a new recipient; a new payee or site, or a
+removed payee or site list. The signer MUST NOT sign a loosening replacement without a fresh proof that the person
+is present (a new sign-in, a device signature). Narrowing needs no fresh proof. The SDKs' `loosens` function returns
+the list of reasons.
 
 ## 8. Receipts and Undo
 
@@ -267,7 +310,7 @@ Rules beyond the schema (`receipt_invalid`):
 
 - tier D never appears;
 - `authority.kind` is `consent` (ref = its `jti`), `mandate` (ref = its `id`), `undo` (ref = the Undo request's
-  `jti`) or `tier` (no ref; tiers A and B only);
+  `jti`) or `tier` (MUST NOT carry a ref; tiers A and B only);
 - `undo.kind` `none` carries no `until` or `token`; any other kind on an `ok` outcome carries `until`;
 - tier B with outcome `ok` (other than an undo receipt) carries a `native` undo with a `token`;
 - a receipt with authority `undo` names the receipt it undoes in `undoes` (its `token_digest`).
@@ -289,14 +332,21 @@ rewrite history; OAC 0.1 does not fix the seal's format.
 ### 8.3 Undo request
 
 Schema: `schemas/undo.schema.json`. Signed by the person's signer, `typ` `oac-undo+jws`. `receipt` is the
-`token_digest` of the receipt to undo; `mode` is `native` or `compensate`; a `compensate` request names in `consent`
-the `jti` of the Consent for the compensating action (its own Preview: "Cancel the booking; no fee").
+`token_digest` of the receipt to undo; `mode` is `native` or `compensate`.
+
+A `compensate` undo is a new action (a cancel, a refund) with its own Preview and Consent: its arguments MUST include
+`undoes`, the receipt's `token_digest` (declared in the tool's `other_args`), and the request names that Consent's
+`jti` in `consent`. The executor verifies that Consent first (6.3), then the request.
 
 The executor checks, in order: envelope and fields; `aud` (`wrong_audience`); time, 900 s maximum lifetime; the named
-receipt is the one given (`receipt_mismatch`); that receipt verifies under the executor's keys, follows 8.1, and is
-this executor's (`receipt_mismatch`); same `sub` (`subject_mismatch`); its outcome is `ok` and its undo kind is not
-`none` (`not_reversible`); `mode` equals the undo kind (`undo_mode_mismatch`); now is not after `undo.until`
-(`undo_window_closed`); `compensate` names a consent (`malformed`); `jti` unused (`replay`).
+receipt is the one given (`receipt_mismatch`); that receipt's own envelope, fields and 8.1 rules, under the
+executor's keys (their own codes, for example `unknown_key` or `receipt_invalid`); it is this executor's
+(`receipt_mismatch`); same `sub` (`subject_mismatch`); its outcome is `ok` and its undo kind is not `none`
+(`not_reversible`); `mode` equals the undo kind (`undo_mode_mismatch`); now is not after `undo.until`
+(`undo_window_closed`); the receipt was not undone before (`already_undone`; the executor MUST keep the set of
+undone receipts); for `compensate`: a consent is named (`malformed`), and the verified Consent has that `jti`, the
+same `sub`, and covers an action whose `undoes` is this receipt (`compensation_mismatch`); finally the request's
+`jti` is used once, atomically (`replay`).
 
 The executor then undoes, and appends a receipt with authority `undo` and `undoes`. An executor MAY also accept its
 own signed-in session for a tier B native undo; the signed request is what makes an undo verifiable by others.
@@ -335,12 +385,21 @@ points to it or exports to it (`mappings.md`).
 
 - **Model-proof by construction.** Nothing a model outputs can mint a Consent or Mandate: the user key is out of its
   reach (section 2), and a model's tier hint can only raise the tier (section 4).
-- **What the person saw.** `fields` are checkable; `summary` is not. Clients MUST render `fields`. With `evidence`, a
-  dispute can compare the screenshot the person saw with the page that was submitted.
-- **Prompt injection.** Text from outside taints the run; tainted runs cannot use Mandates (7.2) and raise writes to
-  tier C (section 4).
-- **Replay.** Every Consent and Undo request is single-use, audience-bound and short-lived; nonces are recorded only
-  after every other check passes, and kept until `exp`.
+- **What the person saw.** Every argument is either a checked field or an unchanged detail (section 5), so nothing
+  runs that was not shown. `summary` is not checkable; clients MUST render `fields` and `details`, escaped. Display
+  text cannot carry direction overrides or invisible characters. With `evidence`, a dispute can compare the
+  screenshot the person saw with the page that was submitted.
+- **Addresses.** One recipient is one bare address; lists, display names and header breaks are refused, and
+  `@domain` rules compare the whole domain.
+- **Prompt injection.** Taint comes from the host, never the agent; when in doubt a run is tainted, Mandates do not
+  apply, and writes rise to tier C (section 4).
+- **Replay and races.** Every Consent and Undo request is single-use, audience-bound and short-lived; the nonce is
+  recorded atomically and only after every other check passes. Mandate counters are updated atomically with the
+  action. A receipt is undone at most once.
+- **Who signed.** Keys are bound to one issuer each, and every check names the person the executor acts for, so
+  one trusted signer cannot speak for another and one person's permission cannot act for someone else.
+- **Revocation.** Executors must refuse revoked and superseded Mandates; how they learn about them is not fixed in
+  0.1 and is the main gap to close next.
 - **Time.** Executors need a clock within 60 s of the signer's.
 - **Custodial signers** are only as strong as their sign-in. Prefer `device` for payments and for loosening Mandates.
 - **Privacy.** Previews and Receipts can reveal what a person does. Store them per person, encrypted, with retention

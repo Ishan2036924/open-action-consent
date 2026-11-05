@@ -25,8 +25,8 @@ def check_semantics(r: Mapping[str, Any]) -> None:
     tier, kind, undo = r["tier"], r["authority"]["kind"], r["undo"]
     if tier == "D":
         raise OACError("receipt_invalid", "a tier D action never runs")
-    if kind != "tier" and "ref" not in r["authority"]:
-        raise OACError("receipt_invalid", "authority needs a ref")
+    if (kind != "tier") != ("ref" in r["authority"]):
+        raise OACError("receipt_invalid", "consent, mandate and undo authority carry a ref; tier carries none")
     if kind == "tier" and tier not in ("A", "B"):
         raise OACError("receipt_invalid", "tier C needs a consent, mandate or undo authority")
     if undo["kind"] == "none" and ("until" in undo or "token" in undo):

@@ -10,6 +10,8 @@ export const CODES = new Set([
   "payee_not_allowed", "site_not_allowed", "currency_mismatch", "over_amount", "over_daily_amount", "over_calls",
   "chain_broken", "chain_seq", "chain_issuer", "receipt_invalid", "receipt_mismatch", "not_reversible",
   "undo_mode_mismatch", "undo_window_closed",
+  // added after the 2026-11-04 review
+  "wrong_issuer", "undeclared_argument", "revoked", "already_undone", "compensation_mismatch",
 ]);
 
 /** A refusal. `code` is one of CODES; `detail` is for logs, never for deciding anything. */

@@ -2,6 +2,7 @@
 // runs. tier = max(implied by the effect, profile floor, executor policy, taint floor, any hint); a hint can only raise.
 
 import * as shapes from "./shapes.ts";
+import { OACError } from "./errors.ts";
 
 const ORDER = "ABCD";
 
@@ -21,6 +22,6 @@ export function tierFor(profile: Record<string, any>, opts: { policyFloor?: stri
   const tiers = [implied(profile), profile.tier_floor, opts.policyFloor ?? "A"];
   if (opts.tainted && profile.effect !== "read") tiers.push("C");
   if (opts.hint != null) tiers.push(opts.hint);
-  for (const t of tiers) if (!ORDER.includes(t) || t.length !== 1) throw new Error(`unknown tier ${t}`);
+  for (const t of tiers) if (!["A", "B", "C", "D"].includes(t)) throw new OACError("malformed", `unknown tier ${t}`);
   return higher(...tiers);
 }

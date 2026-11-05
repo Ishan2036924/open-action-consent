@@ -28,7 +28,14 @@ _DIGEST = re.compile(r"^sha-256:[A-Za-z0-9_-]{43}$")
 _NONCE = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
 _CURRENCY = re.compile(r"^[A-Z]{3}$")
 _HOST = re.compile(r"^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$")
-_ADDR = re.compile(r"^([^@\s]{1,64}@[^@\s]{1,190}|@[^@\s]{1,190})$")
+# one bare ASCII address (no display name, no list, no header tricks); a recipient rule is an address or "@domain".
+# Explicit ASCII classes so every language reads them the same. Internationalized addresses are not in 0.1.
+_LOCAL = r"[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}"
+_DOMAIN = r"[A-Za-z0-9]([A-Za-z0-9.-]{0,188}[A-Za-z0-9])?"
+_EMAIL = re.compile(rf"^{_LOCAL}@{_DOMAIN}$")
+_ADDR = re.compile(rf"^({_LOCAL})?@{_DOMAIN}$")
+# characters that let displayed text lie (controls, bidi overrides, zero-width): refused in what a person reads
+_UNSAFE = re.compile("[\x00-\x1f\x7f-\x9f\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]")
 _LAST4 = re.compile(r"^[0-9]{4}$")
 
 Check = Callable[[Any], bool]
@@ -40,6 +47,11 @@ def _int(lo: int, hi: int = 2**53 - 1) -> Check:
 
 def _str(lo: int, hi: int) -> Check:
     return lambda v: isinstance(v, str) and lo <= len(v) <= hi
+
+
+def _text(lo: int, hi: int) -> Check:
+    """Text a person reads: a length range and no characters that can disguise what it says."""
+    return lambda v: isinstance(v, str) and lo <= len(v) <= hi and _UNSAFE.search(v) is None
 
 
 def _re(rx: re.Pattern[str]) -> Check:
@@ -90,15 +102,17 @@ ID, TOOL, DIGEST, NONCE = _re(_ID), _re(_TOOL), _re(_DIGEST), _re(_NONCE)
 TIME = _int(0)
 UNDO = {"kind": (True, _enum(*UNDO_KINDS)), "window_s": (True, _int(0, YEAR_S)), "note": (False, _str(1, 200))}
 PREVIEW_FIELDS: dict[str, Check] = {
-    "title": _str(1, 200),
-    "to": _list(_str(1, 254), 1, 50),
-    "when": _str(1, 64),
+    "title": _text(1, 200),
+    "to": _list(_re(_EMAIL), 1, 50),
+    "when": _text(1, 64),
     "amount_minor": _int(0),
     "currency": _re(_CURRENCY),
-    "payee": _str(1, 200),
+    "payee": _text(1, 200),
     "site": _re(_HOST),
     "count": _int(0),
 }
+# rule: a pay tool must show amount, currency and payee; a send tool must show who receives it
+REQUIRED_BINDS = {"pay": ("amount_minor", "currency", "payee"), "send": ("to",)}
 
 
 def _undo_rule(u: Mapping[str, Any], what: str) -> None:
@@ -109,6 +123,7 @@ def _undo_rule(u: Mapping[str, Any], what: str) -> None:
 
 def profile(v: Any) -> dict[str, Any]:
     binds = lambda b: isinstance(b, dict) and all(k in PREVIEW_FIELDS and _re(_ARG)(a) for k, a in b.items())
+    others = _list(_re(_ARG), 1, 64)
     check(
         v,
         {
@@ -119,13 +134,36 @@ def profile(v: Any) -> dict[str, Any]:
             "undo": (True, _obj(UNDO, "undo")),
             "tier_floor": (True, _enum(*TIERS)),
             "binds": (False, binds),
+            "other_args": (False, others),
         },
         "action profile",
     )
     _undo_rule(v["undo"], "action profile")
     if v["effect"] == "read" and v["undo"]["kind"] != "none":  # rule: a read has nothing to undo
         raise OACError("malformed", "action profile: a read declares undo none")
+    bound = list(v.get("binds", {}).values())
+    if len(set(bound)) != len(bound) or set(bound) & set(v.get("other_args", [])):  # rule: each argument declared once
+        raise OACError("malformed", "action profile: an argument is declared twice")
+    missing = [f for f in REQUIRED_BINDS.get(v["effect"], ()) if f not in v.get("binds", {})]
+    if missing:
+        raise OACError("malformed", f"action profile: a {v['effect']} tool must bind {missing[0]}")
     return v
+
+
+def check_action(action_doc: Mapping[str, Any], prof: Mapping[str, Any]) -> None:
+    """Every argument is declared by the profile (bound or other_args); bound values are valid fields; a pay or send
+    action carries its required fields."""
+    binds, args = prof.get("binds", {}), action_doc["args"]
+    declared = set(binds.values()) | set(prof.get("other_args", []))
+    extra = sorted(set(args) - declared)
+    if extra:
+        raise OACError("undeclared_argument", f"argument {extra[0]} is not in the tool's profile")
+    for field, arg in binds.items():
+        if arg in args and not PREVIEW_FIELDS[field](args[arg]):
+            raise OACError("malformed", f"argument {arg} is not a valid {field}")
+    for field in REQUIRED_BINDS.get(prof["effect"], ()):
+        if binds[field] not in args:
+            raise OACError("malformed", f"a {prof['effect']} action needs {binds[field]}")
 
 
 def action(v: Any) -> dict[str, Any]:
@@ -145,8 +183,9 @@ def preview(v: Any) -> dict[str, Any]:
             "sub": (True, ID),
             "tool": (True, TOOL),
             "action": (True, DIGEST),
-            "summary": (True, _str(1, 500)),
+            "summary": (True, _text(1, 500)),
             "fields": (True, fields),
+            "details": (False, lambda d: isinstance(d, dict) and all(_re(_ARG)(k) for k in d)),
             "undo": (True, _obj(UNDO, "undo")),
             "cancel_policy": (False, _obj({"text": (True, _str(1, 2000)), "source": (False, _str(1, 2048))}, "cancel_policy")),
             "evidence": (False, lambda e: isinstance(e, dict) and len(e) > 0 and _obj({"screenshot": (False, DIGEST), "dom": (False, DIGEST)}, "evidence")(e)),
@@ -251,6 +290,15 @@ def receipt(v: Any) -> dict[str, Any]:
         },
         "receipt",
     )
+    return v
+
+
+def usage(v: Any) -> dict[str, int]:
+    """What a mandate already did, from the executor's own counters (spec 7.3): counts over the last 24 hours and in
+    this run (a run the executor numbered, never the agent)."""
+    if v is None:
+        return {}
+    check(v, {"calls_today": (False, _int(0)), "calls_this_run": (False, _int(0)), "amount_today_minor": (False, _int(0))}, "usage")
     return v
 
 

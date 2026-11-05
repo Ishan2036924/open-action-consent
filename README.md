@@ -13,8 +13,9 @@ built by the  that exact     binding and the   how to undo it
 tool          preview        limits check out
 ```
 
-- **Bound previews.** Every structured field the person sees (recipient, amount, payee, time) is checked against the
-  call's real arguments. If the agent changes "2 people" to "20" after the yes, the call is refused.
+- **Bound previews.** Every argument is declared by the tool and shown: structured fields (recipient, amount,
+  payee, time) are checked against the call's real arguments, and the rest is shown unchanged. If the agent changes
+  "2 people" to "20" after the yes, or slips in a `bcc`, the call is refused.
 - **Tiers A–D.** Reads just run (A); undoable writes run with a receipt and an Undo (B); sends, payments and anything
   irreversible need a yes (C); some things never run (D). The tier is computed; a model can only make it stricter.
 - **Mandates.** Standing, bounded permissions ("lunch under $25 at these two places, five times a day, for a week").
@@ -32,7 +33,8 @@ OAC sits **next to** MCP, A2A, AP2 and ACP, not on top of them. See [spec/mappin
 from oac import build_preview, make_consent, verify_consent, generate, KeySet, MemoryNonces
 
 profile = {"oac": "0.1", "type": "action-profile", "tool": "send_email", "effect": "send",
-           "undo": {"kind": "none", "window_s": 0}, "tier_floor": "A", "binds": {"to": "to", "title": "subject"}}
+           "undo": {"kind": "none", "window_s": 0}, "tier_floor": "A",
+           "binds": {"to": "to", "title": "subject"}, "other_args": ["body"]}
 action = {"tool": "send_email", "args": {"to": ["sam@example.com"], "subject": "Lunch?", "body": "Friday 1 pm?"}}
 
 preview = build_preview(profile=profile, action=action, executor="mail.example", sub="person:1",
@@ -40,8 +42,9 @@ preview = build_preview(profile=profile, action=action, executor="mail.example",
 user_key = generate()                      # lives with the person's signer, never with the model
 consent = make_consent(key=user_key, iss="signer.example", sub="person:1", aud="mail.example",
                        previews=[preview], now=1793836800)
-verify_consent(consent, keys=KeySet([user_key.jwk]), executor="mail.example", previews=[preview],
-               actions=[action], profiles={"send_email": profile}, now=1793836810, nonces=MemoryNonces())
+verify_consent(consent, keys=KeySet({"signer.example": [user_key.jwk]}), executor="mail.example",
+               sub="person:1", previews=[preview], actions=[action], profiles={"send_email": profile},
+               now=1793836810, nonces=MemoryNonces())
 ```
 
 ## What is here
@@ -53,7 +56,7 @@ verify_consent(consent, keys=KeySet([user_key.jwk]), executor="mail.example", pr
 | [spec/mappings.md](spec/mappings.md) | AP2, Verifiable Intent, Stripe, ACP, UCP, A2A, IETF receipt drafts |
 | [spec/profiles/dispute.md](spec/profiles/dispute.md) | Dispute Evidence Pack |
 | [schemas/](schemas/) | JSON Schema 2020-12 for every object |
-| [vectors/](vectors/) | 115 conformance cases: valid ones and planted defects (forged signature, changed arguments, replay, expired, widened mandate, tier lowered by a hint, broken receipt chain, closed undo window, ...) |
+| [vectors/](vectors/) | 161 conformance cases: valid ones and planted defects (forged signature, changed arguments, hidden bcc, two addresses in one, replay, expired, revoked or widened mandate, one signer speaking for another, signature twins, broken receipt chain, double undo, ...) |
 | [sdk/python/](sdk/python/) | reference SDK (needs `cryptography`) |
 | [sdk/typescript/](sdk/typescript/) | reference SDK (no dependencies, Node 23.6+) |
 | [conformance/](conformance/) | vector format and how to run it |
@@ -65,8 +68,9 @@ verify_consent(consent, keys=KeySet([user_key.jwk]), executor="mail.example", pr
 tools/check_all.sh          # PYTHON=/path/to/python to choose an interpreter
 ```
 
-Both SDKs pass the same vectors, and Python verifies tokens signed by TypeScript. The Python tests also switch off
-each safety check one at a time and confirm a vector fails, so a check that quietly stops working is caught.
+Both SDKs pass the same vectors, Python verifies tokens signed by TypeScript, and a differential run of about 22,600
+generated inputs gives identical answers in both. The Python tests also switch off each safety check one at a time
+and confirm a vector fails, so a check that quietly stops working is caught.
 
 ## Status
 

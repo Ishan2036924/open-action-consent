@@ -27,7 +27,7 @@ from oac.receipts import make_receipt  # noqa: E402
 from oac.testing import vector_key  # noqa: E402
 from oac.undo import make_undo  # noqa: E402
 
-NOW = 1793836800  # 2026-11-04T00:00:00Z
+NOW = 1793836800  # 2026-11-05T00:00:00Z
 EXECUTOR = "https://shop.example/oac"
 SIGNER = "https://atlas.example/signer"
 PERSON = "person:7f3a"
@@ -35,13 +35,19 @@ USER = vector_key("signer")
 DEVICE = vector_key("device", "ES256")
 EXEC = vector_key("executor")
 ATTACKER = vector_key("attacker")
-USER_KEYS = [USER.jwk, DEVICE.jwk]
-EXEC_KEYS = [EXEC.jwk]
+WALLET = vector_key("wallet")  # a second signer the executor also trusts
+OTHER_EXEC = vector_key("other-executor")
+WALLET_ISS = "https://wallet.example"
+OTHER_EXECUTOR = "https://other.example/oac"
+USER_KEYS = {SIGNER: [USER.jwk, DEVICE.jwk], WALLET_ISS: [WALLET.jwk]}
+EXEC_KEYS = {EXECUTOR: [EXEC.jwk], OTHER_EXECUTOR: [OTHER_EXEC.jwk]}
+P256_N = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
 CONSENT_TYP, MANDATE_TYP, RECEIPT_TYP = "oac-consent+jws", "oac-mandate+jws", "oac-receipt+jws"
 
 
-def profile(tool: str, effect: str, kind: str, window: int, binds: dict[str, str], floor: str = "A") -> dict[str, Any]:
-    return {
+def profile(tool: str, effect: str, kind: str, window: int, binds: dict[str, str], floor: str = "A",
+            others: list[str] | None = None) -> dict[str, Any]:
+    doc = {
         "oac": "0.1",
         "type": "action-profile",
         "tool": tool,
@@ -50,15 +56,19 @@ def profile(tool: str, effect: str, kind: str, window: int, binds: dict[str, str
         "tier_floor": floor,
         "binds": binds,
     }
+    if others:
+        doc["other_args"] = others
+    return doc
 
 
 PROFILES = {
     "book_table": profile("book_table", "write", "compensate", 86400, {"payee": "restaurant", "when": "time", "count": "party", "site": "site"}),
-    "send_email": profile("send_email", "send", "none", 0, {"to": "to", "title": "subject"}),
+    "send_email": profile("send_email", "send", "none", 0, {"to": "to", "title": "subject"}, others=["body"]),
     "add_task": profile("add_task", "write", "native", 600, {"title": "title"}),
-    "pay_order": profile("pay_order", "pay", "compensate", 604800, {"amount_minor": "amount_minor", "currency": "currency", "payee": "merchant"}),
+    "pay_order": profile("pay_order", "pay", "compensate", 604800, {"amount_minor": "amount_minor", "currency": "currency", "payee": "merchant"}, others=["items"]),
     "read_calendar": profile("read_calendar", "read", "none", 0, {}),
-    "solve_captcha": profile("solve_captcha", "write", "none", 0, {}, floor="D"),
+    "solve_captcha": profile("solve_captcha", "write", "none", 0, {}, floor="D", others=["page"]),
+    "cancel_booking": profile("cancel_booking", "write", "none", 0, {"payee": "restaurant"}, others=["undoes"]),
 }
 
 ACTIONS = {
@@ -105,8 +115,23 @@ def resign(token: str, change: dict[str, Any], key: Any = USER, typ: str = CONSE
 
 
 def consent_input(token: str, previews: list[dict[str, Any]], actions: list[dict[str, Any]], **kw: Any) -> dict[str, Any]:
-    return {"token": token, "keys": USER_KEYS, "executor": EXECUTOR, "previews": previews, "actions": actions,
-            "profiles": PROFILES, "now": NOW, **kw}
+    return {"token": token, "keys": USER_KEYS, "executor": EXECUTOR, "sub": PERSON, "previews": previews,
+            "actions": actions, "profiles": PROFILES, "now": NOW, **kw}
+
+
+def high_s(token: str) -> str:
+    """The other valid-looking spelling of an ES256 signature (s -> n - s)."""
+    import base64
+
+    head, body, sig = token.split(".")
+    raw = base64.urlsafe_b64decode(sig + "=" * (-len(sig) % 4))
+    s_val = int.from_bytes(raw[32:], "big")
+    return f"{head}.{body}.{b64url(raw[:32] + (P256_N - s_val).to_bytes(32, 'big'))}"
+
+
+def manual_preview(base: dict[str, Any], action: dict[str, Any], **change: Any) -> dict[str, Any]:
+    """A preview a lying or buggy executor built by hand (build_preview would refuse it)."""
+    return copy.deepcopy(base) | {"action": action_digest(action)} | change
 
 
 def ok() -> dict[str, Any]:
@@ -129,7 +154,6 @@ def basics() -> list[dict[str, Any]]:
     ]
     for name, value, want in jcs:
         c.append({"name": name, "op": "jcs", "input": {"value": value}, "expect": {"canonical": want}})
-    c.append({"name": "integer beyond 2^53-1 is refused", "op": "jcs", "input": {"value": {"n": 9007199254740992}}, "expect": err("malformed")})
     parses = [
         ("duplicate key is refused", '{"a":1,"a":2}', err("malformed")),
         ("fraction is refused", '{"amount":1.5}', err("malformed")),
@@ -138,6 +162,11 @@ def basics() -> list[dict[str, Any]]:
         ("NaN is refused", '{"amount":NaN}', err("malformed")),
         ("trailing garbage is refused", '{"a":1} x', err("malformed")),
         ("whitespace is fine when parsing", '{ "b" : 2 , "a" : [ 1 ] }', {"canonical": '{"a":[1],"b":2}'}),
+        ("integer beyond 2^53-1 is refused", '{"n":9007199254740992}', err("malformed")),
+        ("64 levels of nesting are fine", "[" * 64 + "]" * 64, {"canonical": "[" * 64 + "]" * 64}),
+        ("65 levels of nesting are refused", "[" * 65 + "]" * 65, err("malformed")),
+        ("a key that is a lone surrogate is refused", '{"\\ud800":1}', err("malformed")),
+        ("a byte-order mark is refused", "\ufeff{}", err("malformed")),
     ]
     for name, text, want in parses:
         c.append({"name": name, "op": "parse", "input": {"text": text}, "expect": want})
@@ -161,6 +190,8 @@ def basics() -> list[dict[str, Any]]:
     ]
     for name, tool, extra, want in tiers:
         c.append({"name": name, "op": "tier", "input": {"profile": PROFILES[tool], **extra}, "expect": {"tier": want}})
+    for bad in ["CD", "", "c"]:
+        c.append({"name": f"tier name {bad!r} is refused", "op": "tier", "input": {"profile": PROFILES["read_calendar"], "hint": bad}, "expect": err("malformed")})
     bad_profiles = [
         ("a read that claims an undo", {**PROFILES["read_calendar"], "undo": {"kind": "native", "window_s": 600}}),
         ("undo none with a window", {**PROFILES["send_email"], "undo": {"kind": "none", "window_s": 600}}),
@@ -168,6 +199,10 @@ def basics() -> list[dict[str, Any]]:
         ("unknown effect", {**PROFILES["add_task"], "effect": "teleport"}),
         ("bind to an unknown preview field", {**PROFILES["add_task"], "binds": {"colour": "title"}}),
         ("unknown top-level field", {**PROFILES["add_task"], "trust_me": True}),
+        ("a field named like a JavaScript built-in", {**PROFILES["add_task"], "constructor": 1}),
+        ("a pay tool that does not bind the amount", {**PROFILES["pay_order"], "binds": {"currency": "currency", "payee": "merchant"}}),
+        ("a send tool that does not bind recipients", {**PROFILES["send_email"], "binds": {"title": "subject"}}),
+        ("an argument both bound and listed as other", {**PROFILES["send_email"], "other_args": ["body", "to"]}),
     ]
     c.append({"name": "a valid profile", "op": "profile", "input": {"profile": PROFILES["book_table"]}, "expect": ok()})
     for name, p in bad_profiles:
@@ -247,6 +282,39 @@ def consents() -> list[dict[str, Any]]:
     case("payment amount differs from the preview", err("payment_mismatch"),
          token=consent([p_pay], payment=pay_ref | {"amount_minor": 18000}, jti="n_consent_0000000011"), previews=[p_pay], actions=[pay])
     case("replayed nonce", err("replay"), seen_nonces=["n_consent_0000000001"])
+
+    # added after the 2026-11-04 review
+    case("valid: a second trusted signer signs as itself", ok(), token=make_consent(
+        key=WALLET, iss=WALLET_ISS, sub=PERSON, aud=EXECUTOR, previews=[p_book], now=NOW - 20, jti="n_consent_0000000012"))
+    case("a trusted signer's key signs in another signer's name", err("wrong_issuer"), token=make_consent(
+        key=WALLET, iss=SIGNER, sub=PERSON, aud=EXECUTOR, previews=[p_book], now=NOW - 20, jti="n_consent_0000000013"))
+    case("the executor acts for someone else", err("subject_mismatch"), sub="person:other")
+    device = consent([p_book], key=DEVICE, signer_kind="device", jti="n_consent_0000000014")
+    case("ES256 high-S twin of a valid signature", err("bad_signature"), token=high_s(device))
+    m1 = mail(1)
+    p_m1 = pv(m1, "Email sam1@example.com: Re: plan 1")
+    sneaky = {"tool": "send_email", "args": m1["args"] | {"bcc": ["boss@evil.test"]}}
+    p_sneaky = manual_preview(p_m1, sneaky)
+    case("model adds an argument the profile does not declare (bcc)", err("undeclared_argument"),
+         token=consent([p_sneaky], jti="n_consent_0000000015"), previews=[p_sneaky], actions=[sneaky])
+    rewritten = {"tool": "send_email", "args": m1["args"] | {"body": "Please wire $500 to the account below."}}
+    p_hidden = manual_preview(p_m1, rewritten)  # still shows "Sounds good." in details
+    case("details shown differ from the arguments that run", err("binding_mismatch"),
+         token=consent([p_hidden], jti="n_consent_0000000016"), previews=[p_hidden], actions=[rewritten])
+    listed = {"tool": "send_email", "args": m1["args"] | {"to": ["sam1@example.com, boss@evil.test"]}}
+    p_listed = manual_preview(p_m1, listed, fields={"to": ["sam1@example.com, boss@evil.test"], "title": "Re: plan 1"})
+    case("two addresses hidden in one recipient", err("malformed"), token=consent([p_listed], jti="n_consent_0000000017"),
+         previews=[p_listed], actions=[listed])
+    p_bidi = manual_preview(p_book, book, fields=p_book["fields"] | {"payee": "Nobu \u202eBoston"})
+    case("a direction-override character in a shown field", err("malformed"), token=consent([p_bidi], jti="n_consent_0000000018"), previews=[p_bidi])
+    bad_profiles = PROFILES | {"send_email": {k: v for k, v in PROFILES["send_email"].items()} | {"binds": {"title": "subject"}}}
+    case("the tool's profile is invalid (send without recipients bound)", err("malformed"),
+         token=consent([p_m1], jti="n_consent_0000000019"), previews=[p_m1], actions=[m1], profiles=bad_profiles)
+    case("payment given but nothing pays", err("payment_mismatch"), token=consent([p_book], payment=pay_ref, jti="n_consent_0000000020"))
+    pay2 = {"tool": "pay_order", "args": pay["args"] | {"items": ["salad"]}}
+    p_pay2 = pv(pay2, "Pay Sweetgreen $18.00 for 1 salad.", preview_id="pv_pay_2")
+    case("two paying items in one yes", err("malformed"), token=consent([p_pay, p_pay2], payment=pay_ref, jti="n_consent_0000000021"),
+         previews=[p_pay, p_pay2], actions=[pay, pay2])
     return c
 
 
@@ -264,7 +332,8 @@ def mandates() -> list[dict[str, Any]]:
     }
     good = make_mandate(key=USER, payload=body)
     book, pay = ACTIONS["book"], ACTIONS["pay"]
-    base = {"token": good, "keys": USER_KEYS, "action": book, "profile": PROFILES["book_table"], "holder": holder, "now": NOW}
+    base = {"token": good, "keys": USER_KEYS, "action": book, "profile": PROFILES["book_table"], "holder": holder, "sub": PERSON,
+            "now": NOW, "tainted": False}
 
     def case(name: str, expect: dict[str, Any], **change: Any) -> None:
         c.append({"name": name, "op": "check_mandate", "input": {**base, **change}, "expect": expect})
@@ -315,6 +384,29 @@ def mandates() -> list[dict[str, Any]]:
     loose("a later expiry", old | {"exp": old["exp"] + 86400}, ["exp"])
     loose("dropping the payee list", old | {"bounds": {k: v for k, v in nb.items() if k != "payees"}}, ["payees"])
     loose("another holder and no site list", old | {"holder": {"type": "agent", "id": "x"}, "bounds": {k: v for k, v in nb.items() if k != "sites"}}, ["holder", "sites"])
+
+    # added after the 2026-11-04 review
+    no_rcpt = old | {"bounds": {k: v for k, v in nb.items() if k != "recipients"}}
+    c.append({"name": "a recipient list where there was none (none meant nobody)", "op": "loosens",
+              "input": {"old": no_rcpt, "new": no_rcpt | {"bounds": no_rcpt["bounds"] | {"recipients": ["@gmail.com"]}}},
+              "expect": {"reasons": ["recipients"]}})
+    loose("the same signer kind is not loosening", old | {"signer": {"kind": "custodial"}}, [])
+    c.append({"name": "device to custodial is loosening", "op": "loosens",
+              "input": {"old": old | {"signer": {"kind": "device"}}, "new": old}, "expect": {"reasons": ["signer"]}})
+    loose("another issuer", old | {"iss": WALLET_ISS}, ["iss"])
+    loose("dropping one payee is narrowing", old | {"bounds": nb | {"payees": ["Sweetgreen"]}}, [])
+    case("two addresses hidden in one recipient", err("malformed"), action=with_args(mail(1), to=["boss@evil.test, sam@example.com"]), profile=PROFILES["send_email"])
+    case("a display name hides the real address", err("malformed"), action=with_args(mail(1), to=["Sam <boss@evil.test>"]), profile=PROFILES["send_email"])
+    case("a header break in an address", err("malformed"), action=with_args(mail(1), to=["boss@evil.test\r\nBcc: x@example.com"]), profile=PROFILES["send_email"])
+    case("two @ signs in an address", err("malformed"), action=with_args(mail(1), to=["boss@evil.test@example.com"]), profile=PROFILES["send_email"])
+    case("model adds an undeclared bcc", err("undeclared_argument"), action=with_args(mail(1), bcc=["boss@evil.test"]), profile=PROFILES["send_email"])
+    case("a payment that leaves out its amount", err("malformed"), action={"tool": "pay_order", "args": {"currency": "USD", "merchant": "Sweetgreen"}}, profile=PROFILES["pay_order"])
+    case("the executor acts for someone else", err("subject_mismatch"), sub="person:other")
+    case("revoked or superseded", err("revoked"), revoked=["md_lunch_1"])
+    case("usage counts that are not numbers", err("malformed"), usage={"calls_today": None})
+    no_payees = make_mandate(key=USER, payload=body | {"bounds": {k: v for k, v in body["bounds"].items() if k != "payees"}})
+    case("pay mandate without a payee list", err("pay_without_caps"), token=no_payees, action=pay, profile=PROFILES["pay_order"])
+    case("a trusted signer's key signs in another signer's name", err("wrong_issuer"), token=make_mandate(key=WALLET, payload=body))
     return c
 
 
@@ -352,7 +444,7 @@ def receipts_and_undo() -> list[dict[str, Any]]:
     bad_prev = sign(payload_of(r3) | {"prev": token_digest(r1)}, EXEC, RECEIPT_TYP)
     chain("prev points at the wrong receipt", err("chain_broken"), tokens=[r1, r2, bad_prev])
     chain("seq 1 with a prev", err("chain_broken"), tokens=[sign(payload_of(r1) | {"prev": token_digest(r2)}, EXEC, RECEIPT_TYP)])
-    chain("signed by the executor's key but issued as someone else", err("chain_issuer"),
+    chain("signed by the executor's key but issued as someone else", err("wrong_issuer"),
           tokens=[r1, sign(payload_of(r2) | {"iss": "https://other.example/oac"}, EXEC, RECEIPT_TYP)])
     chain("a receipt from an unknown key", err("unknown_key"), tokens=[r1, sign(payload_of(r2), ATTACKER, RECEIPT_TYP)])
     chain("edited after signing", err("bad_signature"),
@@ -360,6 +452,12 @@ def receipts_and_undo() -> list[dict[str, Any]]:
     chain("tier C on the tool's own say-so", err("receipt_invalid"),
           tokens=[r1, sign(payload_of(r2) | {"authority": {"kind": "tier"}}, EXEC, RECEIPT_TYP)])
     chain("a tier D receipt", err("receipt_invalid"), tokens=[sign(payload_of(r1) | {"tier": "D"}, EXEC, RECEIPT_TYP)])
+    chain("tier authority carrying a ref", err("receipt_invalid"),
+          tokens=[sign(payload_of(r1) | {"authority": {"kind": "tier", "ref": "anything"}}, EXEC, RECEIPT_TYP)])
+    chain("an export that starts mid-chain with no prev", err("chain_broken"), tokens=[sign(payload_of(r2) | {"prev": None}, EXEC, RECEIPT_TYP)])
+    other = make_receipt(key=OTHER_EXEC, payload={"iss": OTHER_EXECUTOR, "sub": PERSON, "seq": 1, "prev": None, "iat": NOW, "tool": "add_task",
+                         "tier": "A", "authority": {"kind": "tier"}, "action": action_digest(task), "outcome": "ok", "result": res, "undo": {"kind": "none"}})
+    chain("another executor's chain, under its own trusted key", err("chain_issuer"), tokens=[other])
     chain("tier B without an undo token", err("receipt_invalid"),
           tokens=[sign(payload_of(r1) | {"undo": {"kind": "native", "until": NOW + 600}}, EXEC, RECEIPT_TYP)])
 
@@ -373,7 +471,24 @@ def receipts_and_undo() -> list[dict[str, Any]]:
 
     u1 = undo(r1, "native", "n_undo_00000000000001")
     undo_case("valid: native undo inside the window", ok(), u1, r1)
-    undo_case("valid: compensate with a consent for the cancel", ok(), undo(r2, "compensate", "n_undo_00000000000002", consent="n_consent_0000000099"), r2)
+    cancel = {"tool": "cancel_booking", "args": {"restaurant": "Nobu Boston", "undoes": token_digest(r2)}}
+    p_cancel = pv(cancel, "Cancel the Nobu Boston booking. No fee.", preview_id="pv_cancel")
+    cancel_consent = payload_of(consent([p_cancel], jti="n_consent_0000000099"))
+    comp = {"consent": cancel_consent, "action": cancel}
+    undo_case("valid: compensate with a consent for the cancel", ok(),
+              undo(r2, "compensate", "n_undo_00000000000002", consent="n_consent_0000000099"), r2, compensation=comp)
+    undo_case("compensate with no verified consent given", err("compensation_mismatch"),
+              undo(r2, "compensate", "n_undo_00000000000010", consent="n_consent_0000000099"), r2)
+    other_cancel = {"tool": "cancel_booking", "args": {"restaurant": "Nobu Boston", "undoes": token_digest(r1)}}
+    undo_case("the cancel consent is for undoing another receipt", err("compensation_mismatch"),
+              undo(r2, "compensate", "n_undo_00000000000011", consent="n_consent_0000000099"), r2,
+              compensation={"consent": cancel_consent, "action": other_cancel})
+    undo_case("the request names a different consent than the one given", err("compensation_mismatch"),
+              undo(r2, "compensate", "n_undo_00000000000012", consent="n_consent_0000000098"), r2, compensation=comp)
+    undo_case("already undone", err("already_undone"), u1, r1, undone=[token_digest(r1)])
+    undo_case("a receipt for another person", err("subject_mismatch"),
+              make_undo(key=USER, iss=SIGNER, sub="person:other", aud=EXECUTOR, receipt_token=r1, mode="native", now=NOW + 30,
+                        jti="n_undo_00000000000013"), r1)
     undo_case("window closed", err("undo_window_closed"), undo(r1, "native", "n_undo_00000000000008", now=NOW + 590), r1, now=NOW + 601)
     undo_case("a sent email cannot be undone", err("not_reversible"), undo(r3, "native", "n_undo_00000000000003"), r3)
     undo_case("native undo asked of a compensate action", err("undo_mode_mismatch"), undo(r2, "native", "n_undo_00000000000004"), r2)

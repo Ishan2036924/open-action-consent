@@ -25,17 +25,18 @@ const OPS: Record<string, (i: any) => unknown> = {
   profile: (i) => (shapes.profile(i.profile), OK),
   binding: (i) => (checkBinding(i.preview, i.action, i.profile), OK),
   verify_consent: (i) => (verifyConsent(i.token, {
-    keys: new KeySet(i.keys), executor: i.executor, previews: i.previews, actions: i.actions, profiles: i.profiles,
+    keys: new KeySet(i.keys), executor: i.executor, sub: i.sub, previews: i.previews, actions: i.actions, profiles: i.profiles,
     now: i.now, nonces: new MemoryNonces(i.seen_nonces ?? []), policyFloor: i.policy_floor, tainted: i.tainted ?? false,
   }), OK),
   check_mandate: (i) => (checkMandate(i.token, {
-    keys: new KeySet(i.keys), action: i.action, profile: i.profile, holder: i.holder, now: i.now, usage: i.usage, tainted: i.tainted ?? false,
+    keys: new KeySet(i.keys), action: i.action, profile: i.profile, holder: i.holder, sub: i.sub, now: i.now,
+    tainted: i.tainted, usage: i.usage, revoked: i.revoked ?? [],
   }), OK),
   loosens: (i) => ({ reasons: loosens(i.old, i.new).sort() }),
   verify_chain: (i) => (verifyChain(i.tokens, { keys: new KeySet(i.keys), executor: i.executor, sub: i.sub }), OK),
   check_undo: (i) => (checkUndo(i.token, {
     keys: new KeySet(i.keys), executor: i.executor, receiptToken: i.receipt_token, receiptKeys: new KeySet(i.receipt_keys),
-    now: i.now, nonces: new MemoryNonces(i.seen_nonces ?? []),
+    now: i.now, nonces: new MemoryNonces(i.seen_nonces ?? []), undone: i.undone ?? [], compensation: i.compensation,
   }), OK),
 };
 
@@ -52,7 +53,7 @@ export function run(dir: string): { total: number; failures: string[] } {
   let total = 0;
   const failures: string[] = [];
   for (const name of fs.readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
-    for (const c of JSON.parse(fs.readFileSync(path.join(dir, name), "utf8")).cases) {
+    for (const c of (parse(fs.readFileSync(path.join(dir, name))) as any).cases) { // strict parser, as for the wire
       total += 1;
       let got: unknown;
       try { got = runCase(c); } catch (e) { got = { crash: String(e) }; }

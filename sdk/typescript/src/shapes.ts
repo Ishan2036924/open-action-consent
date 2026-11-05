@@ -34,7 +34,7 @@ const strCp = (lo: number, hi: number): Check => (v) => typeof v === "string" &&
 
 export function check(v: unknown, fields: Fields, what: string): void {
   if (!isObj(v)) throw new OACError("malformed", `${what} must be an object`);
-  const extra = Object.keys(v).filter((k) => !(k in fields)).sort();
+  const extra = Object.keys(v).filter((k) => !Object.hasOwn(fields, k)).sort();
   if (extra.length) throw new OACError("malformed", `${what}: unknown field ${extra[0]}`);
   for (const [name, [required, ok]] of Object.entries(fields)) {
     if (!Object.hasOwn(v, name)) {
@@ -52,21 +52,30 @@ const DIGEST = re(/^sha-256:[A-Za-z0-9_-]{43}$/);
 const NONCE = re(/^[A-Za-z0-9_-]{16,128}$/);
 const CURRENCY = re(/^[A-Z]{3}$/);
 const HOST = re(/^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$/);
-const ADDR = re(/^([^@\s]{1,64}@[^@\s]{1,190}|@[^@\s]{1,190})$/u);
+// one bare ASCII address; a recipient rule is an address or "@domain" (same classes as shapes.py)
+const LOCAL = "[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}";
+const DOMAIN = "[A-Za-z0-9]([A-Za-z0-9.-]{0,188}[A-Za-z0-9])?";
+const EMAIL = re(new RegExp(`^${LOCAL}@${DOMAIN}$`));
+const ADDR = re(new RegExp(`^(${LOCAL})?@${DOMAIN}$`));
+// characters that let displayed text lie (controls, bidi overrides, zero-width): refused in what a person reads
+const UNSAFE = /[\x00-\x1f\x7f-\x9f\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/;
+const text = (lo: number, hi: number): Check => (v) => strCp(lo, hi)(v) && !UNSAFE.test(v);
 const LAST4 = re(/^[0-9]{4}$/);
 const TIME = int(0);
 const UNDO: Fields = { kind: [true, oneOf(...UNDO_KINDS)], window_s: [true, int(0, YEAR_S)], note: [false, strCp(1, 200)] };
 
 export const PREVIEW_FIELDS: Record<string, Check> = {
-  title: strCp(1, 200),
-  to: list(strCp(1, 254), 1, 50),
-  when: strCp(1, 64),
+  title: text(1, 200),
+  to: list(EMAIL, 1, 50),
+  when: text(1, 64),
   amount_minor: int(0),
   currency: CURRENCY,
-  payee: strCp(1, 200),
+  payee: text(1, 200),
   site: HOST,
   count: int(0),
 };
+// rule: a pay tool must show amount, currency and payee; a send tool must show who receives it
+export const REQUIRED_BINDS: Record<string, string[]> = { pay: ["amount_minor", "currency", "payee"], send: ["to"] };
 const has = (o: object, k: string) => Object.hasOwn(o, k);
 
 function undoRule(u: Record<string, any>, what: string): void {
@@ -77,14 +86,36 @@ function undoRule(u: Record<string, any>, what: string): void {
 
 export function profile(v: any): Record<string, any> {
   const binds: Check = (b) => isObj(b) && Object.entries(b).every(([k, a]) => has(PREVIEW_FIELDS, k) && ARG(a));
+  const others = list(ARG, 1, 64);
   check(v, {
     oac: [true, constant(VERSION)], type: [true, constant("action-profile")], tool: [true, TOOL],
     effect: [true, oneOf(...EFFECTS)], undo: [true, obj(UNDO, "undo")], tier_floor: [true, oneOf(...TIERS)],
-    binds: [false, binds],
+    binds: [false, binds], other_args: [false, others],
   }, "action profile");
   undoRule(v.undo, "action profile");
   if (v.effect === "read" && v.undo.kind !== "none") throw new OACError("malformed", "action profile: a read declares undo none");
+  const bound = Object.values(v.binds ?? {}) as string[];
+  const other: string[] = v.other_args ?? [];
+  if (new Set(bound).size !== bound.length || bound.some((a) => other.includes(a))) {
+    throw new OACError("malformed", "action profile: an argument is declared twice");
+  }
+  const missing = (REQUIRED_BINDS[v.effect] ?? []).filter((f) => !has(v.binds ?? {}, f));
+  if (missing.length) throw new OACError("malformed", `action profile: a ${v.effect} tool must bind ${missing[0]}`);
   return v;
+}
+
+/** Every argument is declared (bound or other_args); bound values are valid fields; pay/send carry their fields. */
+export function checkAction(actionDoc: Record<string, any>, prof: Record<string, any>): void {
+  const binds: Record<string, string> = prof.binds ?? {}, args = actionDoc.args;
+  const declared = new Set([...Object.values(binds), ...(prof.other_args ?? [])]);
+  const extra = Object.keys(args).filter((a) => !declared.has(a)).sort();
+  if (extra.length) throw new OACError("undeclared_argument", `argument ${extra[0]} is not in the tool's profile`);
+  for (const [field, arg] of Object.entries(binds)) {
+    if (has(args, arg) && !PREVIEW_FIELDS[field](args[arg])) throw new OACError("malformed", `argument ${arg} is not a valid ${field}`);
+  }
+  for (const field of REQUIRED_BINDS[prof.effect] ?? []) {
+    if (!has(args, binds[field])) throw new OACError("malformed", `a ${prof.effect} action needs ${binds[field]}`);
+  }
 }
 
 export function action(v: any): Record<string, any> {
@@ -97,7 +128,8 @@ export function preview(v: any): Record<string, any> {
   const evidence: Check = (e) => isObj(e) && Object.keys(e).length > 0 && obj({ screenshot: [false, DIGEST], dom: [false, DIGEST] }, "evidence")(e);
   check(v, {
     oac: [true, constant(VERSION)], type: [true, constant("preview")], id: [true, ID], executor: [true, ID], sub: [true, ID],
-    tool: [true, TOOL], action: [true, DIGEST], summary: [true, strCp(1, 500)], fields: [true, fields],
+    tool: [true, TOOL], action: [true, DIGEST], summary: [true, text(1, 500)], fields: [true, fields],
+    details: [false, (d) => isObj(d) && Object.keys(d).every((k) => ARG(k))],
     undo: [true, obj(UNDO, "undo")],
     cancel_policy: [false, obj({ text: [true, strCp(1, 2000)], source: [false, strCp(1, 2048)] }, "cancel_policy")],
     evidence: [false, evidence], iat: [true, TIME], exp: [true, TIME],
@@ -149,6 +181,13 @@ export function receipt(v: any): Record<string, any> {
     outcome: [true, oneOf("ok", "failed")], result: [true, DIGEST], undo: [true, obj(undo, "undo")],
     undoes: [false, DIGEST], payment: [false, obj(payment, "payment")],
   }, "receipt");
+  return v;
+}
+
+/** What a mandate already did, from the executor's own counters (spec 7.3). */
+export function usage(v: any): Record<string, number> {
+  if (v === null || v === undefined) return {};
+  check(v, { calls_today: [false, int(0)], calls_this_run: [false, int(0)], amount_today_minor: [false, int(0)] }, "usage");
   return v;
 }
 

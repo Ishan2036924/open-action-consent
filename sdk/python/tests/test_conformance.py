@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 import oac.consent
+import oac.shapes
 import oac.jws
 import oac.mandate
 import oac.receipts
@@ -37,6 +38,8 @@ MUTATIONS = [
     ("no time check on consents", oac.consent, "check_time", _noop, "lives longer than 15 minutes"),
     ("tier D treated as C", oac.consent, "tier_for", lambda *a, **k: "C", "tier D never runs, even with a yes"),
     ("any recipient allowed", oac.mandate, "_recipient_ok", lambda *a: True, "recipient outside the list"),
+    ("undeclared arguments allowed", oac.shapes, "check_action", _noop, "model adds an undeclared bcc"),
+    ("issuer binding off", oac.jws.KeySet, "issuer", lambda self, kid: "https://atlas.example/signer", "signs in another signer's name"),
     ("receipt rules off", oac.receipts, "check_semantics", _noop, "tier C on the tool's own say-so"),
     ("undo receipt rules off", oac.undo, "check_semantics", _noop, "undo of an invalid receipt"),
 ]
@@ -50,5 +53,10 @@ def test_each_check_is_load_bearing(monkeypatch, label, module, attr, fake, must
 
 
 def test_replay_check_is_load_bearing(monkeypatch) -> None:
-    monkeypatch.setattr(oac.consent.MemoryNonces, "seen", lambda self, jti: False)
+    monkeypatch.setattr(oac.consent.MemoryNonces, "use_once", lambda self, jti, exp: True)
     assert any("replayed nonce" in f for f in failing())
+
+
+def test_low_s_check_is_load_bearing(monkeypatch) -> None:
+    monkeypatch.setattr(oac.jws, "_P256_ORDER", 2**300)  # n/2 huge: every s counts as low
+    assert any("high-S twin" in f for f in failing())

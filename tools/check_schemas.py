@@ -17,6 +17,7 @@ registry = Registry().with_resources((s["$id"], Resource.from_contents(s)) for s
 for s in schemas.values():
     Draft202012Validator.check_schema(s)
 V = {name: Draft202012Validator(s, registry=registry) for name, s in schemas.items()}
+BEYOND_SCHEMA = {"a read that claims an undo", "an argument both bound and listed as other"}  # rules the schema text says it cannot express
 TYP = {"oac-consent+jws": "consent", "oac-mandate+jws": "mandate", "oac-receipt+jws": "receipt", "oac-undo+jws": "undo"}
 
 
@@ -47,7 +48,7 @@ for path in sorted((ROOT / "vectors").glob("*.json")):
             errs = list(V[name].iter_errors(obj))
             if errs:
                 errors.append(f"{path.name} :: {case['name']}: {name}: {errs[0].message}")
-        if case["op"] == "profile" and not ok and case["name"] != "a read that claims an undo":
+        if case["op"] == "profile" and not ok and case["name"] not in BEYOND_SCHEMA:
             checked += 1
             if V["action-profile"].is_valid(inp["profile"]):
                 errors.append(f"{path.name} :: {case['name']}: schema accepted a malformed profile")

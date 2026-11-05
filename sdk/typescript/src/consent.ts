@@ -12,13 +12,17 @@ export const TYP = "oac-consent+jws";
 export const MAX_S = 900;
 export const SKEW_S = 60;
 
-export interface NonceStore { seen(jti: string): boolean; use(jti: string, exp: number): void }
+/** Record jti until exp and return true, or return false if already recorded. Must be atomic (insert-if-absent). */
+export interface NonceStore { useOnce(jti: string, exp: number): boolean }
 
 export class MemoryNonces implements NonceStore {
   private s = new Map<string, number>();
   constructor(seen: Iterable<string> = []) { for (const j of seen) this.s.set(j, 0); }
-  seen(jti: string): boolean { return this.s.has(jti); }
-  use(jti: string, exp: number): void { this.s.set(jti, exp); }
+  useOnce(jti: string, exp: number): boolean { // single-threaded JS: check-and-set cannot interleave
+    if (this.s.has(jti)) return false;
+    this.s.set(jti, exp);
+    return true;
+  }
 }
 
 export const newNonce = () => crypto.randomBytes(18).toString("base64url");
@@ -51,12 +55,13 @@ function payment(p: Record<string, any>, preview: Record<string, any>): void {
 }
 
 export function verifyConsent(token: string, o: {
-  keys: KeySet; executor: string; previews: Record<string, any>[]; actions: Record<string, any>[];
+  keys: KeySet; executor: string; sub: string; previews: Record<string, any>[]; actions: Record<string, any>[];
   profiles: Record<string, Record<string, any>>; now: number; nonces: NonceStore; policyFloor?: string; tainted?: boolean;
 }): Record<string, any> {
   const p = verify(token, o.keys, TYP);
   shapes.consent(p);
   if (p.aud !== o.executor) throw new OACError("wrong_audience");
+  if (p.sub !== o.sub) throw new OACError("subject_mismatch", "the consent is another person's");
   checkTime(p, o.now, MAX_S);
   if (p.items.length !== o.previews.length || o.previews.length !== o.actions.length) {
     throw new OACError("preview_mismatch", "one preview and one action per item");
@@ -72,6 +77,7 @@ export function verifyConsent(token: string, o: {
     if (o.now >= preview.exp) throw new OACError("preview_expired");
     const profile = Object.hasOwn(o.profiles, action.tool) ? o.profiles[action.tool] : undefined;
     if (profile === undefined) throw new OACError("unknown_tool");
+    shapes.profile(profile);
     checkBinding(preview, action, profile);
     if (tierFor(profile, { policyFloor: o.policyFloor, tainted: o.tainted }) === "D") throw new OACError("tier_d");
     if (profile.effect === "pay") {
@@ -81,7 +87,6 @@ export function verifyConsent(token: string, o: {
     }
   });
   if (pays === 0 && Object.hasOwn(p, "payment")) throw new OACError("payment_mismatch", "payment given but no item pays");
-  if (o.nonces.seen(p.jti)) throw new OACError("replay");
-  o.nonces.use(p.jti, p.exp);
+  if (!o.nonces.useOnce(p.jti, p.exp)) throw new OACError("replay");
   return p;
 }
