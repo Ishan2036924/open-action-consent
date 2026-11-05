@@ -95,9 +95,23 @@ and confirm a vector fails, so a check that quietly stops working is caught.
 
 ## Status
 
-Draft 0.1 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback, implementations and reviews are
-welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), and report vulnerabilities privately as described in
-[SECURITY.md](SECURITY.md).
+Spec draft 0.1, packages 0.3.0 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback,
+implementations and reviews are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), and report vulnerabilities privately
+as described in [SECURITY.md](SECURITY.md).
+
+### Known gaps (help wanted)
+
+These are open and on the list. If one matters to you, open an issue or a pull request; CONTRIBUTING.md says how a
+change lands (spec, vectors, both SDKs).
+
+| Gap | Today | Where |
+|---|---|---|
+| Device proofs in the MCP plug-ins | `verify_consent` / `verifyConsent` check passkey proofs, but `oac.mcp` and `open-action-consent/mcp` do not ask for them yet | spec 3.6, `spec/mcp-extension.md` 3.2 |
+| Mapping to EP authorization receipts | the exact signed-byte mapping between a device proof and an EP authorization context is open; shared test vectors are proposed | `spec/mappings.md` |
+| Wire version | objects still say `"oac":"0.1"` although 0.3.0 receipts and `pay` profiles are not compatible with 0.2.x | spec header |
+| Occurrence scope | an order id is tracked per tool, so two different pay tools could each run the same order | spec 5.1 |
+| WebAuthn backup flags | the optional check that BS is not set without BE is not done | spec 3.6 |
+| SDK parity | small API differences: TypeScript exports `MemoryOccurrences` and `ActionFailed` at the top level, Python keeps them in submodules; only Python has a passkey test helper | `sdk/` |
 
 **OAC-conformant:** an implementation that passes every case in `vectors/` may say so and link to this repository.
 
