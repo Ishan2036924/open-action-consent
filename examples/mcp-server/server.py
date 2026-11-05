@@ -38,7 +38,7 @@ EXECUTOR = "https://tables.example/oac"
 
 
 def profile(tool: str, effect: str, kind: str, window: int, binds: dict[str, str]) -> dict[str, Any]:
-    return {"oac": "0.1", "type": "action-profile", "tool": tool, "effect": effect,
+    return {"oac": "0.2", "type": "action-profile", "tool": tool, "effect": effect,
             "undo": {"kind": kind, "window_s": window}, "tier_floor": "A", "binds": binds}
 
 
@@ -196,7 +196,7 @@ class Server:
         caps = meta["io.modelcontextprotocol/clientCapabilities"]
         if method == "server/discover":
             result = {"resultType": "complete", "supportedVersions": [VERSION],
-                      "capabilities": {"tools": {}, "extensions": {EXT: {"version": "0.1", "executor": EXECUTOR}}},
+                      "capabilities": {"tools": {}, "extensions": {EXT: {"version": "0.2", "executor": EXECUTOR}}},
                       "_meta": {"io.modelcontextprotocol/serverInfo": {"name": "oac-example-tables", "version": "0.1.0"}}}
         elif method == "tools/list":
             result = {"resultType": "complete", "tools": [

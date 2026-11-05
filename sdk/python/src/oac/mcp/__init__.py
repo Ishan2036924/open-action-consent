@@ -5,6 +5,7 @@ from __future__ import annotations
 import inspect as _inspect
 import json
 import time
+from dataclasses import replace
 from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 
@@ -21,19 +22,27 @@ except ImportError as e:  # the optional dependency is not installed
     raise ImportError('oac.mcp needs the MCP SDK: pip install "open-action-consent[mcp]"') from e
 
 from oac import KeySet, MemoryNonces, OACError, SigningKey, digest, make_receipt, shapes, tier_for, token_digest, verify, verify_consent
-from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, check_open, claim, occurrence_key, resolve
+from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, check_open, claim, occurrence_key, resolve, scope
 from oac.preview import action_digest, build_preview
+from oac.webauthn import DeviceCheck
 
 ID = "com.atlasiw/oac"
 PROFILE_KEY, PREVIEW_KEY, RECEIPT_KEY, CONSENT_KEY, RUN_KEY = (f"{ID}-profile", f"{ID}-preview", f"{ID}-receipt",
                                                               f"{ID}-consent", f"{ID}-run")
-OUTCOME_KEY = f"{ID}-outcome"
+OUTCOME_KEY, DEVICE_KEY = f"{ID}-outcome", f"{ID}-device-proof"
 ASK = "oac_consent"
 
 
 def _refused(text: str) -> CallToolResult:
     return CallToolResult(content=[TextContent(type="text", text=text)], is_error=True)
 
+
+def _fits(proof: Any, token: str) -> bool:
+    """A well-formed device proof made for this token; anything else is not kept."""
+    try:
+        return proof is not None and shapes.device_proof(proof)["consent"] == token_digest(token)
+    except OACError:
+        return False
 
 class OACExtension(Extension):
     identifier = ID
@@ -52,9 +61,12 @@ class OACExtension(Extension):
         clock: Callable[[], int] = lambda: int(time.time()),
         inspect: Callable[[Mapping[str, Any], ServerRequestContext[Any, Any]], Any] | None = None,
         occurrences: OccurrenceStore | None = None,
+        device: Callable[[str, Mapping[str, Any]], DeviceCheck | None] | None = None,
     ) -> None:
         """inspect(action, ctx) may return {"evidence": ...} or {"refuse": reason}. It runs before
-        asking and again before running; a changed page is refused."""
+        asking and again before running; a changed page is refused.
+        device(person, action) returns the passkey check a tier C action needs (its proof is
+        filled in here), or None when no passkey is needed."""
         self.executor, self.key, self.signers = executor, key, signers
         self._consent_url, self._person, self._clock = consent_url, person, clock
         self._summarize = summarize or (lambda a: f"{a['tool']} with {json.dumps(a['args'], sort_keys=True)}"[:500])
@@ -62,28 +74,33 @@ class OACExtension(Extension):
         self._tainted = tainted or (lambda ctx: True)
         self.policy_floor = policy_floor
         self._inspect_fn = inspect
+        self._device = device
         self.profiles: dict[str, dict[str, Any]] = {}
         self.previews: dict[str, dict[str, Any]] = {}  # preview digest -> preview
         self.consents: dict[str, str] = {}  # preview digest -> consent token
+        self.proofs: dict[str, Mapping[str, Any]] = {}  # preview digest -> device proof sent with the consent
         self.nonces = MemoryNonces()
         self.occurrences = occurrences or MemoryOccurrences()
         self.receipts: dict[str, list[str]] = {}  # person -> chain
         self.tokens: dict[str, str] = {}  # authority digest in a receipt -> the exact token
+        self.device_proofs: dict[str, Any] = {}  # same digest -> the passkey proof that came with it
 
     # setup
     def settings(self) -> dict[str, Any]:
-        return {"version": "0.1", "executor": self.executor}
+        return {"version": shapes.VERSION, "executor": self.executor}
 
     def profile(self, tool: str, *, effect: str, undo: str = "none", window_s: int = 0, tier_floor: str = "A",
                 binds: Mapping[str, str] | None = None, other_args: list[str] | None = None,
-                occurrence: str | None = None) -> dict[str, Any]:
+                occurrence: str | None = None, occurrence_scope: str | None = None) -> dict[str, Any]:
         """Register a tool's Action Profile and return the `_meta` to pass to `@server.tool(meta=...)`."""
-        doc: dict[str, Any] = {"oac": "0.1", "type": "action-profile", "tool": tool, "effect": effect,
+        doc: dict[str, Any] = {"oac": shapes.VERSION, "type": "action-profile", "tool": tool, "effect": effect,
                                "undo": {"kind": undo, "window_s": window_s}, "tier_floor": tier_floor, "binds": dict(binds or {})}
         if other_args:
             doc["other_args"] = list(other_args)
         if occurrence:
             doc["occurrence"] = occurrence
+        if occurrence_scope:
+            doc["occurrence_scope"] = occurrence_scope
         self.profiles[tool] = shapes.profile(doc)
         return {PROFILE_KEY: doc}
 
@@ -91,8 +108,9 @@ class OACExtension(Extension):
     def preview(self, preview_id: str) -> dict[str, Any] | None:
         return next((p for p in self.previews.values() if p["id"] == preview_id), None)
 
-    def accept_consent(self, token: str) -> bool:
-        """Keep a valid Consent for a pending preview. Never replaces one already kept."""
+    def accept_consent(self, token: str, proof: Mapping[str, Any] | None = None) -> bool:
+        """Keep a valid Consent, and the passkey proof sent with it, for a pending preview.
+        Never replaces a different token already kept; the same token may bring a new proof."""
         try:
             p = verify(token, self.signers, "oac-consent+jws")
             shapes.consent(p)
@@ -100,8 +118,10 @@ class OACExtension(Extension):
             return False
         kept = False
         for item in p["items"] if p["aud"] == self.executor else []:
-            if item["preview"] in self.previews and item["preview"] not in self.consents:
+            if item["preview"] in self.previews and self.consents.get(item["preview"], token) == token:
                 self.consents[item["preview"]] = token
+                if _fits(proof, token):
+                    self.proofs[item["preview"]] = proof
                 kept = True
         return kept
 
@@ -149,17 +169,22 @@ class OACExtension(Extension):
         token = self.consents.get(state.get("preview", ""))
         meta = dict(ctx.meta or {})
         token = token or meta.get(CONSENT_KEY)
+        proof = self.proofs.get(state.get("preview", ""))
+        if proof is None:
+            proof = meta.get(DEVICE_KEY)
         if preview is None or token is None:
             return self._ask(action, profile, person, seen.get("evidence"))
         # compare the DOM, not the screenshot: pixels differ between two captures
         if (seen.get("evidence") or {}).get("dom") != (preview.get("evidence") or {}).get("dom"):
             return _refused("Refused (page_changed): what is there now is not what the person approved. Nothing ran.")
+        need = self._device(person, action) if self._device else None
+        device = replace(need, proof=proof) if need else None
         claimed = None
         try:
             claimed = claim(self.occurrences, occurrence_key(person, profile, action["args"]))
             consent = verify_consent(token, keys=self.signers, executor=self.executor, sub=person, previews=[preview],
                                      actions=[action], profiles=self.profiles, now=self._clock(), nonces=self.nonces,
-                                     policy_floor=self.policy_floor, tainted=self._tainted(ctx))
+                                     policy_floor=self.policy_floor, tainted=self._tainted(ctx), device=device)
         except BaseException as e:
             if claimed:
                 self.occurrences.release(claimed)
@@ -167,6 +192,8 @@ class OACExtension(Extension):
                 return _refused(f"Refused ({e.code}). Nothing ran.")
             raise
         self.tokens[token_digest(token)] = token
+        if device:
+            self.device_proofs[token_digest(token)] = device.proof
         authority = {"kind": "consent", "ref": consent["jti"], "digest": token_digest(token)}
         return await self._run(ctx, call_next, person, profile, action, "C", authority, digest(preview), claimed)
 
@@ -194,7 +221,9 @@ class OACExtension(Extension):
 
     def resolve(self, tool: str, occurrence: str, *, person: str, outcome: str) -> None:
         """Record what the provider says happened to an unknown attempt: ok or failed."""
-        resolve(self.occurrences, (person, tool, occurrence), outcome)
+        if tool not in self.profiles:
+            raise OACError("unknown_tool", f"{tool} has no OAC profile")
+        resolve(self.occurrences, (person, scope(self.profiles[tool]), occurrence), outcome)
 
     async def _look(self, action: Mapping[str, Any], ctx: ServerRequestContext[Any, Any]) -> dict[str, Any]:
         if self._inspect_fn is None:
@@ -236,6 +265,8 @@ class OACExtension(Extension):
             payload["preview"] = preview_digest
         if "occurrence" in profile:
             payload["occurrence"] = action["args"][profile["occurrence"]]
+        if "occurrence_scope" in profile:
+            payload["occurrence_scope"] = profile["occurrence_scope"]
         receipt = make_receipt(key=self.key, payload=payload)
         chain.append(receipt)
         if isinstance(result, CallToolResult):

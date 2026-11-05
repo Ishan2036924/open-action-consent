@@ -6,10 +6,11 @@ import asyncio
 
 import pytest
 
-from oac import KeySet, OACError, generate, make_consent, token_digest, verify_chain
+from oac import DeviceCheck, KeySet, OACError, generate, make_consent, token_digest, verify_chain
 from oac.gate import ActionFailed, Gate, NeedsConsent
 from oac.jcs import parse
 from oac.jws import b64url_decode
+from oac.testing import passkey_proof
 
 EX, SIGNER, PERSON = "https://app.example/oac", "https://signer.example", "person:1"
 
@@ -137,7 +138,7 @@ def test_a_yes_held_while_the_first_attempt_is_unclear_is_not_used_up() -> None:
         gate.run("pay_order", PAY, provider_timeout, person=PERSON)
     gate.resolve("pay_order", "ord_1", person=PERSON, outcome="failed")
     approve_payment(gate, key)
-    gate.occurrences.finish((PERSON, "pay_order", "ord_1"), "unknown")  # another worker's attempt is unclear
+    gate.occurrences.finish((PERSON, "tool:pay_order", "ord_1"), "unknown")  # another worker's attempt is unclear
     assert code_of(lambda: gate.run("pay_order", PAY, lambda **a: None, person=PERSON)) == "occurrence_unresolved"
     gate.resolve("pay_order", "ord_1", person=PERSON, outcome="failed")
     gate.run("pay_order", PAY, lambda **a: None, person=PERSON)  # the held yes still works
@@ -155,10 +156,10 @@ def test_a_cancelled_payment_is_recorded_as_unknown_and_can_be_resolved() -> Non
 
     with pytest.raises(asyncio.TimeoutError):
         asyncio.run(go())
-    assert gate.occurrences.state((PERSON, "pay_order", "ord_1")) == "unknown"
+    assert gate.occurrences.state((PERSON, "tool:pay_order", "ord_1")) == "unknown"
     (r,) = verify_chain(gate.receipts[PERSON], keys=KeySet({EX: [gate.key.jwk]}), executor=EX)
     assert r["outcome"] == "unknown"
-    gate.occurrences.finish((PERSON, "pay_order", "ord_1"), "running")  # as if the process had crashed mid-call
+    gate.occurrences.finish((PERSON, "tool:pay_order", "ord_1"), "running")  # as if the process had crashed mid-call
     gate.resolve("pay_order", "ord_1", person=PERSON, outcome="ok")
     assert code_of(lambda: gate.run("pay_order", PAY, lambda **a: None, person=PERSON)) == "duplicate_occurrence"
 
@@ -186,3 +187,42 @@ def test_an_error_the_tool_marks_as_failed_allows_a_retry() -> None:
     with pytest.raises(ActionFailed):
         gate.run("book", {"slot": "s_1"}, full, person=PERSON, tainted=False)
     gate.run("book", {"slot": "s_1"}, lambda **a: "booked", person=PERSON, tainted=False)
+
+
+def test_a_gate_that_needs_a_passkey_runs_only_with_a_proof_over_that_consent() -> None:
+    key, passkey = generate(), generate("ES256")
+    need = DeviceCheck(None, {"cred-1": passkey.jwk}, "app.example", ["https://app.example"])
+    gate = Gate(executor=EX, key=generate(), signers=KeySet({SIGNER: [key.jwk]}),
+                device=lambda person, action: need if action["tool"] == "send_email" else None)
+    gate.profile("send_email", effect="send", binds={"to": "to", "title": "subject"}, other_args=["body"])
+    args = {"to": ["sam@example.com"], "subject": "Hi", "body": "See you at 6"}
+    sent: list[str] = []
+    with pytest.raises(NeedsConsent) as ask:
+        gate.run("send_email", args, lambda **a: sent.append("sent"), person=PERSON)
+    p = ask.value.preview
+    token = make_consent(key=key, iss=SIGNER, sub=PERSON, aud=EX, previews=[p], now=p["iat"] + 1)
+    assert gate.accept_consent(token)
+    assert code_of(lambda: gate.run("send_email", args, lambda **a: sent.append("sent"), person=PERSON)) == "device_proof_missing"
+    other = make_consent(key=key, iss=SIGNER, sub=PERSON, aud=EX, previews=[p], now=p["iat"] + 2)
+    assert not gate.accept_consent(other, proof=passkey_proof(other, passkey))  # never replaces the kept token
+    proof = passkey_proof(token, passkey)
+    assert gate.accept_consent(token, proof=proof)  # the same token may bring its proof later
+    assert gate.accept_consent(token, proof={"junk": 1})  # a junk re-post is not kept, so it cannot block the run
+    _, receipt = gate.run("send_email", args, lambda **a: sent.append("sent"), person=PERSON)
+    assert sent == ["sent"] and gate.device_proofs[token_digest(token)] == proof
+
+
+def test_two_pay_tools_with_one_provider_scope_share_an_order() -> None:
+    gate, key = world()
+    binds = {"amount_minor": "amount", "currency": "currency", "payee": "shop"}
+    for tool in ("pay_order", "pay_express"):
+        gate.profile(tool, effect="pay", undo="compensate", window_s=86400, other_args=["order"], occurrence="order",
+                     occurrence_scope="stripe:acct_1", binds=binds)
+    approve_payment(gate, key)
+    _, receipt = gate.run("pay_order", PAY, lambda **a: "paid", person=PERSON)
+    assert parse(b64url_decode(receipt.split(".")[1]))["occurrence_scope"] == "stripe:acct_1"
+    # refused before the person is asked: the order already ran through the other tool
+    assert code_of(lambda: gate.run("pay_express", PAY, lambda **a: "paid", person=PERSON)) == "duplicate_occurrence"
+    # a tool whose name is spelled like that scope keeps orders of its own
+    gate.profile("stripe:acct_1", effect="write", undo="native", window_s=600, other_args=["order"], occurrence="order")
+    gate.run("stripe:acct_1", {"order": "ord_1"}, lambda **a: "held", person=PERSON, tainted=False)

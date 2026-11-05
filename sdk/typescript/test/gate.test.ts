@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Gate, generate, KeySet, makeConsent, NeedsConsent, OACError, tokenDigest, verifyChain } from "../src/index.ts";
+import { Gate, generate, KeySet, makeConsent, NeedsConsent, OACError, tokenDigest, verifyChain, type DeviceCheck } from "../src/index.ts";
+import { passkeyProof } from "../src/testing.ts";
 
 const EX = "https://app.example/oac", SIGNER = "https://signer.example", PERSON = "person:1";
 
@@ -58,4 +59,46 @@ test("gate: a timed-out payment cannot be paid again until it is resolved", asyn
   assert.deepEqual(chain.map((r) => r.outcome), ["unknown", "ok"]);
   assert.deepEqual(chain.map((r) => gate.tokens.get(r.authority.digest)), tokens);
   assert.deepEqual(chain.map((r) => r.authority.digest), tokens.map(tokenDigest));
+});
+
+test("gate: a passkey is required, and only a proof over the kept consent lets it run", async () => {
+  const key = generate(), passkey = generate("ES256");
+  const need: DeviceCheck = { proof: null, credentials: { "cred-1": passkey.jwk }, rp_id: "app.example", origins: ["https://app.example"] };
+  const gate = new Gate({ executor: EX, key: generate(), signers: new KeySet({ [SIGNER]: [key.jwk] }), device: () => need });
+  gate.profile("send_email", { effect: "send", binds: { to: "to", title: "subject" }, otherArgs: ["body"] });
+  const args = { to: ["sam@example.com"], subject: "Hi", body: "See you at 6" };
+  const sent: string[] = [];
+  let p: any;
+  await assert.rejects(gate.run("send_email", args, () => sent.push("x"), { person: PERSON }), (e: any) => { p = e.preview; return e instanceof NeedsConsent; });
+  const token = makeConsent({ key, iss: SIGNER, sub: PERSON, aud: EX, previews: [p], now: p.iat + 1 });
+  assert.ok(gate.acceptConsent(token));
+  await assert.rejects(gate.run("send_email", args, () => sent.push("x"), { person: PERSON }), (e: any) => e.code === "device_proof_missing");
+  const other = makeConsent({ key, iss: SIGNER, sub: PERSON, aud: EX, previews: [p], now: p.iat + 2 });
+  assert.equal(gate.acceptConsent(other, passkeyProof(other, passkey)), false);
+  const proof = passkeyProof(token, passkey);
+  assert.ok(gate.acceptConsent(token, proof));
+  assert.ok(gate.acceptConsent(token, { junk: 1 })); // a junk re-post is not kept, so it cannot block the run
+  assert.ok(gate.acceptConsent(token, null));
+  await gate.run("send_email", args, () => sent.push("x"), { person: PERSON });
+  assert.deepEqual(sent, ["x"]);
+  assert.deepEqual(gate.deviceProofs.get(tokenDigest(token)), proof);
+});
+
+test("gate: two pay tools with one provider scope share an order", async () => {
+  const key = generate();
+  const gate = new Gate({ executor: EX, key: generate(), signers: new KeySet({ [SIGNER]: [key.jwk] }) });
+  for (const tool of ["pay_order", "pay_express"]) {
+    gate.profile(tool, { effect: "pay", undo: "compensate", windowS: 86400, otherArgs: ["order"], occurrence: "order",
+      occurrenceScope: "stripe:acct_1", binds: { amount_minor: "amount", currency: "currency", payee: "shop" } });
+  }
+  const args = { amount: 1800, currency: "USD", shop: "Sweetgreen", order: "ord_1" };
+  let p: any;
+  await assert.rejects(gate.run("pay_order", args, () => "paid", { person: PERSON }), (e: any) => { p = e.preview; return e instanceof NeedsConsent; });
+  const payment = { rail: "stripe_link", ref: "lsrq_test_1", amount_minor: 1800, currency: "USD", payee: "Sweetgreen" };
+  assert.ok(gate.acceptConsent(makeConsent({ key, iss: SIGNER, sub: PERSON, aud: EX, previews: [p], now: p.iat + 1, payment })));
+  const [, receipt] = await gate.run("pay_order", args, () => "paid", { person: PERSON });
+  assert.equal(JSON.parse(Buffer.from(receipt.split(".")[1], "base64url").toString()).occurrence_scope, "stripe:acct_1");
+  await assert.rejects(gate.run("pay_express", args, () => "paid", { person: PERSON }), (e: any) => e.code === "duplicate_occurrence");
+  gate.profile("stripe:acct_1", { effect: "write", undo: "native", windowS: 600, otherArgs: ["order"], occurrence: "order" });
+  await gate.run("stripe:acct_1", { order: "ord_1" }, () => "held", { person: PERSON, tainted: false });
 });

@@ -5,7 +5,7 @@ from __future__ import annotations
 import functools
 import inspect
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 try:
@@ -75,9 +75,10 @@ def preview_for(gate: Gate, item: ToolApprovalItem, tool: Any, *, person: str) -
     return gate.preview(tool.name, _full_args(sig, args), person=person)
 
 
-def approve(gate: Gate, state: RunState[Any, Any], item: ToolApprovalItem, consent_token: str) -> bool:
-    """Hand the Consent to the gate and approve the item. False if the Consent is not valid."""
-    if not gate.accept_consent(consent_token):
+def approve(gate: Gate, state: RunState[Any, Any], item: ToolApprovalItem, consent_token: str,
+            device_proof: Mapping[str, Any] | None = None) -> bool:
+    """Hand the Consent (and any passkey proof) to the gate and approve the item. False if the Consent is not valid."""
+    if not gate.accept_consent(consent_token, device_proof):
         return False
     state.approve(item)
     return True

@@ -9,6 +9,7 @@ from typing import Any
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from oac.shapes import VERSION
 from oac.jws import SigningKey, b64url, ed25519_from_seed, p256_from_seed, token_digest
 from oac.webauthn import USER_PRESENT, USER_VERIFIED, challenge
 
@@ -26,5 +27,5 @@ def passkey_proof(consent_token: str, key: SigningKey, *, credential: str = "cre
     client = json.dumps({"type": type_, "challenge": challenge(challenge_for or consent_token), "origin": origin,
                          "crossOrigin": False}, separators=(",", ":")).encode()
     sig = key.private.sign(auth + hashlib.sha256(client).digest(), ec.ECDSA(hashes.SHA256()))
-    return {"oac": "0.1", "type": "device-proof", "consent": token_digest(consent_token), "credential": credential,
+    return {"oac": VERSION, "type": "device-proof", "consent": token_digest(consent_token), "credential": credential,
             "authenticator_data": b64url(auth), "client_data_json": b64url(client), "signature": b64url(sig)}

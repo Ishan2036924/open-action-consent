@@ -16,17 +16,19 @@ from oac.errors import OACError
 from oac.jcs import parse
 from oac.jws import b64url, b64url_decode, token_digest
 
-USER_PRESENT, USER_VERIFIED = 0x01, 0x04
+USER_PRESENT, USER_VERIFIED, BACKUP_ELIGIBLE, BACKED_UP = 0x01, 0x04, 0x08, 0x10
 
 
 @dataclass(frozen=True)
 class DeviceCheck:
-    """What an executor that requires a passkey knows about the person and itself."""
+    """What an executor that requires a passkey knows about the person and itself.
+    device_bound refuses passkeys that can be synced to other devices (BE flag set)."""
 
     proof: Mapping[str, Any] | None
     credentials: Mapping[str, Mapping[str, Any]]
     rp_id: str
     origins: Sequence[str]
+    device_bound: bool = False
 
 
 def challenge(consent_token: str) -> str:
@@ -77,3 +79,7 @@ def verify_device_proof(consent_token: str, check: DeviceCheck) -> None:
         raise OACError("user_not_present")
     if not auth[32] & USER_VERIFIED:
         raise OACError("user_not_verified")
+    if auth[32] & BACKED_UP and not auth[32] & BACKUP_ELIGIBLE:
+        raise OACError("malformed", "backed up but not backup eligible")
+    if check.device_bound and auth[32] & BACKUP_ELIGIBLE:
+        raise OACError("not_device_bound")

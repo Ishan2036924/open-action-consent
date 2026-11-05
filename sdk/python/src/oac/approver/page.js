@@ -74,7 +74,7 @@ async function showPreview() {
   el("approve").onclick = async () => {
     const now = Math.floor(Date.now() / 1000);
     const jti = b64u(crypto.getRandomValues(new Uint8Array(18)));
-    const consent = { oac: "0.1", type: "consent", iss: issuer, sub: person, aud: preview.executor, jti, iat: now, exp: now + 300,
+    const consent = { oac: preview.oac, type: "consent", iss: issuer, sub: person, aud: preview.executor, jti, iat: now, exp: now + 300,
       items: [{ preview: await digest(preview), action: preview.action }], signer: { kind: "device" } };
     try {
       const res = await post("api/consent", { token: await signJws(consent, "oac-consent+jws") });

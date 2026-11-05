@@ -67,6 +67,7 @@ CODES = frozenset(
         "rp_mismatch",
         "user_not_present",
         "user_not_verified",
+        "not_device_bound",
         # business occurrences
         "occurrence_unresolved",
         "duplicate_occurrence",

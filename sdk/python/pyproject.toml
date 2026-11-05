@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "open-action-consent"
-version = "0.3.0"
+version = "0.4.0"
 description = "Open Action Consent: a verifiable yes for actions AI agents take for people. Core SDK plus MCP, browser, approval page, OpenAI Agents and LangGraph integrations."
 readme = "README.md"
 license = "Apache-2.0"
@@ -34,7 +34,7 @@ oac-gated-browser = "oac.browser.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/Ishan2036924/open-action-consent"
-Specification = "https://github.com/Ishan2036924/open-action-consent/blob/main/spec/oac-v0.1.md"
+Specification = "https://github.com/Ishan2036924/open-action-consent/blob/main/spec/oac.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

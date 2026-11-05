@@ -1,21 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:oac:0.1:undo",
-  "title": "OAC v0.1 Undo request (JWS payload, typ oac-undo+jws)",
+  "$id": "urn:oac:0.2:undo",
+  "title": "OAC 0.2 Undo request (JWS payload, typ oac-undo+jws)",
   "description": "The person asks the executor to take back one receipt's action. receipt = sha-256 of that receipt's compact token. Rules beyond the schema: exp - iat <= 900; mode must equal the receipt's undo kind; native and compensate only inside the receipt's until; compensate names the Consent (jti) for its new action.",
   "type": "object", "additionalProperties": false,
   "required": ["oac", "type", "iss", "sub", "aud", "jti", "iat", "exp", "receipt", "mode"],
   "properties": {
-    "oac": {"$ref": "urn:oac:0.1:common#/$defs/version"},
+    "oac": {"$ref": "urn:oac:0.2:common#/$defs/version"},
     "type": {"const": "undo"},
-    "iss": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "sub": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "aud": {"$ref": "urn:oac:0.1:common#/$defs/id"},
-    "jti": {"$ref": "urn:oac:0.1:common#/$defs/nonce"},
-    "iat": {"$ref": "urn:oac:0.1:common#/$defs/time"},
-    "exp": {"$ref": "urn:oac:0.1:common#/$defs/time"},
-    "receipt": {"$ref": "urn:oac:0.1:common#/$defs/digest"},
+    "iss": {"$ref": "urn:oac:0.2:common#/$defs/id"},
+    "sub": {"$ref": "urn:oac:0.2:common#/$defs/id"},
+    "aud": {"$ref": "urn:oac:0.2:common#/$defs/id"},
+    "jti": {"$ref": "urn:oac:0.2:common#/$defs/nonce"},
+    "iat": {"$ref": "urn:oac:0.2:common#/$defs/time"},
+    "exp": {"$ref": "urn:oac:0.2:common#/$defs/time"},
+    "receipt": {"$ref": "urn:oac:0.2:common#/$defs/digest"},
     "mode": {"enum": ["native", "compensate"]},
-    "consent": {"$ref": "urn:oac:0.1:common#/$defs/nonce"}
+    "consent": {"$ref": "urn:oac:0.2:common#/$defs/nonce"}
   }
 }

@@ -23,7 +23,9 @@ oac.registerTool(server, "book_table",
 
 Behaviour matches the [Python plug-in](mcp-python.md): tier A/B run (B with a receipt and undo token in
 `_meta["com.atlasiw/oac-receipt"]`); tier C answers `input_required` with a URL-mode elicitation and runs only with
-a valid signed Consent; tier D, unprofiled tools and undeclared arguments never run.
+a valid signed Consent; tier D, unprofiled tools and undeclared arguments never run. Passkeys work the same way:
+`device: (person, action) => check | null` in the options, `oac.acceptConsent(token, proof)` from the signer page,
+and `oac.deviceProofs` keeps them. A profile's `occurrenceScope` shares order ids across tools.
 
 Differences from the Python SDK, handled here:
 
@@ -32,4 +34,4 @@ Differences from the Python SDK, handled here:
 | does not integrity-protect `requestState` | OAC signs its own (HMAC-SHA256, 15-minute expiry, bound to the person and the action digest) |
 | turns errors thrown in a tool into tool results | a client without the extension or URL elicitation gets a tool error that names `-32021`; nothing runs |
 
-Tests: `sdk/typescript/test/mcp.test.ts` (end to end through the SDK's `InMemoryTransport` and `Client`). Stores are in memory in 0.1.
+Tests: `sdk/typescript/test/mcp.test.ts` (end to end through the SDK's `InMemoryTransport` and `Client`). Stores are in memory for now.

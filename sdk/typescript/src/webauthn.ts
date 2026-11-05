@@ -6,10 +6,13 @@ import { OACError } from "./errors.ts";
 import { parse } from "./jcs.ts";
 import { b64url, b64urlDecode, tokenDigest, type Jwk } from "./jws.ts";
 
-export const USER_PRESENT = 0x01, USER_VERIFIED = 0x04;
+export const USER_PRESENT = 0x01, USER_VERIFIED = 0x04, BACKUP_ELIGIBLE = 0x08, BACKED_UP = 0x10;
 
-/** What an executor that requires a passkey knows about the person and itself. */
-export type DeviceCheck = { proof: Record<string, any> | null; credentials: Record<string, Jwk>; rp_id: string; origins: string[] };
+/** What an executor that requires a passkey knows about the person and itself.
+ * device_bound refuses passkeys that can be synced to other devices (BE flag set). */
+export type DeviceCheck = {
+  proof: Record<string, any> | null; credentials: Record<string, Jwk>; rp_id: string; origins: string[]; device_bound?: boolean;
+};
 
 /** The WebAuthn challenge for a Consent: SHA-256 of the token's ASCII bytes, base64url. */
 export const challenge = (consentToken: string) => b64url(crypto.createHash("sha256").update(consentToken, "ascii").digest());
@@ -48,4 +51,6 @@ export function verifyDeviceProof(consentToken: string, check: DeviceCheck): voi
   if (!Buffer.from(auth.subarray(0, 32)).equals(rpHash)) throw new OACError("rp_mismatch");
   if (!(auth[32] & USER_PRESENT)) throw new OACError("user_not_present");
   if (!(auth[32] & USER_VERIFIED)) throw new OACError("user_not_verified");
+  if (auth[32] & BACKED_UP && !(auth[32] & BACKUP_ELIGIBLE)) throw new OACError("malformed", "backed up but not backup eligible");
+  if (check.device_bound === true && auth[32] & BACKUP_ELIGIBLE) throw new OACError("not_device_bound");
 }

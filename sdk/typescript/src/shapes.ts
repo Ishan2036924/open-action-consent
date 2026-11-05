@@ -3,7 +3,7 @@
 import { OACError } from "./errors.ts";
 import { canonical } from "./jcs.ts";
 
-export const VERSION = "0.1";
+export const VERSION = "0.2";
 export const EFFECTS = ["read", "write", "send", "pay", "delete"];
 const UNDO_KINDS = ["native", "compensate", "none"];
 export const TIERS = ["A", "B", "C", "D"];
@@ -90,7 +90,7 @@ export function profile(v: any): Record<string, any> {
   check(v, {
     oac: [true, constant(VERSION)], type: [true, constant("action-profile")], tool: [true, TOOL],
     effect: [true, oneOf(...EFFECTS)], undo: [true, obj(UNDO, "undo")], tier_floor: [true, oneOf(...TIERS)],
-    binds: [false, binds], other_args: [false, others], occurrence: [false, ARG],
+    binds: [false, binds], other_args: [false, others], occurrence: [false, ARG], occurrence_scope: [false, OCCURRENCE],
   }, "action profile");
   undoRule(v.undo, "action profile");
   if (v.effect === "read" && v.undo.kind !== "none") throw new OACError("malformed", "action profile: a read declares undo none");
@@ -105,6 +105,7 @@ export function profile(v: any): Record<string, any> {
   if (has(v, "occurrence") && !bound.includes(v.occurrence) && !other.includes(v.occurrence)) {
     throw new OACError("malformed", "action profile: the occurrence argument is not declared");
   }
+  if (has(v, "occurrence_scope") && !has(v, "occurrence")) throw new OACError("malformed", "action profile: an occurrence scope needs an occurrence");
   return v;
 }
 
@@ -218,7 +219,9 @@ export function receipt(v: any): Record<string, any> {
     authority: [true, obj(authority, "authority")], action: [true, DIGEST], preview: [false, DIGEST],
     outcome: [true, oneOf(...OUTCOMES)], result: [true, DIGEST], undo: [true, obj(undo, "undo")],
     undoes: [false, DIGEST], payment: [false, obj(payment, "payment")], occurrence: [false, OCCURRENCE],
+    occurrence_scope: [false, OCCURRENCE],
   }, "receipt");
+  if (has(v, "occurrence_scope") && !has(v, "occurrence")) throw new OACError("malformed", "receipt: an occurrence scope needs an occurrence");
   return v;
 }
 

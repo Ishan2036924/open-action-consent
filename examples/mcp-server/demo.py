@@ -18,7 +18,7 @@ PERSON = "person:demo"
 SIGNER = "https://signer.example"
 signer_key = generate()  # held by the person's signer; the "model" below never touches it
 server = Server(person=PERSON, signers={SIGNER: [signer_key.jwk]})
-CAPS = {"elicitation": {"url": {}}, "extensions": {EXT: {"version": "0.1"}}}
+CAPS = {"elicitation": {"url": {}}, "extensions": {EXT: {"version": "0.2"}}}
 _id = 0
 
 

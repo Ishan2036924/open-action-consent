@@ -8,7 +8,7 @@ from typing import Any, Protocol
 
 from oac.errors import OACError
 
-Key = tuple[str, str, str]  # (person, tool, occurrence)
+Key = tuple[str, str, str]  # (person, scope, occurrence)
 
 
 class OccurrenceStore(Protocol):
@@ -52,9 +52,16 @@ class MemoryOccurrences:
         return self._states.get(key)
 
 
+def scope(profile: Mapping[str, Any]) -> str:
+    """Where the profile's occurrence ids are unique: its occurrence_scope, else the tool itself.
+    The prefixes keep a scope from ever matching a tool's own records."""
+    s = profile.get("occurrence_scope")
+    return "tool:" + profile["tool"] if s is None else "scope:" + s
+
+
 def occurrence_key(person: str, profile: Mapping[str, Any], args: Mapping[str, Any]) -> Key | None:
     name = profile.get("occurrence")
-    return None if name is None else (person, profile["tool"], args[name])
+    return None if name is None else (person, scope(profile), args[name])
 
 
 def _refuse(state: str | None) -> None:
