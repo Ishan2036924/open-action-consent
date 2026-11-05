@@ -8,6 +8,7 @@ version = "0.2.0"
 description = "Open Action Consent: a verifiable yes for actions AI agents take for people. Core SDK plus MCP, browser, approval page, OpenAI Agents and LangGraph integrations."
 readme = "README.md"
 license = "Apache-2.0"
+authors = [{ name = "Ishan Srivastava" }]
 requires-python = ">=3.10"
 keywords = ["ai-agents", "consent", "mcp", "agent-payments", "jws", "open-standard"]
 dependencies = ["cryptography>=42"]
