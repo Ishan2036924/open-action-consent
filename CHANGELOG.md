@@ -1,0 +1,13 @@
+# Changelog
+
+## 0.1.0 (2026-11-04)
+
+First public draft.
+
+- Spec: Action Profile, Preview, Consent, Mandate, Receipt, Undo; tiers A–D; MCP 2026-07-28 binding built on
+  SEP-2848 and SEP-2793; mappings to AP2, Verifiable Intent, ACP, UCP, A2A and the IETF receipt drafts; dispute profile.
+- Key discovery (`/.well-known/oac-issuer`), status lists (W3C Bitstring Status List encoding) and chain seals.
+- Python and TypeScript reference SDKs, 205 conformance vectors, JSON schemas, an example MCP server and demo.
+- Hardened after an independent security and cross-language review: every argument declared and shown, bare
+  recipient addresses, issuer-bound keys, revocation, host-reported taint, atomic nonces, single undo, low-S ES256,
+  strict JSON and gzip parsing.

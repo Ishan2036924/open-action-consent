@@ -1,5 +1,7 @@
 # Open Action Consent (OAC)
 
+[![ci](https://github.com/Ishan2036924/open-action-consent/actions/workflows/ci.yml/badge.svg)](https://github.com/Ishan2036924/open-action-consent/actions/workflows/ci.yml)
+
 **A verifiable "yes" for things AI agents do for people.**
 
 When an agent sends an email, books a table or pays, the person's approval is usually a button no one else can check.
@@ -74,7 +76,11 @@ and confirm a vector fails, so a check that quietly stops working is caught.
 
 ## Status
 
-Draft 0.1. Not endorsed by any standards body. Feedback, implementations and reviews are welcome.
+Draft 0.1 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback, implementations and reviews are
+welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), and report vulnerabilities privately as described in
+[SECURITY.md](SECURITY.md).
+
+**OAC-conformant:** an implementation that passes every case in `vectors/` may say so and link to this repository.
 
 ## License
 
