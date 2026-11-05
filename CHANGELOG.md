@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.0 (2026-11-05)
 
 Same protocol (OAC 0.1). Everything now ships as one package per language, with optional parts.
 
