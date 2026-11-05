@@ -1,5 +1,4 @@
-"""Consent (spec section 6): the person's signed yes to one or more Previews. Verified by the executor right before
-it runs the actions; checks run in the spec's order and the first failure is the one reported."""
+"""Consents (spec 6): the person's signed yes to one or more Previews."""
 
 from __future__ import annotations
 
@@ -13,6 +12,7 @@ from oac.errors import OACError
 from oac.jws import KeySet, SigningKey, digest, sign, verify
 from oac.preview import action_digest, check_binding
 from oac.tiers import tier_for
+from oac.webauthn import DeviceCheck, verify_device_proof
 
 TYP = "oac-consent+jws"
 MAX_S = 900  # a Consent lives at most 15 minutes
@@ -21,14 +21,12 @@ SKEW_S = 60  # clocks may differ this much
 
 class NonceStore(Protocol):
     def use_once(self, jti: str, exp: int) -> bool:
-        """Record jti until exp and return True, or return False if it was already recorded. Must be atomic: two
-        callers with the same jti can never both get True."""
+        """Record jti until exp. Returns False if it was already there. Must be atomic."""
         ...
 
 
 class MemoryNonces:
-    """In-memory nonce store for tests and examples. Production stores do an atomic insert-if-absent (a unique key)
-    and keep each jti until its exp has passed."""
+    """For tests and examples. A real store does an atomic insert-if-absent."""
 
     def __init__(self, seen: Sequence[str] = ()) -> None:
         self._seen: dict[str, int] = {j: 0 for j in seen}
@@ -108,6 +106,7 @@ def verify_consent(
     nonces: NonceStore,
     policy_floor: str = "A",
     tainted: bool = False,
+    device: DeviceCheck | None = None,
 ) -> dict[str, Any]:
     """`sub` is the person this executor is acting for (from its own sign-in), never taken from the token."""
     p = verify(token, keys, TYP)
@@ -146,6 +145,8 @@ def verify_consent(
             _payment(p, preview)
     if pays == 0 and "payment" in p:
         raise OACError("payment_mismatch", "payment given but no item pays")
+    if device is not None:
+        verify_device_proof(token, device)
     if not nonces.use_once(p["jti"], p["exp"]):
         raise OACError("replay")
     return p

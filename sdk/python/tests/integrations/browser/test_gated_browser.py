@@ -1,4 +1,4 @@
-"""Gated Browser end to end: official MCP SDK in-memory client -> OAC extension -> real headless Chromium -> local site."""
+"""Gated Browser end to end: MCP client, OAC extension, headless Chromium, local site."""
 
 from __future__ import annotations
 

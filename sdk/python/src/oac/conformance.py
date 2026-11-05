@@ -1,6 +1,4 @@
-"""Conformance runner: `python -m oac.conformance <vectors dir>`. Runs every case in vectors/*.json against this SDK and
-exits non-zero if any result differs from the expected one. The case format is in conformance/README.md; the
-TypeScript SDK runs the same files."""
+"""Run the shared vectors: python -m oac.conformance vectors"""
 
 from __future__ import annotations
 
@@ -22,6 +20,8 @@ from oac.tiers import tier_for
 from oac.undo import check_undo
 from oac.discovery import keyset_from, metadata_url
 from oac.status import bit, decode
+from oac.occurrence import MemoryOccurrences, claim
+from oac.webauthn import DeviceCheck
 
 
 def _consent(i: Mapping[str, Any]) -> Any:
@@ -37,7 +37,14 @@ def _consent(i: Mapping[str, Any]) -> Any:
         nonces=MemoryNonces(i.get("seen_nonces", [])),
         policy_floor=i.get("policy_floor", "A"),
         tainted=i.get("tainted", False),
+        device=DeviceCheck(**i["device"]) if "device" in i else None,
     )
+    return {"ok": True}
+
+
+def _occurrence(i: Mapping[str, Any]) -> Any:
+    key = ("person", "tool", "occurrence")
+    claim(MemoryOccurrences({key: i["state"]} if i["state"] else None), key)
     return {"ok": True}
 
 
@@ -104,6 +111,7 @@ OPS: dict[str, Callable[[Mapping[str, Any]], Any]] = {
     "loosens": lambda i: {"reasons": sorted(loosens(i["old"], i["new"]))},
     "verify_chain": _chain,
     "check_undo": _undo,
+    "claim_occurrence": _occurrence,
     "status_bit": lambda i: {"revoked": bit(decode(i["encoded_list"]), i["index"])},
     "metadata_url": lambda i: {"url": metadata_url(i["iss"])},
     "keyset_from": lambda i: {"issuer": keyset_from([(d[0], d[1]) for d in i["docs"]]).issuer(i["kid"])},

@@ -1,15 +1,6 @@
-"""Gated Browser: an MCP browser for agents that stops before every final click.
+"""Gated Browser: an MCP browser that stops before every final click. See guides/gated-browser.md.
 
-The agent can open, read, fill and follow links freely (tier A). A final action (Book, Pay, Send, Submit, Delete...)
-only goes through `submit`, which is tier C: the person sees a Preview with the site, the button and digests of a
-screenshot and of the page, signs a Consent, and the click happens only if the page is still the one they approved.
-Built on the OAC MCP extension (`oac.mcp.OACExtension`) and Playwright. Install: pip install "open-action-consent[browser]",
-then `playwright install chromium`. Code decides what is final, never the model.
-
-Hard rules: no CAPTCHA or "verify you are human" is ever attempted (the agent stops and the person takes over);
-passwords, card numbers and similar are never typed; only https (plus hosts you allow), never private, loopback,
-link-local or metadata addresses, checked on every request the page makes, redirects included.
-"""
+Never solves CAPTCHAs, never types passwords or card numbers, never visits private addresses."""
 
 import ipaddress
 import re

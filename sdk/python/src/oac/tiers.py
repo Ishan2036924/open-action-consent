@@ -1,6 +1,4 @@
-"""Approval tiers (spec section 4): A just runs, B runs with a receipt and an Undo, C needs a Consent or a Mandate,
-D never runs. tier = max(what the effect implies, the profile's floor, the executor's policy, the taint floor, any
-hint). A model's hint can only raise the tier: max() never lowers it."""
+"""Approval tiers (spec 4). A hint can raise the tier, never lower it."""
 
 from __future__ import annotations
 

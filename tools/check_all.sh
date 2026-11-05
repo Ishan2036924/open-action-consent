@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Run every check: both SDKs' conformance + tests, schemas (needs jsonschema), the demo. Regenerating vectors is a
-# separate step (python tools/make_vectors.py) after a spec change.
+# Every check. After a spec change, regenerate vectors first: python tools/make_vectors.py
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PY="${PYTHON:-python3}"

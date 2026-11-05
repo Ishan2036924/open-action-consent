@@ -1,5 +1,4 @@
-// Undo requests (spec section 8.3): native restores prior state inside the window; compensate runs a new action that
-// needs its own Consent, named here; none cannot be undone. Mirrors undo.py.
+// Undo requests (spec 8.3).
 
 import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";

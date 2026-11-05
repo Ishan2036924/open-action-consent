@@ -1,6 +1,4 @@
-// Issuer metadata (spec section 3.5): for issuer https://host/path the document is at
-// https://host/.well-known/oac-issuer/path (the RFC 8414 pattern) and its `issuer` must equal the issuer exactly.
-// `keysetFrom` turns documents you already have into a KeySet; `fetchMetadata` is a small, strict HTTPS fetcher.
+// Issuer metadata (spec 3.5): where an issuer publishes its public keys.
 
 import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";
@@ -9,7 +7,7 @@ import { KeySet, type Jwk } from "./jws.ts";
 
 export const MAX_DOC = 64 * 1024;
 
-// Matched as text, same pattern as discovery.py, so every language agrees (no URL parser normalizing ports or IDNs).
+// matched as text, not with a URL parser, so every language agrees
 const LABEL = "[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?";
 const ISSUER = new RegExp(`^https://(${LABEL}(\\.${LABEL})*)(:[0-9]{1,5})?((/(?!\\.\\.?(/|$))[A-Za-z0-9._~-]+)*)/?$`);
 

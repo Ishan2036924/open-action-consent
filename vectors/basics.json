@@ -345,8 +345,10 @@
       "payee": "merchant"
      },
      "other_args": [
-      "items"
-     ]
+      "items",
+      "order"
+     ],
+     "occurrence": "order"
     }
    },
    "expect": {
@@ -772,8 +774,10 @@
       "payee": "merchant"
      },
      "other_args": [
-      "items"
-     ]
+      "items",
+      "order"
+     ],
+     "occurrence": "order"
     }
    },
    "expect": {
@@ -828,6 +832,65 @@
       "body",
       "to"
      ]
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "a pay tool that names no occurrence",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     },
+     "other_args": [
+      "items",
+      "order"
+     ]
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "an occurrence argument the tool does not declare",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     },
+     "other_args": [
+      "items",
+      "order"
+     ],
+     "occurrence": "cart"
     }
    },
    "expect": {

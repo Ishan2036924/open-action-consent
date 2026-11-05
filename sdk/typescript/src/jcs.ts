@@ -1,6 +1,4 @@
-// RFC 8785 (JCS) canonical JSON for the OAC subset, plus a strict parser. OAC carries integers only (money in minor
-// units, time in unix seconds), so JCS reduces to: keys sorted by UTF-16 code units (JavaScript's default sort),
-// no whitespace, strings as JSON.stringify writes them, integers in plain decimal within +-(2^53 - 1).
+// RFC 8785 canonical JSON for OAC's integer-only subset, and a strict parser.
 
 import { OACError } from "./errors.ts";
 

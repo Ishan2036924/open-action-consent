@@ -1,5 +1,4 @@
-# The conformance vectors are JWS tokens signed with public test keys (oac.testing.vector_key); they look like JWTs on
-# purpose. Only that rule, only in vectors/, is allowed. Everything else uses gitleaks' default rules.
+# vectors/ holds JWS tokens signed with public test keys. Allow only the JWT rule, only there.
 [extend]
 useDefault = true
 

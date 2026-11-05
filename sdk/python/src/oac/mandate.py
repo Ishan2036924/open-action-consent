@@ -1,5 +1,4 @@
-"""Mandates (spec section 7): a standing, bounded, expiring permission. It can stand in for a Consent on tier C only;
-it never covers tier D, never runs in a tainted run, and a pay tool needs caps and a payee list."""
+"""Mandates (spec 7): standing, bounded permission that can replace a Consent on tier C."""
 
 from __future__ import annotations
 
@@ -51,10 +50,7 @@ def check_mandate(
     status_lists: Mapping[str, str] | None = None,
     policy_floor: str = "A",
 ) -> dict[str, Any]:
-    """`holder` and `sub` come from the executor's own authentication; `tainted` from the host runtime that saw what
-    entered the run (never from the model), and it has no default on purpose; `usage` from the executor's own
-    counters; `revoked` = ids the signer revoked or a later mandate superseded; `status_lists` = list id -> signed
-    status list token, needed when the mandate carries `status`."""
+    """holder, sub, tainted and usage come from the executor and host, never the model."""
     p = verify(token, keys, TYP)
     shapes.mandate(p)
     if canonical(p["holder"]) != canonical(holder):
@@ -110,8 +106,7 @@ def check_mandate(
 
 
 def loosens(old: Mapping[str, Any], new: Mapping[str, Any]) -> list[str]:
-    """What a replacement mandate allows that the old one did not. A signer must not sign a non-empty answer without a
-    fresh proof that the person is present (spec 7.4)."""
+    """What the new mandate allows that the old one did not (spec 7.4)."""
     shapes.mandate(old)
     shapes.mandate(new)
     out: list[str] = []
@@ -145,8 +140,7 @@ def loosens(old: Mapping[str, Any], new: Mapping[str, Any]) -> list[str]:
                 o, n = oa.get(key), na.get(key)
                 if o is not None and (n is None or n > o):
                     out.append(f"amount.{key}")
-    # recipients: no list means nobody, so any list where there was none, or any new entry, loosens.
-    # payees and sites: no list means no limit, so dropping the list, or a new entry, loosens.
+    # no recipient list means nobody; no payee or site list means anyone
     o, n = ob.get("recipients"), nb.get("recipients")
     if n is not None and (o is None or set(n) - set(o)):
         out.append("recipients")

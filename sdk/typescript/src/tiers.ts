@@ -1,5 +1,4 @@
-// Approval tiers (spec section 4): A runs, B runs with a receipt and an Undo, C needs a Consent or a Mandate, D never
-// runs. tier = max(implied by the effect, profile floor, executor policy, taint floor, any hint); a hint can only raise.
+// Approval tiers (spec 4). A hint can raise the tier, never lower it.
 
 import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";

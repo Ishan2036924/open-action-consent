@@ -1,13 +1,4 @@
-"""A tiny MCP 2026-07-28 server that uses the OAC extension (spec/mcp-extension.md). Illustration only: one person,
-an in-memory store, fake bookings.
-
-Tools:
-  book_table  tier C (compensate undo): asks for a Consent through a URL-mode elicitation, then books
-  add_task    tier B (native undo): runs at once and returns a receipt with an undo token
-  oac_undo    takes a signed undo request and a receipt
-
-`handle(message)` answers one JSON-RPC message; run this file to serve over stdio. The consent page is simulated by
-`receive_consent`, standing in for the person's signer posting the signed Consent to the executor."""
+"""A tiny MCP server using the OAC extension. One person, in-memory state, fake bookings."""
 
 from __future__ import annotations
 
@@ -81,13 +72,12 @@ class Server:
         self.undo_tokens: dict[str, str] = {}  # undo token -> task id
         self.undone: set[str] = set()  # token digests of receipts already undone
 
-    # ---- consent page stand-in (server-to-server, never through the MCP client or the model)
+    # consent page stand-in (server-to-server, never through the MCP client or the model)
     def preview_for_page(self, preview_id: str) -> dict[str, Any]:
         return self.previews[preview_id]
 
     def receive_consent(self, token: str) -> bool:
-        """Keep a Consent only if a trusted signer signed it, for this person and this executor, over a pending
-        preview; never replace one already kept (so a stray post cannot block the person's approval)."""
+        """Stands in for the signer page posting a Consent. Never replaces one already kept."""
         try:
             payload = verify(token, self.signer_keys, "oac-consent+jws")
         except OACError:
@@ -102,7 +92,7 @@ class Server:
                 kept = True
         return kept
 
-    # ---- helpers
+    # helpers
     def _state(self, fields: dict[str, Any]) -> str:
         body = b64url(canonical_bytes(fields))
         return body + "." + b64url(hmac.new(self.state_secret, body.encode(), hashlib.sha256).digest())
@@ -138,7 +128,7 @@ class Server:
     def _refused(text: str) -> dict[str, Any]:
         return {"resultType": "complete", "isError": True, "content": [{"type": "text", "text": text}]}
 
-    # ---- tools
+    # tools
     def _book(self, params: dict[str, Any], caps: dict[str, Any]) -> dict[str, Any]:
         action = {"tool": "book_table", "args": params["arguments"]}
         now = int(time.time())
@@ -165,7 +155,7 @@ class Server:
                                      actions=[action], profiles=PROFILES, now=now, nonces=self.nonces)
         except OACError as e:
             return self._refused(f"Refused ({e.code}). Nothing was booked.")
-        receipt = self._receipt("book_table", "C", {"kind": "consent", "ref": consent["jti"]}, action,
+        receipt = self._receipt("book_table", "C", {"kind": "consent", "ref": consent["jti"], "digest": token_digest(token)}, action,
                                 {"confirmation": "NB-2231"}, {"kind": "compensate", "until": now + 86400},
                                 preview=st["preview"])
         return self._done("Booked. Confirmation NB-2231.", receipt)
@@ -190,11 +180,11 @@ class Server:
             return self._refused(f"Undo refused ({e.code}).")
         self.undone.add(req["receipt"])
         self.tasks.pop(self.undo_tokens.pop(r["undo"]["token"]), None)
-        receipt = self._receipt(r["tool"], r["tier"], {"kind": "undo", "ref": req["jti"]}, {"tool": "oac_undo", "args": {}},
+        receipt = self._receipt(r["tool"], r["tier"], {"kind": "undo", "ref": req["jti"], "digest": token_digest(args["request"])}, {"tool": "oac_undo", "args": {}},
                                 {"undone": True}, {"kind": "none"}, undoes=req["receipt"])
         return self._done("Undone.", receipt)
 
-    # ---- JSON-RPC
+    # JSON-RPC
     def handle(self, msg: dict[str, Any]) -> dict[str, Any]:
         mid, method, params = msg.get("id"), msg.get("method"), msg.get("params", {})
         meta = params.get("_meta", {})

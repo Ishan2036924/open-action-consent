@@ -1,5 +1,4 @@
-// Actions and Previews (spec sections 3 and 5). Every structured Preview field is bound to one argument by the tool's
-// Action Profile, so what the person reads is provably what will run.
+// Actions and Previews (spec 5 and 6.1).
 
 import * as crypto from "node:crypto";
 import * as shapes from "./shapes.ts";

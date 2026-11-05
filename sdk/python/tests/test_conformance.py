@@ -1,5 +1,4 @@
-"""Every shared vector passes, and the runner really fails when a safety check is switched off (planted defects:
-each mutation below must turn at least one named vector red)."""
+"""All vectors pass, and switching off a check turns named vectors red."""
 
 from __future__ import annotations
 
@@ -11,6 +10,7 @@ import oac.consent
 import oac.shapes
 import oac.jws
 import oac.mandate
+import oac.occurrence
 import oac.receipts
 import oac.undo
 from oac.conformance import run
@@ -44,6 +44,8 @@ MUTATIONS = [
     ("issuer binding off", oac.jws.KeySet, "issuer", lambda self, kid: "https://atlas.example/signer", "signs in another signer's name"),
     ("receipt rules off", oac.receipts, "check_semantics", _noop, "tier C on the tool's own say-so"),
     ("undo receipt rules off", oac.undo, "check_semantics", _noop, "undo of an invalid receipt"),
+    ("device proof ignored", oac.consent, "verify_device_proof", _noop, "user present but not verified"),
+    ("occurrence state ignored", oac.occurrence, "_refuse", _noop, "last attempt is unknown"),
 ]
 
 

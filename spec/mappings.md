@@ -20,7 +20,7 @@ relying on a row.
 | Other | Its object | OAC counterpart | How they meet |
 |---|---|---|---|
 | MCP 2026-07-28 ([spec](https://modelcontextprotocol.io/specification/2026-07-28)) | URL-mode elicitation (accept/decline/cancel, unsigned); tool annotations (hints) | Consent (signed); Action Profile | `mcp-extension.md` |
-| MCP SEP-2848 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848)) | async approval via Tasks; args digest; unsigned | Consent as the approval evidence | `mcp-extension.md` section 7 |
+| MCP SEP-2848 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848)) | async approval via Tasks; args digest; unsigned | Consent as the approval evidence | `mcp-extension.md` section 8 |
 | MCP SEP-2793 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2793)) | `reversibility` auto/manual/none, `approvalRecommendation` | `undo.kind` native/compensate/none; tiers | one to one for reversibility; OAC tiers are computed, not recommended |
 | A2A v1.0 ([spec](https://a2a-protocol.org/latest/specification/), Apache-2.0) | `INPUT_REQUIRED` task state; extensions; JWS over JCS for Agent Cards | Preview / Consent | carry the Preview when a task is `INPUT_REQUIRED` for approval, and the Consent and Receipt as extension data; same JWS + JCS building blocks |
 | OpenAI Agents SDK (`needs_approval`), LangGraph (`interrupt`) | in-process approvals and interrupts, unsigned | Consent | `oac.openai_agents`, `oac.langgraph`: the pause carries the Preview; the tool runs only with a verified Consent |
@@ -30,7 +30,7 @@ relying on a row.
 
 | Other | Its object | OAC counterpart | How they meet |
 |---|---|---|---|
-| IETF draft-schrock-ep-authorization-receipts-13 ([datatracker](https://datatracker.ietf.org/doc/draft-schrock-ep-authorization-receipts/)) | authorization context over a JCS action; WebAuthn challenge = context hash | Consent with `signer.kind = "device"` | a device signer can use the consent digest as the WebAuthn challenge; OAC adds the bound Preview fields and the MCP binding |
+| IETF draft-schrock-ep-authorization-receipts-13 ([datatracker](https://datatracker.ietf.org/doc/draft-schrock-ep-authorization-receipts/)) | authorization context over a JCS action; WebAuthn challenge = context hash | Consent plus a device proof (spec 3.6) | the proof is a plain WebAuthn assertion whose challenge is SHA-256 of the exact Consent token; `signer.kind = "device"` alone is only the signer's claim. The signed-byte mapping between an OAC device proof and an EP authorization context is still open; shared test vectors are proposed |
 | IETF agent audit-trail and SCITT agent drafts | hash-chained logs, COSE records | Receipt chain | export receipts into those logs; OAC does not need its own log format |
 | Acta, delegation and counter-sign receipt drafts | signed receipts | Receipt | export target |
 | ISO/IEC TS 27560 | consent record for personal-data processing | Consent / Mandate | a Mandate can be summarized as a 27560 record for privacy records |

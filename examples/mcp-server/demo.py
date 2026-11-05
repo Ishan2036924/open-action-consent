@@ -1,6 +1,4 @@
-"""Walk through OAC over MCP with the example server: ask → approve → book → receipt; a B-tier task and its undo; and
-two attacks that must fail. Run: `python examples/mcp-server/demo.py`. Every message goes through JSON text, as on the
-wire."""
+"""Walk through OAC over MCP with the example server. Run: python examples/mcp-server/demo.py"""
 
 from __future__ import annotations
 

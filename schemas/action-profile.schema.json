@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:oac:0.1:action-profile",
   "title": "OAC v0.1 Action Profile",
-  "description": "Published by a tool's author (in MCP: the tool's _meta). Says what the tool does, whether and how it can be undone, its lowest tier, and how every argument is shown: bound to a Preview field, or listed in other_args (shown unchanged). Unsigned; the executor's policy may only raise its tier. Rules beyond the schema: a read declares undo none; no argument is declared twice.",
+  "description": "Published by a tool's author (in MCP: the tool's _meta). Says what the tool does, whether and how it can be undone, its lowest tier, and how every argument is shown: bound to a Preview field, or listed in other_args (shown unchanged). Unsigned; the executor's policy may only raise its tier. Rules beyond the schema: a read declares undo none; no argument is declared twice; occurrence names a declared argument.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -66,6 +66,10 @@
       "items": {
         "$ref": "urn:oac:0.1:common#/$defs/arg"
       }
+    },
+    "occurrence": {
+      "description": "The argument whose value identifies the business occurrence (an order id, a booking reference). The executor runs one occurrence at most once and passes the value to the provider as its idempotency key. Required for pay.",
+      "$ref": "urn:oac:0.1:common#/$defs/arg"
     }
   },
   "allOf": [
@@ -79,7 +83,8 @@
       },
       "then": {
         "required": [
-          "binds"
+          "binds",
+          "occurrence"
         ],
         "properties": {
           "binds": {

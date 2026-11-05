@@ -1,9 +1,6 @@
-"""Write vectors/*.json: every valid case and every planted defect the spec says a verifier must refuse.
+"""Write vectors/*.json. Expected results are written by hand from the spec; the SDK must agree.
 
-Run from the repo root: `python tools/make_vectors.py`. The EXPECTED result of each case is written here by hand, from
-the spec, never computed by the SDK; the script then checks that the Python SDK agrees and stops if it does not.
-Keys come from oac.testing.vector_key (public labels), so the output is the same on every run except ES256 signatures,
-which are random by design; those cases only test verification."""
+Run from the repo root: python tools/make_vectors.py"""
 
 from __future__ import annotations
 
@@ -28,6 +25,8 @@ from oac.testing import vector_key  # noqa: E402
 from oac.undo import make_undo  # noqa: E402
 from oac.receipts import make_seal  # noqa: E402
 from oac.status import encode, make_status_list  # noqa: E402
+from oac.testing import passkey_proof  # noqa: E402
+from oac.webauthn import USER_PRESENT, USER_VERIFIED  # noqa: E402
 
 NOW = 1793836800  # 2026-11-05T00:00:00Z
 EXECUTOR = "https://shop.example/oac"
@@ -35,6 +34,7 @@ SIGNER = "https://atlas.example/signer"
 PERSON = "person:7f3a"
 USER = vector_key("signer")
 DEVICE = vector_key("device", "ES256")
+PASSKEY = vector_key("passkey", "ES256")
 EXEC = vector_key("executor")
 ATTACKER = vector_key("attacker")
 WALLET = vector_key("wallet")  # a second signer the executor also trusts
@@ -48,7 +48,7 @@ CONSENT_TYP, MANDATE_TYP, RECEIPT_TYP = "oac-consent+jws", "oac-mandate+jws", "o
 
 
 def profile(tool: str, effect: str, kind: str, window: int, binds: dict[str, str], floor: str = "A",
-            others: list[str] | None = None) -> dict[str, Any]:
+            others: list[str] | None = None, occurrence: str | None = None) -> dict[str, Any]:
     doc = {
         "oac": "0.1",
         "type": "action-profile",
@@ -60,6 +60,8 @@ def profile(tool: str, effect: str, kind: str, window: int, binds: dict[str, str
     }
     if others:
         doc["other_args"] = others
+    if occurrence:
+        doc["occurrence"] = occurrence
     return doc
 
 
@@ -67,7 +69,8 @@ PROFILES = {
     "book_table": profile("book_table", "write", "compensate", 86400, {"payee": "restaurant", "when": "time", "count": "party", "site": "site"}),
     "send_email": profile("send_email", "send", "none", 0, {"to": "to", "title": "subject"}, others=["body"]),
     "add_task": profile("add_task", "write", "native", 600, {"title": "title"}),
-    "pay_order": profile("pay_order", "pay", "compensate", 604800, {"amount_minor": "amount_minor", "currency": "currency", "payee": "merchant"}, others=["items"]),
+    "pay_order": profile("pay_order", "pay", "compensate", 604800, {"amount_minor": "amount_minor", "currency": "currency", "payee": "merchant"},
+                         others=["items", "order"], occurrence="order"),
     "read_calendar": profile("read_calendar", "read", "none", 0, {}),
     "solve_captcha": profile("solve_captcha", "write", "none", 0, {}, floor="D", others=["page"]),
     "cancel_booking": profile("cancel_booking", "write", "none", 0, {"payee": "restaurant"}, others=["undoes"]),
@@ -75,7 +78,8 @@ PROFILES = {
 
 ACTIONS = {
     "book": {"tool": "book_table", "args": {"restaurant": "Nobu Boston", "time": "2026-11-06T19:30-05:00", "party": 2, "site": "nobu.example"}},
-    "pay": {"tool": "pay_order", "args": {"amount_minor": 1800, "currency": "USD", "merchant": "Sweetgreen", "items": ["bowl"]}},
+    "pay": {"tool": "pay_order", "args": {"amount_minor": 1800, "currency": "USD", "merchant": "Sweetgreen", "items": ["bowl"],
+                                          "order": "ord_2231"}},
     "captcha": {"tool": "solve_captcha", "args": {"page": "https://x.example"}},
 }
 
@@ -144,7 +148,7 @@ def err(code: str) -> dict[str, Any]:
     return {"error": code}
 
 
-# ---------------------------------------------------------------- canonical JSON, digests, signing, tiers
+# canonical JSON, digests, signing, tiers
 def basics() -> list[dict[str, Any]]:
     c: list[dict[str, Any]] = []
     jcs = [
@@ -205,6 +209,8 @@ def basics() -> list[dict[str, Any]]:
         ("a pay tool that does not bind the amount", {**PROFILES["pay_order"], "binds": {"currency": "currency", "payee": "merchant"}}),
         ("a send tool that does not bind recipients", {**PROFILES["send_email"], "binds": {"title": "subject"}}),
         ("an argument both bound and listed as other", {**PROFILES["send_email"], "other_args": ["body", "to"]}),
+        ("a pay tool that names no occurrence", {k: v for k, v in PROFILES["pay_order"].items() if k != "occurrence"}),
+        ("an occurrence argument the tool does not declare", {**PROFILES["pay_order"], "occurrence": "cart"}),
     ]
     c.append({"name": "a valid profile", "op": "profile", "input": {"profile": PROFILES["book_table"]}, "expect": ok()})
     for name, p in bad_profiles:
@@ -212,7 +218,7 @@ def basics() -> list[dict[str, Any]]:
     return c
 
 
-# ---------------------------------------------------------------- consent
+# consent
 def consents() -> list[dict[str, Any]]:
     c: list[dict[str, Any]] = []
     book, pay = ACTIONS["book"], ACTIONS["pay"]
@@ -230,7 +236,7 @@ def consents() -> list[dict[str, Any]]:
     p_pay = pv(pay, "Pay Sweetgreen $18.00 for 1 bowl. Refund within 7 days.")
     pay_ref = {"rail": "stripe_link", "ref": "lsrq_test_123", "amount_minor": 1800, "currency": "USD", "payee": "Sweetgreen"}
     case("valid: payment matches the preview", ok(), token=consent([p_pay], payment=pay_ref, jti="n_consent_0000000003"), previews=[p_pay], actions=[pay])
-    case("valid: device key (ES256 passkey-style)", ok(), token=consent([p_book], key=DEVICE, signer_kind="device", jti="n_consent_0000000004"))
+    case("valid: ES256 device key", ok(), token=consent([p_book], key=DEVICE, signer_kind="device", jti="n_consent_0000000004"))
     case("valid: tainted run still runs with a consent", ok(), tainted=True)
 
     # envelope
@@ -285,7 +291,6 @@ def consents() -> list[dict[str, Any]]:
          token=consent([p_pay], payment=pay_ref | {"amount_minor": 18000}, jti="n_consent_0000000011"), previews=[p_pay], actions=[pay])
     case("replayed nonce", err("replay"), seen_nonces=["n_consent_0000000001"])
 
-    # added after the 2026-11-04 review
     case("valid: a second trusted signer signs as itself", ok(), token=make_consent(
         key=WALLET, iss=WALLET_ISS, sub=PERSON, aud=EXECUTOR, previews=[p_book], now=NOW - 20, jti="n_consent_0000000012"))
     case("a trusted signer's key signs in another signer's name", err("wrong_issuer"), token=make_consent(
@@ -317,10 +322,40 @@ def consents() -> list[dict[str, Any]]:
     p_pay2 = pv(pay2, "Pay Sweetgreen $18.00 for 1 salad.", preview_id="pv_pay_2")
     case("two paying items in one yes", err("malformed"), token=consent([p_pay, p_pay2], payment=pay_ref, jti="n_consent_0000000021"),
          previews=[p_pay, p_pay2], actions=[pay, pay2])
+    no_order = {"tool": "pay_order", "args": pay["args"] | {"order": "ord 2231; DROP"}}
+    p_no_order = manual_preview(p_pay, no_order, details={"items": ["bowl"], "order": "ord 2231; DROP"})
+    case("a payment whose occurrence id is not an id", err("malformed"),
+         token=consent([p_no_order], payment=pay_ref, jti="n_consent_0000000022"), previews=[p_no_order], actions=[no_order])
+
+    # device proofs: a passkey assertion over the exact consent token (spec 3.6)
+    signed = consent([p_book], jti="n_consent_0000000030")
+    creds = {"cred-1": PASSKEY.jwk}
+
+    def device(name: str, expect: dict[str, Any], proof: dict[str, Any] | None, token: str = signed, **change: Any) -> None:
+        check = {"proof": proof, "credentials": creds, "rp_id": "app.example", "origins": ["https://app.example"]}
+        case(name, expect, token=token, device=check, **change)
+
+    device("valid: passkey proof over the exact consent", ok(), passkey_proof(signed, PASSKEY))
+    device("passkey required but no proof given", err("device_proof_missing"), None)
+    device("a proof made for another consent", err("device_proof_mismatch"),
+           passkey_proof(consent([p_book], jti="n_consent_0000000031"), PASSKEY))
+    device("an unregistered credential", err("unknown_credential"), passkey_proof(signed, PASSKEY, credential="cred-9"))
+    device("a proof signed by another key", err("bad_signature"), passkey_proof(signed, DEVICE))
+    changed = {"tool": "book_table", "args": book["args"] | {"party": 6}}
+    device("valid proof, but the arguments changed after approval", err("action_mismatch"),
+           passkey_proof(signed, PASSKEY), actions=[changed])
+    device("the passkey signed a challenge for another token", err("challenge_mismatch"),
+           passkey_proof(signed, PASSKEY, challenge_for=consent([p_book], jti="n_consent_0000000032")))
+    device("assertion made on another origin", err("wrong_origin"), passkey_proof(signed, PASSKEY, origin="https://evil.example"))
+    device("assertion for another relying party", err("rp_mismatch"), passkey_proof(signed, PASSKEY, rp_id="evil.example"))
+    device("user not present", err("user_not_present"), passkey_proof(signed, PASSKEY, flags=USER_VERIFIED))
+    device("user present but not verified (no PIN or biometric)", err("user_not_verified"),
+           passkey_proof(signed, PASSKEY, flags=USER_PRESENT))
+    device("a registration, not an assertion", err("malformed"), passkey_proof(signed, PASSKEY, type_="webauthn.create"))
     return c
 
 
-# ---------------------------------------------------------------- mandates
+# mandates
 def mandates() -> list[dict[str, Any]]:
     c: list[dict[str, Any]] = []
     holder = {"type": "agent", "id": "lunch-bot"}
@@ -387,7 +422,6 @@ def mandates() -> list[dict[str, Any]]:
     loose("dropping the payee list", old | {"bounds": {k: v for k, v in nb.items() if k != "payees"}}, ["payees"])
     loose("another holder and no site list", old | {"holder": {"type": "agent", "id": "x"}, "bounds": {k: v for k, v in nb.items() if k != "sites"}}, ["holder", "sites"])
 
-    # added after the 2026-11-04 review
     no_rcpt = old | {"bounds": {k: v for k, v in nb.items() if k != "recipients"}}
     c.append({"name": "a recipient list where there was none (none meant nobody)", "op": "loosens",
               "input": {"old": no_rcpt, "new": no_rcpt | {"bounds": no_rcpt["bounds"] | {"recipients": ["@gmail.com"]}}},
@@ -412,7 +446,7 @@ def mandates() -> list[dict[str, Any]]:
     return c
 
 
-# ---------------------------------------------------------------- receipts and undo
+# receipts and undo
 def receipts_and_undo() -> list[dict[str, Any]]:
     c: list[dict[str, Any]] = []
     rs: list[str] = []
@@ -427,12 +461,26 @@ def receipts_and_undo() -> list[dict[str, Any]]:
     task = {"tool": "add_task", "args": {"title": "Call the dentist"}}
     r1 = add({"tool": "add_task", "tier": "B", "authority": {"kind": "tier"}, "action": action_digest(task), "outcome": "ok", "result": res,
               "undo": {"kind": "native", "until": NOW + 600, "token": "undo_7Qx"}})
-    r2 = add({"tool": "book_table", "tier": "C", "authority": {"kind": "consent", "ref": "n_consent_0000000001"},
+    book_consent = consent([pv(ACTIONS["book"], "Book Nobu Boston")])
+    lunch_mandate = make_mandate(key=USER, payload={
+        "id": "md_lunch_1", "iss": SIGNER, "sub": PERSON, "holder": {"type": "agent", "id": "lunch-bot"}, "goal": "Reply to lunch plans.",
+        "tools": ["send_email"], "bounds": {"calls": {"per_day": 5}, "recipients": ["@example.com"]},
+        "iat": NOW - 3600, "exp": NOW + 86400, "signer": {"kind": "custodial"}})
+
+    def undo(receipt: str, mode: str, jti: str, **kw: Any) -> str:
+        return make_undo(key=USER, iss=SIGNER, sub=PERSON, aud=kw.pop("aud", EXECUTOR), receipt_token=receipt, mode=mode,
+                         now=kw.pop("now", NOW + 30), jti=jti, **kw)
+
+    u1 = undo(r1, "native", "n_undo_00000000000001")
+    r2 = add({"tool": "book_table", "tier": "C",
+              "authority": {"kind": "consent", "ref": "n_consent_0000000001", "digest": token_digest(book_consent)},
               "action": action_digest(ACTIONS["book"]), "preview": digest(pv(ACTIONS["book"], "Book Nobu Boston")), "outcome": "ok",
               "result": res, "undo": {"kind": "compensate", "until": NOW + 86400}})
-    r3 = add({"tool": "send_email", "tier": "C", "authority": {"kind": "mandate", "ref": "md_lunch_1"}, "action": action_digest(mail(1)),
+    r3 = add({"tool": "send_email", "tier": "C", "authority": {"kind": "mandate", "ref": "md_lunch_1", "digest": token_digest(lunch_mandate)},
+              "action": action_digest(mail(1)),
               "outcome": "ok", "result": res, "undo": {"kind": "none"}})
-    r4 = add({"tool": "add_task", "tier": "B", "authority": {"kind": "undo", "ref": "n_undo_00000000000001"}, "action": action_digest(task),
+    r4 = add({"tool": "add_task", "tier": "B", "authority": {"kind": "undo", "ref": "n_undo_00000000000001", "digest": token_digest(u1)},
+              "action": action_digest(task),
               "outcome": "ok", "result": res, "undo": {"kind": "none"}, "undoes": token_digest(r1)})
     base = {"tokens": rs, "keys": EXEC_KEYS, "executor": EXECUTOR}
 
@@ -456,6 +504,10 @@ def receipts_and_undo() -> list[dict[str, Any]]:
     chain("a tier D receipt", err("receipt_invalid"), tokens=[sign(payload_of(r1) | {"tier": "D"}, EXEC, RECEIPT_TYP)])
     chain("tier authority carrying a ref", err("receipt_invalid"),
           tokens=[sign(payload_of(r1) | {"authority": {"kind": "tier", "ref": "anything"}}, EXEC, RECEIPT_TYP)])
+    chain("consent authority without the digest of the exact token", err("receipt_invalid"),
+          tokens=[r1, sign(payload_of(r2) | {"authority": {"kind": "consent", "ref": "n_consent_0000000001"}}, EXEC, RECEIPT_TYP)])
+    chain("tier authority carrying a digest", err("receipt_invalid"),
+          tokens=[sign(payload_of(r1) | {"authority": {"kind": "tier", "digest": token_digest(r1)}}, EXEC, RECEIPT_TYP)])
     chain("an export that starts mid-chain with no prev", err("chain_broken"), tokens=[sign(payload_of(r2) | {"prev": None}, EXEC, RECEIPT_TYP)])
     other = make_receipt(key=OTHER_EXEC, payload={"iss": OTHER_EXECUTOR, "sub": PERSON, "seq": 1, "prev": None, "iat": NOW, "tool": "add_task",
                          "tier": "A", "authority": {"kind": "tier"}, "action": action_digest(task), "outcome": "ok", "result": res, "undo": {"kind": "none"}})
@@ -467,11 +519,6 @@ def receipts_and_undo() -> list[dict[str, Any]]:
         inp = {"token": token, "keys": USER_KEYS, "executor": EXECUTOR, "receipt_token": receipt, "receipt_keys": EXEC_KEYS, "now": NOW + 60}
         c.append({"name": name, "op": "check_undo", "input": inp | change, "expect": expect})
 
-    def undo(receipt: str, mode: str, jti: str, **kw: Any) -> str:
-        return make_undo(key=USER, iss=SIGNER, sub=PERSON, aud=kw.pop("aud", EXECUTOR), receipt_token=receipt, mode=mode,
-                         now=kw.pop("now", NOW + 30), jti=jti, **kw)
-
-    u1 = undo(r1, "native", "n_undo_00000000000001")
     undo_case("valid: native undo inside the window", ok(), u1, r1)
     cancel = {"tool": "cancel_booking", "args": {"restaurant": "Nobu Boston", "undoes": token_digest(r2)}}
     p_cancel = pv(cancel, "Cancel the Nobu Boston booking. No fee.", preview_id="pv_cancel")
@@ -503,10 +550,48 @@ def receipts_and_undo() -> list[dict[str, Any]]:
               undo(self_approved, "compensate", "n_undo_00000000000009", consent="n_consent_0000000098"), self_approved)
     failed = sign(payload_of(r1) | {"outcome": "failed"}, EXEC, RECEIPT_TYP)
     undo_case("nothing to undo when the action failed", err("not_reversible"), undo(failed, "native", "n_undo_00000000000007"), failed)
+    c.extend(occurrences())
     return c
 
 
-# ---------------------------------------------------------------- status lists, key discovery, seals (0.1 gap closers)
+def occurrences() -> list[dict[str, Any]]:
+    """A payment that timed out, then a fresh consent for the same order (spec 5.1)."""
+    c: list[dict[str, Any]] = []
+    for state, want in [(None, ok()), ("failed", ok()), ("running", err("occurrence_unresolved")),
+                        ("unknown", err("occurrence_unresolved")), ("ok", err("duplicate_occurrence"))]:
+        c.append({"name": f"claim an occurrence whose last attempt is {state or 'new'}", "op": "claim_occurrence",
+                  "input": {"state": state}, "expect": want})
+    rs: list[str] = []
+    pay = ACTIONS["pay"]
+
+    def add(outcome: str, jti: str) -> str:
+        token = consent([pv(pay, "Pay Sweetgreen $18.00")], jti=jti)
+        undo = {"kind": "compensate", "until": NOW + 604800} if outcome == "ok" else {"kind": "compensate"}
+        t = make_receipt(key=EXEC, payload={
+            "iss": EXECUTOR, "sub": PERSON, "seq": len(rs) + 1, "prev": token_digest(rs[-1]) if rs else None, "iat": NOW + len(rs),
+            "tool": "pay_order", "tier": "C", "authority": {"kind": "consent", "ref": jti, "digest": token_digest(token)},
+            "action": action_digest(pay), "outcome": outcome, "result": digest(None), "undo": undo, "occurrence": "ord_2231"})
+        rs.append(t)
+        return t
+
+    timeout, retry, again = add("unknown", "n_consent_0000000040"), add("ok", "n_consent_0000000041"), add("ok", "n_consent_0000000042")
+    base = {"keys": EXEC_KEYS, "executor": EXECUTOR}
+    c.append({"name": "valid: a timeout, then a retry after it was resolved as failed", "op": "verify_chain",
+              "input": base | {"tokens": [timeout, retry]}, "expect": ok()})
+    c.append({"name": "the same order paid twice under two fresh consents", "op": "verify_chain",
+              "input": base | {"tokens": [timeout, retry, again]}, "expect": err("duplicate_occurrence")})
+    refund_request = make_undo(key=USER, iss=SIGNER, sub=PERSON, aud=EXECUTOR, receipt_token=retry, mode="compensate",
+                               now=NOW + 1, jti="n_undo_00000000000040", consent="n_consent_0000000043")
+    refund = make_receipt(key=EXEC, payload={
+        "iss": EXECUTOR, "sub": PERSON, "seq": 3, "prev": token_digest(retry), "iat": NOW + 2, "tool": "pay_order", "tier": "C",
+        "authority": {"kind": "undo", "ref": "n_undo_00000000000040", "digest": token_digest(refund_request)}, "action": action_digest(pay),
+        "outcome": "ok", "result": digest(None), "undo": {"kind": "none"}, "undoes": token_digest(retry), "occurrence": "ord_2231"})
+    c.append({"name": "valid: an undo receipt for a paid order is not a second payment", "op": "verify_chain",
+              "input": base | {"tokens": [timeout, retry, refund]}, "expect": ok()})
+    return c
+
+
+# status lists, key discovery, seals
 def gap_closers() -> list[dict[str, Any]]:
     import gzip
 

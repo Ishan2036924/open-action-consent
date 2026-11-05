@@ -32,7 +32,7 @@ async function setup(opts: { approve?: boolean; tainted?: boolean; speaksOAC?: b
   const [ct, st] = InMemoryTransport.createLinkedPair();
   await server.connect(st);
   await client.connect(ct);
-  return { oac, client, log, seen, personKey };
+  return { oac, client, log, seen, personKey, server };
 }
 
 test("tier C asks, then runs with a signed receipt", async () => {
@@ -102,4 +102,27 @@ test("a client without the extension is refused (-32021) and nothing runs", asyn
   assert.equal(r.isError, true);
   assert.match(r.content[0].text, /-32021/);
   assert.deepEqual(log, []);
+});
+
+test("a tool error with an occurrence blocks a repeat until it is resolved", async () => {
+  const { oac, client, log, server } = await setup();
+  const answers = ["timeout", "ok", "ok"];
+  oac.registerTool(server, "hold_slot", { description: "Hold a slot", inputSchema: z.object({ slot: z.string() }) },
+    { effect: "write", undo: "native", windowS: 600, otherArgs: ["slot"], occurrence: "slot" },
+    async ({ slot }) => {
+      if (answers.shift() === "timeout") throw new Error("the provider did not answer");
+      log.push(`held ${slot}`);
+      return { content: [{ type: "text", text: "Held." }] };
+    });
+  const call = () => client.callTool({ name: "hold_slot", arguments: { slot: "s_1" } }) as Promise<any>;
+  const first = await call();
+  const blocked = await call();
+  oac.resolve("hold_slot", "s_1", { person: PERSON, outcome: "failed" });
+  const retried = await call();
+  const again = await call();
+  assert.ok(first.isError && blocked.isError && blocked.content[0].text.includes("occurrence_unresolved"));
+  assert.ok(!retried.isError && again.isError && again.content[0].text.includes("duplicate_occurrence"));
+  assert.deepEqual(log, ["held s_1"]);
+  const chain = verifyChain(oac.receipts.get(PERSON)!, { keys: new KeySet({ [EXECUTOR]: [oac.o.key.jwk] }), executor: EXECUTOR });
+  assert.deepEqual(chain.map((r) => r.outcome), ["unknown", "ok"]);
 });

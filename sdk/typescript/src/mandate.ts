@@ -1,5 +1,4 @@
-// Mandates (spec section 7): standing, bounded, expiring permission. Covers tier C only; never tier D; never waives
-// the taint floor; a pay tool needs caps and a payee list. Mirrors mandate.py, check for check.
+// Mandates (spec 7): standing, bounded permission that can replace a Consent on tier C.
 
 import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";
@@ -71,7 +70,7 @@ export function checkMandate(token: string, o: {
   return p;
 }
 
-/** What a replacement mandate allows that the old one did not; non-empty = the signer needs fresh proof (spec 7.4). */
+/** What the new mandate allows that the old one did not (spec 7.4). */
 export function loosens(old: Record<string, any>, nw: Record<string, any>): string[] {
   shapes.mandate(old);
   shapes.mandate(nw);
@@ -100,8 +99,7 @@ export function loosens(old: Record<string, any>, nw: Record<string, any>): stri
       }
     }
   }
-  // recipients: no list means nobody, so any list where there was none, or a new entry, loosens.
-  // payees and sites: no list means no limit, so dropping the list, or a new entry, loosens.
+  // no recipient list means nobody; no payee or site list means anyone
   if (nb.recipients !== undefined && (ob.recipients === undefined || newOnes(nb.recipients, ob.recipients))) out.push("recipients");
   for (const key of ["payees", "sites"]) {
     const o = ob[key], n = nb[key];

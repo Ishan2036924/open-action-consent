@@ -1,4 +1,4 @@
-// OAC (Open Action Consent) v0.1 reference SDK for TypeScript. Spec: spec/oac-v0.1.md.
+// Open Action Consent for TypeScript. Spec: spec/oac-v0.1.md
 
 export { CODES, OACError } from "./errors.ts";
 export { canonical, parse } from "./jcs.ts";
@@ -10,5 +10,7 @@ export { makeConsent, MemoryNonces, verifyConsent, type NonceStore } from "./con
 export { checkMandate, loosens, makeMandate } from "./mandate.ts";
 export { makeReceipt, verifyChain } from "./receipts.ts";
 export { checkUndo, makeUndo } from "./undo.ts";
-export { Gate, NeedsConsent, type ProfileSpec } from "./gate.ts";
-export const VERSION = "0.2.1";
+export { ActionFailed, Gate, NeedsConsent, type ProfileSpec } from "./gate.ts";
+export { MemoryOccurrences, type OccurrenceStore } from "./occurrence.ts";
+export { verifyDeviceProof, type DeviceCheck } from "./webauthn.ts";
+export const VERSION = "0.3.0";

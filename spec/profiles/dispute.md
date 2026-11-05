@@ -14,13 +14,15 @@ A JSON object, `"type": "dispute-pack"`:
 | `claim` | `{"kind": "not_authorized" \| "not_as_described" \| "not_received" \| "not_cancelled", "receipt": <token_digest>}` |
 | `mandate` | the Mandate token, if one was used |
 | `previews` | the Preview objects the Consent covers |
-| `consent` | the Consent token (or `null` when a Mandate was the authority) |
+| `consent` | the exact Consent token the executor kept (or `null` when a Mandate was the authority) |
+| `device_proof` | the device proof for that Consent, if the executor required one (spec 3.6) |
 | `receipts` | the chain segment from the disputed receipt back to the last seal, plus any undo receipts |
 | `keys` | the public JWKs of the signer and the executor |
 | `attachments` | files whose digests appear in the Preview `evidence` (screenshot, page) and the merchant's policy page |
 
-Anyone can verify the pack offline with the SDKs: the Consent against the Previews, the receipts as a chain, and each
-attachment against its digest.
+Anyone can verify the pack offline with the SDKs: the Consent against the Previews, its `token_digest` against the
+receipt's `authority.digest`, the device proof against the Consent, the receipts as a chain, and each attachment
+against its digest.
 
 ## What each claim needs
 

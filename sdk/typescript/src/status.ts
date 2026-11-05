@@ -1,6 +1,4 @@
-// Status lists (spec section 7.5): which Mandates a signer revoked. W3C Bitstring Status List encoding (GZIP, then
-// multibase base64url "u"; index 0 = left-most bit; at least 16 KB), in a signed OAC object (typ oac-status+jws).
-// Exactly one gzip member and nothing after it: read by hand, because Node's gunzip joins members and skips zeros.
+// Status lists (spec 7.5): which Mandates a signer revoked, as a W3C bitstring.
 
 import * as zlib from "node:zlib";
 import * as shapes from "./shapes.ts";

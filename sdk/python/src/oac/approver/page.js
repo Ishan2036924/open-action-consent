@@ -1,6 +1,4 @@
-// OAC Approver page script. The person's key is a non-extractable WebCrypto P-256 key kept in this browser
-// (IndexedDB); the server never sees it. Canonical JSON (RFC 8785, integers only) and JWS here must match the SDKs
-// byte for byte; tests verify browser-made tokens with the Python SDK.
+// Approver page. The person's key never leaves this browser; JCS and JWS here must match the SDKs byte for byte.
 const N = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n;
 const enc = new TextEncoder();
 const b64u = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -38,7 +36,7 @@ async function signJws(payload, typ) {
   const body = b64u(enc.encode(canonical(payload)));
   const sig = new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, k.pair.privateKey, enc.encode(head + "." + body)));
   let s = BigInt("0x" + [...sig.slice(32)].map((b) => b.toString(16).padStart(2, "0")).join(""));
-  if (s > N / 2n) s = N - s; // low-S: one payload, one signature (spec 3.3)
+  if (s > N / 2n) s = N - s; // low-S, as the SDKs require (spec 3.3)
   const sBytes = s.toString(16).padStart(64, "0").match(/../g).map((h) => parseInt(h, 16));
   return head + "." + body + "." + b64u(new Uint8Array([...sig.slice(0, 32), ...sBytes]));
 }

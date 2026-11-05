@@ -1,7 +1,4 @@
-"""Issuer metadata (spec section 3.5): where a signer or executor publishes its public keys. For issuer
-https://host/path the document lives at https://host/.well-known/oac-issuer/path (the RFC 8414 pattern), and its
-`issuer` must equal the issuer exactly. Fetching is optional and kept apart from verification: `keyset_from` turns
-documents you already have into a KeySet; `fetch_metadata` is a small, strict HTTPS fetcher."""
+"""Issuer metadata (spec 3.5): where an issuer publishes its public keys."""
 
 from __future__ import annotations
 
@@ -16,8 +13,7 @@ from oac.jcs import parse
 from oac.jws import KeySet
 
 MAX_DOC = 64 * 1024
-# A strict issuer form, matched as text (no URL parser, so every language agrees): lowercase ASCII host, optional
-# port, path segments of unreserved characters, optional trailing slash. No query, fragment or credentials.
+# matched as text, not with a URL parser, so every language agrees
 _LABEL = r"[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?"
 _ISSUER = re.compile(rf"^https://({_LABEL}(\.{_LABEL})*)(:[0-9]{{1,5}})?((/(?!\.\.?(/|$))[A-Za-z0-9._~-]+)*)/?$")
 
