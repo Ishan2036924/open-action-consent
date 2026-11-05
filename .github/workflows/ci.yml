@@ -32,8 +32,9 @@ jobs:
       - name: vector generator agrees with the SDK
         run: python tools/make_vectors.py
 
-  gated-browser:
-    runs-on: ubuntu-latest
+  browser-tools:
+    # Playwright 1.58 does not support Chromium on ubuntu-latest (26.04) yet
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -46,6 +47,8 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - name: Gated Browser (MCP SDK + OAC extension + headless Chromium + local test site)
         run: cd integrations/gated-browser && python -m pytest -q -p anyio
+      - name: Approver (enrol, approve, decline in headless Chromium; browser-signed consent verified by the SDK)
+        run: cd integrations/approver && python -m pytest -q
 
   typescript:
     runs-on: ubuntu-latest

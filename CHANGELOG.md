@@ -6,6 +6,8 @@
 - `integrations/mcp-typescript`: OAC tool wrapper for the official MCP TypeScript SDK v2 (2.4).
 - `integrations/gated-browser`: an MCP browser that stops before every final click; page-change detection, CAPTCHA
   hand-off, no secrets typed, private-address guard on every request.
+- `integrations/approver`: a self-hostable approval page; non-extractable WebCrypto key in the browser signs the
+  Consent (device signer); enrolment by one-time code; issuer metadata for key discovery.
 - `oac-mcp`: optional `inspect` hook seals evidence (page digests) into the Preview and refuses if it changed.
 
 ## 0.1.0 (2026-11-04)

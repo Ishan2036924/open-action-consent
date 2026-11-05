@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oac-approver"
+version = "0.1.0"
+description = "A self-hostable approval page for Open Action Consent: the person's key stays in their browser"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = ["starlette>=0.40", "uvicorn>=0.30", "cryptography>=42"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+oac_approver = ["page.js"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "../../sdk/python/src"]
+testpaths = ["tests"]
