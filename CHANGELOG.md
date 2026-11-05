@@ -2,18 +2,19 @@
 
 ## 0.2.0 (unreleased)
 
-Same protocol (OAC 0.1); new packages and integrations.
+Same protocol (OAC 0.1). Everything now ships as one package per language, with optional parts.
 
-- `integrations/mcp-python`: OAC as an extension for the official MCP Python SDK (`mcp` 2.3, protocol 2026-07-28).
-- `integrations/mcp-typescript`: OAC tool wrapper for the official MCP TypeScript SDK v2 (2.4).
-- `integrations/gated-browser`: an MCP browser that stops before every final click; page-change detection, CAPTCHA
-  hand-off, no secrets typed, private-address guard on every request.
-- `integrations/approver`: a self-hostable approval page; non-extractable WebCrypto key in the browser signs the
-  Consent (device signer); enrolment by one-time code; issuer metadata for key discovery.
-- `oac.gate` / `Gate` (Python and TypeScript): framework-neutral executor gate shared by the adapters.
-- Adapters: OpenAI Agents SDK (`oac_tool`), LangGraph (`gated` with `interrupt`), Vercel AI SDK (`withOAC`); in
-  each, the framework's own approval alone runs nothing without the person's signed Consent.
-- `oac-mcp`: optional `inspect` hook seals evidence (page digests) into the Preview and refuses if it changed.
+- Python `open-action-consent` (PyPI): `oac.gate` (framework-neutral gate) and optional parts `oac.mcp` (official MCP
+  Python SDK extension, protocol 2026-07-28), `oac.browser` (Gated Browser: final clicks only with a signed yes on that
+  exact page, page-change refusal, CAPTCHA hand-off, no secrets typed, private-address guard; command
+  `oac-gated-browser`), `oac.approver` (self-hostable approval page; non-extractable WebCrypto key in the browser signs
+  the Consent), `oac.openai_agents`, `oac.langgraph`. Install with `[mcp]`, `[browser]`, `[approver]`,
+  `[openai-agents]`, `[langgraph]` or `[all]`.
+- TypeScript `open-action-consent` (npm, built with TypeScript 7): `Gate`, `open-action-consent/mcp` (MCP SDK v2 tool
+  wrapper) and `open-action-consent/vercel-ai` (AI SDK 7 adapter).
+- In every framework adapter, the framework's own approval alone runs nothing without the person's signed Consent.
+- `oac.mcp`: optional `inspect` hook seals evidence (page digests) into the Preview and refuses if it changed.
+- Release workflow with trusted publishing (no stored tokens).
 
 ## 0.1.0 (2026-11-04)
 

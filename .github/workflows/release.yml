@@ -1,7 +1,7 @@
 name: release
 
-# Publishes all packages when a version tag (v0.2.0, ...) is pushed. No passwords or tokens are stored anywhere:
-# PyPI and npm trust this repository's workflow directly ("trusted publishing", OIDC). See RELEASING.md.
+# Publishes `open-action-consent` to PyPI and npm when a version tag (v0.2.0, ...) is pushed. No passwords or tokens
+# are stored anywhere: PyPI and npm trust this repository's workflow directly ("trusted publishing"). See RELEASING.md.
 on:
   push:
     tags: ["v*"]
@@ -24,12 +24,7 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
-      - run: python -m pip install "build>=1.2"
-      - name: build the six packages
-        run: |
-          for d in sdk/python integrations/mcp-python integrations/gated-browser integrations/approver integrations/openai-agents integrations/langgraph; do
-            python -m build --outdir dist "$d"
-          done
+      - run: python -m pip install "build>=1.2" && python -m build --outdir dist sdk/python
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
         with:
           packages-dir: dist
@@ -41,6 +36,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    defaults:
+      run:
+        working-directory: sdk/typescript
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -51,12 +49,10 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: npm --version
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npm run build --workspaces
-      - run: npm test --workspaces
-      - name: publish (SDK first, then the packages that depend on it; versions already on npm are skipped)
+      - run: npm run build
+      - run: npm test
+      - name: publish (skipped if this version is already on npm)
         run: |
-          for ws in sdk/typescript integrations/mcp-typescript integrations/vercel-ai; do
-            name=$(node -p "require('./$ws/package.json').name"); version=$(node -p "require('./$ws/package.json').version")
-            if npm view "$name@$version" version >/dev/null 2>&1; then echo "skip $name@$version (already published)"; continue; fi
-            npm publish --workspace "$ws" --access public
-          done
+          version=$(node -p "require('./package.json').version")
+          if npm view "open-action-consent@$version" version >/dev/null 2>&1; then echo "skip: already published"; exit 0; fi
+          npm publish --access public

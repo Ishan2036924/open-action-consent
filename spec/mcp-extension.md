@@ -143,8 +143,8 @@ still keeps its receipt and undo for the person, even if the client never sees t
 
 ## 7. Reference plug-ins
 
-`integrations/mcp-python` (official Python SDK, which has an extension interceptor and seals `requestState`) and
-`integrations/mcp-typescript` (official TypeScript SDK v2, which has neither, so the plug-in wraps each tool and signs
+`oac.mcp` in the Python package (official Python SDK, which has an extension interceptor and seals `requestState`) and
+`open-action-consent/mcp` in the npm package (official TypeScript SDK v2, which has neither, so the plug-in wraps each tool and signs
 its own state) implement this binding and are tested end to end through each SDK's in-memory client.
 
 ## 8. Relation to SEP-2848

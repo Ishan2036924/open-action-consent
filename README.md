@@ -29,6 +29,22 @@ tool          preview        limits check out
 
 OAC sits **next to** MCP, A2A, AP2 and ACP, not on top of them. See [spec/mappings.md](spec/mappings.md).
 
+## Install
+
+| | Python | JavaScript / TypeScript |
+|---|---|---|
+| Core | `pip install open-action-consent` | `npm install open-action-consent` |
+| MCP servers | `pip install "open-action-consent[mcp]"` → `oac.mcp` | `open-action-consent/mcp` (+ `@modelcontextprotocol/server`) |
+| Gated Browser | `pip install "open-action-consent[browser]"` → `oac.browser`, command `oac-gated-browser` | |
+| Approval page | `pip install "open-action-consent[approver]"` → `oac.approver` | |
+| OpenAI Agents SDK | `pip install "open-action-consent[openai-agents]"` → `oac.openai_agents` | |
+| LangGraph | `pip install "open-action-consent[langgraph]"` → `oac.langgraph` | |
+| Vercel AI SDK | | `open-action-consent/vercel-ai` (+ `ai`) |
+| Everything | `pip install "open-action-consent[all]"` | |
+
+The core needs only `cryptography` (Python) or nothing (TypeScript); each part pulls in its framework only when you
+ask for it.
+
 ## Quickstart (Python)
 
 ```python
@@ -62,11 +78,9 @@ verify_consent(consent, keys=KeySet({"signer.example": [user_key.jwk]}), executo
 | [sdk/python/](sdk/python/) | reference SDK (needs `cryptography`) |
 | [sdk/typescript/](sdk/typescript/) | reference SDK (no dependencies, Node 23.6+) |
 | [conformance/](conformance/) | vector format and how to run it |
-| [integrations/mcp-python/](integrations/mcp-python/) | **plug-in for the official MCP Python SDK**: `MCPServer(extensions=[OACExtension(...)])` |
-| [integrations/mcp-typescript/](integrations/mcp-typescript/) | **plug-in for the official MCP TypeScript SDK v2**: `oac.registerTool(server, ...)` |
-| [integrations/openai-agents/](integrations/openai-agents/), [langgraph/](integrations/langgraph/), [vercel-ai/](integrations/vercel-ai/) | **adapters** for the OpenAI Agents SDK, LangGraph and the Vercel AI SDK: their approval pauses, made signed |
-| [integrations/gated-browser/](integrations/gated-browser/) | **Gated Browser**: an MCP browser that stops before every final click (Playwright) |
-| [integrations/approver/](integrations/approver/) | **Approver**: a self-hostable approval page; the person's key stays in their browser |
+| [sdk/python/src/oac/](sdk/python/src/oac/) `mcp`, `browser`, `approver`, `openai_agents`, `langgraph` | the optional parts of the Python package (see the install table above) |
+| [sdk/typescript/src/](sdk/typescript/src/) `mcp/`, `vercel-ai/` | the optional parts of the npm package |
+| [guides/](guides/) | one short guide per part: MCP (Python, TypeScript), Gated Browser, Approver, OpenAI Agents, LangGraph, Vercel AI |
 | [examples/mcp-server/](examples/mcp-server/) | a small dependency-free MCP server using the extension, and a demo with attacks that fail |
 
 ## Check everything

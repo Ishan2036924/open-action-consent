@@ -5,9 +5,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 PY="${PYTHON:-python3}"
 PYTHONPATH=sdk/python/src "$PY" -m oac.conformance vectors
-(cd sdk/python && "$PY" -m pytest -q)
+(cd sdk/python && "$PY" -m pytest -q)  # integrations without their extras installed are skipped
 node sdk/typescript/src/conformance.ts vectors
-if [ -d node_modules/typescript ]; then npm run build --workspaces --silent && node sdk/typescript/dist/conformance.js vectors && npm test --workspaces --silent; else (cd sdk/typescript && node --test test/*.test.ts); echo "skip: TypeScript build and plug-ins (npm ci at the repo root)"; fi
+if [ -d sdk/typescript/node_modules/typescript ]; then (cd sdk/typescript && npm run build --silent && node dist/conformance.js ../../vectors && npm test --silent); else echo "skip: TypeScript build and integration tests (npm ci in sdk/typescript)"; fi
 if "$PY" -c "import jsonschema" 2>/dev/null; then "$PY" tools/check_schemas.py; else echo "skip: schemas (pip install jsonschema)"; fi
 "$PY" examples/mcp-server/demo.py > /dev/null && echo "demo: ok"
-if "$PY" -c "import mcp" 2>/dev/null; then (cd integrations/mcp-python && "$PY" -m pytest -q -p anyio); else echo "skip: MCP Python plug-in (pip install mcp)"; fi

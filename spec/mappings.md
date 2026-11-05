@@ -23,8 +23,8 @@ relying on a row.
 | MCP SEP-2848 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848)) | async approval via Tasks; args digest; unsigned | Consent as the approval evidence | `mcp-extension.md` section 7 |
 | MCP SEP-2793 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2793)) | `reversibility` auto/manual/none, `approvalRecommendation` | `undo.kind` native/compensate/none; tiers | one to one for reversibility; OAC tiers are computed, not recommended |
 | A2A v1.0 ([spec](https://a2a-protocol.org/latest/specification/), Apache-2.0) | `INPUT_REQUIRED` task state; extensions; JWS over JCS for Agent Cards | Preview / Consent | carry the Preview when a task is `INPUT_REQUIRED` for approval, and the Consent and Receipt as extension data; same JWS + JCS building blocks |
-| OpenAI Agents SDK (`needs_approval`), LangGraph (`interrupt`) | in-process approvals and interrupts, unsigned | Consent | `integrations/openai-agents`, `integrations/langgraph`: the pause carries the Preview; the tool runs only with a verified Consent |
-| Vercel AI SDK 7 (`toolApproval`, `experimental_toolApprovalSecret`) | approval request/response; the server can HMAC-sign approval requests | Consent | `integrations/vercel-ai`; the HMAC stops forged requests, OAC adds the person's own signature over what they saw and a receipt |
+| OpenAI Agents SDK (`needs_approval`), LangGraph (`interrupt`) | in-process approvals and interrupts, unsigned | Consent | `oac.openai_agents`, `oac.langgraph`: the pause carries the Preview; the tool runs only with a verified Consent |
+| Vercel AI SDK 7 (`toolApproval`, `experimental_toolApprovalSecret`) | approval request/response; the server can HMAC-sign approval requests | Consent | `open-action-consent/vercel-ai`; the HMAC stops forged requests, OAC adds the person's own signature over what they saw and a receipt |
 
 ## Receipts, consent records, identity
 

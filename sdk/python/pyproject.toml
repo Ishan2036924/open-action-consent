@@ -5,10 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "open-action-consent"
 version = "0.2.0"
-description = "Open Action Consent: signed previews, consents, mandates, receipts and undo for agent actions"
+description = "Open Action Consent: a verifiable yes for actions AI agents take for people. Core SDK plus MCP, browser, approval page, OpenAI Agents and LangGraph integrations."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
+keywords = ["ai-agents", "consent", "mcp", "agent-payments", "jws", "open-standard"]
 dependencies = ["cryptography>=42"]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -19,7 +20,16 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=8"]
+mcp = ["mcp>=2.3,<3"]
+browser = ["mcp>=2.3,<3", "playwright>=1.50"]
+approver = ["starlette>=0.40", "uvicorn>=0.30"]
+openai-agents = ["openai-agents>=0.24,<0.30"]
+langgraph = ["langgraph>=1.2,<2"]
+all = ["mcp>=2.3,<3", "playwright>=1.50", "starlette>=0.40", "uvicorn>=0.30", "openai-agents>=0.24,<0.30", "langgraph>=1.2,<2"]
+test = ["pytest>=8", "anyio>=4"]
+
+[project.scripts]
+oac-gated-browser = "oac.browser.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/Ishan2036924/open-action-consent"
@@ -27,6 +37,9 @@ Specification = "https://github.com/Ishan2036924/open-action-consent/blob/main/s
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+oac = ["approver/page.js"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
