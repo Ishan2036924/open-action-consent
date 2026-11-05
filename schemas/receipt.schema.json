@@ -198,7 +198,7 @@
       "$ref": "urn:oac:0.2:common#/$defs/occurrence"
     },
     "occurrence_scope": {
-      "description": "The profile's occurrence scope, when it names one. Chain checks compare occurrences within a scope (the tool's name when absent).",
+      "description": "The profile's occurrence scope, when it names one. Chain checks compare occurrences within a scope (the tool's own scope when absent).",
       "$ref": "urn:oac:0.2:common#/$defs/occurrence"
     }
   },

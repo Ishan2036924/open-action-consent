@@ -8,6 +8,7 @@ from typing import Any
 from oac import shapes
 from oac.errors import OACError
 from oac.jws import KeySet, SigningKey, sign, token_digest, verify
+from oac.occurrence import scope
 
 TYP = "oac-receipt+jws"
 SEAL_TYP = "oac-seal+jws"
@@ -75,7 +76,7 @@ def verify_chain(
             if r["prev"] != token_digest(tokens[i - 1]):
                 raise OACError("chain_broken")
         if "occurrence" in r and r["outcome"] == "ok" and r["authority"]["kind"] != "undo":
-            key = (r.get("occurrence_scope", r["tool"]), r["occurrence"])
+            key = (scope(r), r["occurrence"])
             if key in done:
                 raise OACError("duplicate_occurrence", "the same occurrence ran twice")
             done.add(key)

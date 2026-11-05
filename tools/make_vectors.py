@@ -622,6 +622,9 @@ def occurrences() -> list[dict[str, Any]]:
     apart = paid(paid([], "pay_order", "n_consent_0000000046", "stripe:acct_1"), "pay_order_express", "n_consent_0000000047", "stripe:acct_2")
     c.append({"name": "valid: the same order id in two different provider scopes", "op": "verify_chain",
               "input": base | {"tokens": apart}, "expect": ok()})
+    lookalike = paid(paid([], "stripe", "n_consent_0000000048", None), "pay_order_express", "n_consent_0000000049", "stripe")
+    c.append({"name": "valid: a scope spelled like another tool's name does not share that tool's orders", "op": "verify_chain",
+              "input": base | {"tokens": lookalike}, "expect": ok()})
     return c
 
 

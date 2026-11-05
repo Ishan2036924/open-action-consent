@@ -37,6 +37,13 @@ def _refused(text: str) -> CallToolResult:
     return CallToolResult(content=[TextContent(type="text", text=text)], is_error=True)
 
 
+def _fits(proof: Any, token: str) -> bool:
+    """A well-formed device proof made for this token; anything else is not kept."""
+    try:
+        return proof is not None and shapes.device_proof(proof)["consent"] == token_digest(token)
+    except OACError:
+        return False
+
 class OACExtension(Extension):
     identifier = ID
 
@@ -113,7 +120,7 @@ class OACExtension(Extension):
         for item in p["items"] if p["aud"] == self.executor else []:
             if item["preview"] in self.previews and self.consents.get(item["preview"], token) == token:
                 self.consents[item["preview"]] = token
-                if proof is not None:
+                if _fits(proof, token):
                     self.proofs[item["preview"]] = proof
                 kept = True
         return kept
@@ -162,7 +169,9 @@ class OACExtension(Extension):
         token = self.consents.get(state.get("preview", ""))
         meta = dict(ctx.meta or {})
         token = token or meta.get(CONSENT_KEY)
-        proof = self.proofs.get(state.get("preview", "")) or meta.get(DEVICE_KEY)
+        proof = self.proofs.get(state.get("preview", ""))
+        if proof is None:
+            proof = meta.get(DEVICE_KEY)
         if preview is None or token is None:
             return self._ask(action, profile, person, seen.get("evidence"))
         # compare the DOM, not the screenshot: pixels differ between two captures

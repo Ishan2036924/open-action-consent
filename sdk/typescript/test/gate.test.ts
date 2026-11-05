@@ -77,6 +77,8 @@ test("gate: a passkey is required, and only a proof over the kept consent lets i
   assert.equal(gate.acceptConsent(other, passkeyProof(other, passkey)), false);
   const proof = passkeyProof(token, passkey);
   assert.ok(gate.acceptConsent(token, proof));
+  assert.ok(gate.acceptConsent(token, { junk: 1 })); // a junk re-post is not kept, so it cannot block the run
+  assert.ok(gate.acceptConsent(token, null));
   await gate.run("send_email", args, () => sent.push("x"), { person: PERSON });
   assert.deepEqual(sent, ["x"]);
   assert.deepEqual(gate.deviceProofs.get(tokenDigest(token)), proof);
@@ -97,4 +99,6 @@ test("gate: two pay tools with one provider scope share an order", async () => {
   const [, receipt] = await gate.run("pay_order", args, () => "paid", { person: PERSON });
   assert.equal(JSON.parse(Buffer.from(receipt.split(".")[1], "base64url").toString()).occurrence_scope, "stripe:acct_1");
   await assert.rejects(gate.run("pay_express", args, () => "paid", { person: PERSON }), (e: any) => e.code === "duplicate_occurrence");
+  gate.profile("stripe:acct_1", { effect: "write", undo: "native", windowS: 600, otherArgs: ["order"], occurrence: "order" });
+  await gate.run("stripe:acct_1", { order: "ord_1" }, () => "held", { person: PERSON, tainted: false });
 });

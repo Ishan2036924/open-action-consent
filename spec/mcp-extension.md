@@ -98,8 +98,8 @@ way; which signers it trusts is its own policy (spec 3.3).
 
 When the server requires a passkey (spec 3.6), the device proof travels with the Consent: the signer page posts it
 together with the token, or the client attaches `_meta["com.atlasiw/oac-device-proof"]: {...}`. Without a valid proof
-the server refuses with the code from spec 3.6 and runs nothing. A proof posted with the token wins over one in
-`_meta`. The server keeps the proof with the token, next to the receipt.
+the server refuses with the code from spec 3.6 and runs nothing. A well-formed proof posted with the token, made for
+that token, wins over one in `_meta`; anything else posted with it is ignored. The server keeps the proof with the token, next to the receipt.
 
 ### 3.3 The result carries the receipt
 

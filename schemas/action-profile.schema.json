@@ -72,7 +72,7 @@
       "$ref": "urn:oac:0.2:common#/$defs/arg"
     },
     "occurrence_scope": {
-      "description": "Where occurrence ids are unique, such as one provider account. Tools with the same scope share one record per occurrence, so two tools cannot each run the same order. Defaults to the tool's own name.",
+      "description": "Where occurrence ids are unique, such as one provider account. Tools with the same scope share one record per occurrence, so two tools cannot each run the same order. Without it the tool has a scope of its own, which never matches a named scope.",
       "$ref": "urn:oac:0.2:common#/$defs/occurrence"
     }
   },

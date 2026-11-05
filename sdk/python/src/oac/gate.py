@@ -28,6 +28,13 @@ from oac.tiers import tier_for
 from oac.webauthn import DeviceCheck
 
 
+def _fits(proof: Any, token: str) -> bool:
+    """A well-formed device proof made for this token; anything else is not kept."""
+    try:
+        return proof is not None and shapes.device_proof(proof)["consent"] == token_digest(token)
+    except OACError:
+        return False
+
 class NeedsConsent(Exception):
     """The action is tier C and no valid Consent is held yet: show `preview` to the person."""
 
@@ -123,7 +130,7 @@ class Gate:
         for item in c["items"] if c["aud"] == self.executor else []:
             if item["preview"] in pending and self.consents.get(item["preview"], token) == token:
                 self.consents[item["preview"]] = token
-                if proof is not None:
+                if _fits(proof, token):
                     self.proofs[item["preview"]] = proof
                 kept = True
         return kept

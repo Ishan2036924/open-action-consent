@@ -3,7 +3,7 @@
 import * as crypto from "node:crypto";
 import { inputRequired, inputResponse, type McpServer } from "@modelcontextprotocol/server";
 import { actionDigest, buildPreview, digest, KeySet, makeReceipt, MemoryNonces, OACError, shapes, tierFor, tokenDigest, verify, verifyConsent, type SigningKey } from "../index.ts";
-import type { DevicePolicy } from "../gate.ts";
+import { fits, type DevicePolicy } from "../gate.ts";
 import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, scope, type OccurrenceKey, type OccurrenceStore } from "../occurrence.ts";
 
 export const ID = "com.atlasiw/oac";
@@ -74,14 +74,14 @@ export class OAC {
 
   /** Keep a valid Consent, and the passkey proof sent with it, for a pending preview.
    * Never replaces a different token already kept; the same token may bring a new proof. */
-  acceptConsent(token: string, proof?: Record<string, any>): boolean {
+  acceptConsent(token: string, proof?: Record<string, any> | null): boolean {
     let p: Record<string, any>;
     try { p = verify(token, this.o.signers, "oac-consent+jws"); shapes.consent(p); } catch { return false; }
     let kept = false;
     for (const item of p.aud === this.o.executor ? p.items : []) {
       if (this.previews.has(item.preview) && (this.consents.get(item.preview) ?? token) === token) {
         this.consents.set(item.preview, token);
-        if (proof !== undefined) this.proofs.set(item.preview, proof);
+        if (fits(proof, token)) this.proofs.set(item.preview, proof!);
         kept = true;
       }
     }

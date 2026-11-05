@@ -44,7 +44,7 @@ export function previewFor(gate: Gate, request: { toolCall: { toolName: string; 
 }
 
 /** The tool message to send back: approved only when the signed Consent is valid for a pending Preview. */
-export function approvalMessage(gate: Gate, approvalId: string, consentToken: string | null): any {
-  const approved = consentToken !== null && gate.acceptConsent(consentToken);
+export function approvalMessage(gate: Gate, approvalId: string, consentToken: string | null, deviceProof?: Record<string, any> | null): any {
+  const approved = consentToken !== null && gate.acceptConsent(consentToken, deviceProof);
   return { role: "tool", content: [{ type: "tool-approval-response", approvalId, approved, reason: approved ? "signed OAC consent" : "no valid signed consent" }] };
 }

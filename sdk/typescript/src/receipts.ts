@@ -1,5 +1,6 @@
 // Receipts (spec 8): the executor's signed record of each action, chained per person.
 
+import { scope } from "./occurrence.ts";
 import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";
 import { KeySet, sign, tokenDigest, verify, type SigningKey } from "./jws.ts";
@@ -52,7 +53,7 @@ export function verifyChain(tokens: string[], o: { keys: KeySet; executor: strin
       if (r.prev !== tokenDigest(tokens[i - 1])) throw new OACError("chain_broken");
     }
     if (Object.hasOwn(r, "occurrence") && r.outcome === "ok" && r.authority.kind !== "undo") {
-      const key = JSON.stringify([r.occurrence_scope ?? r.tool, r.occurrence]);
+      const key = JSON.stringify([scope(r), r.occurrence]);
       if (done.has(key)) throw new OACError("duplicate_occurrence", "the same occurrence ran twice");
       done.add(key);
     }

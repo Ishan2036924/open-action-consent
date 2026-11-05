@@ -53,8 +53,10 @@ class MemoryOccurrences:
 
 
 def scope(profile: Mapping[str, Any]) -> str:
-    """Where the profile's occurrence ids are unique: its occurrence_scope, else the tool itself."""
-    return profile.get("occurrence_scope", profile["tool"])
+    """Where the profile's occurrence ids are unique: its occurrence_scope, else the tool itself.
+    The prefixes keep a scope from ever matching a tool's own records."""
+    s = profile.get("occurrence_scope")
+    return "tool:" + profile["tool"] if s is None else "scope:" + s
 
 
 def occurrence_key(person: str, profile: Mapping[str, Any], args: Mapping[str, Any]) -> Key | None:

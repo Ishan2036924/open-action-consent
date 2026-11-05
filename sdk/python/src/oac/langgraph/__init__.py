@@ -24,7 +24,8 @@ def gated(gate: Gate, tool: str, args: Mapping[str, Any], fn: Callable[..., Any]
     except OACError as e:
         return f"Refused ({e.code}). Nothing ran."
     token = answer.get("consent") if isinstance(answer, Mapping) else None
-    if not isinstance(token, str) or not gate.accept_consent(token):
+    proof = answer.get("device_proof") if isinstance(answer, Mapping) else None
+    if not isinstance(token, str) or not gate.accept_consent(token, proof):
         return NOT_APPROVED
     try:
         return gate.run(tool, args, fn, person=person, tainted=tainted)[0]

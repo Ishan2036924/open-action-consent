@@ -10,16 +10,19 @@ Closes five of the six known gaps listed in 0.3.0. Breaking: objects now say `"o
 - Device proofs in the gates and MCP plug-ins: a `device` option returns the passkey check an action needs.
   `accept_consent(token, proof)` / `acceptConsent(token, proof)` takes the proof from the signer page; the MCP
   plug-ins also read `_meta["com.atlasiw/oac-device-proof"]`. Proofs are kept in `device_proofs` / `deviceProofs`.
-  The same token may be posted again to bring its proof; a different token still never replaces a kept one.
+  The same token may be posted again to bring its proof; only a well-formed proof made for that token is kept, and a
+  different token still never replaces a kept one. The LangGraph, OpenAI Agents and Vercel AI adapters pass a proof
+  through too.
 - Occurrence scope: a profile may name `occurrence_scope` (for example one provider account). Tools with the same
-  scope share one record per order, so two pay tools cannot each pay the same order. Receipts carry the scope, and
-  chain verification compares occurrences within it.
+  scope share one record per order, so two pay tools cannot each pay the same order. A tool without a scope keeps
+  records of its own that never match a named scope. Receipts carry the scope, and chain verification compares
+  occurrences within it. Do not add or change a tool's scope while it has records, unless you move them.
 - WebAuthn backup flags: a proof whose BS flag is set without BE is malformed. `DeviceCheck.device_bound` refuses
   passkeys that can sync (`not_device_bound`, new error code).
 - SDK parity: Python exports `Gate`, `NeedsConsent`, `ActionFailed`, `MemoryOccurrences` and `OccurrenceStore` at
   the top level, like TypeScript. TypeScript gains `passkeyProof` in `open-action-consent/testing`, like Python's
   `oac.testing.passkey_proof`.
-- 10 new shared test vectors (240 in total).
+- 11 new shared test vectors (241 in total).
 
 Still open: the exact mapping between a device proof and an EP authorization context.
 

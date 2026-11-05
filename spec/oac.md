@@ -206,7 +206,8 @@ Published by a tool's author (in MCP, in the tool's `_meta`; section 10). Schema
   is about (5.1). Required for `pay`; it MUST be a declared argument, and its value in every action MUST match
   `[A-Za-z0-9_.:-]{1,128}` (`malformed`).
 - `occurrence_scope` (optional, same pattern) names where those ids are unique, such as one provider account
-  (`stripe:acct_1`). It needs `occurrence`. Without it, the scope is the tool's own name.
+  (`stripe:acct_1`). It needs `occurrence`. Without it, the tool has a scope of its own, which never matches a named
+  scope even when the two are spelled alike.
 
 Rules:
 
@@ -226,7 +227,9 @@ person says yes again. The second Consent has a new `jti`, so the nonce check do
 may have gone through. The occurrence id closes this gap. For a tool whose profile names an `occurrence`, the executor
 keeps one record per person, occurrence scope and occurrence value, with the state of its latest attempt: `running`,
 `ok`, `failed` or `unknown`. Tools whose profiles name the same `occurrence_scope` share these records, so an order
-paid through one tool cannot be paid again through another; a tool without a scope has records of its own.
+paid through one tool cannot be paid again through another; a tool without a scope has records of its own. An
+executor MUST NOT add or change a tool's `occurrence_scope` while that tool has records, unless it moves them to the
+new scope; otherwise an order already paid, or still `unknown`, would look new.
 
 1. Before it runs the action (for tier C, before it verifies the Consent, so a refusal does not use up the `jti`), the
    executor claims the record atomically: new or `failed` becomes `running`; `ok` is refused
@@ -447,7 +450,8 @@ and a store holds the details.
 rules of 8.1; `iss` is the expected executor (`chain_issuer`); same `sub` throughout (`subject_mismatch`); the first
 has `prev` null if and only if its `seq` is 1 (`chain_broken`); each later one has `seq` one more than the one before
 (`chain_seq`) and `prev` equal to its `token_digest` (`chain_broken`); no two receipts with outcome `ok` share a scope
-(`occurrence_scope`, else the tool) and an `occurrence` (`duplicate_occurrence`), not counting undo receipts.
+(the `occurrence_scope`, else the tool's own scope, as in 5) and an `occurrence` (`duplicate_occurrence`), not counting
+undo receipts.
 
 **Seals.** A person's signer MAY countersign the chain from time to time with a **seal**
 (`schemas/seal.schema.json`, `typ` `oac-seal+jws`): `{iss, sub, executor, seq, head, iat}`, where `head` is the

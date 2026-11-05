@@ -19,6 +19,11 @@ export class NeedsConsent extends Error {
 /** Throw from a tool when the action surely did not happen. Other errors count as unknown. */
 export class ActionFailed extends Error {}
 
+/** A well-formed device proof made for this token; anything else is not kept. */
+export function fits(proof: Record<string, any> | null | undefined, token: string): boolean {
+  try { return proof != null && shapes.deviceProof(proof).consent === tokenDigest(token); } catch { return false; }
+}
+
 /** Returns the passkey check a tier C action needs (its proof is filled in by the gate), or null when none is needed. */
 export type DevicePolicy = (person: string, action: Record<string, any>) => DeviceCheck | null;
 
@@ -90,7 +95,7 @@ export class Gate {
 
   /** Keep a valid Consent, and the passkey proof sent with it, for a pending Preview.
    * Never replaces a different token already kept; the same token may bring a new proof. */
-  acceptConsent(token: string, proof?: Record<string, any>): boolean {
+  acceptConsent(token: string, proof?: Record<string, any> | null): boolean {
     let c: Record<string, any>;
     try { c = verify(token, this.signers, "oac-consent+jws"); shapes.consent(c); } catch { return false; }
     const pending = new Set([...this.pending.values()].map(digest));
@@ -98,7 +103,7 @@ export class Gate {
     for (const item of c.aud === this.executor ? c.items : []) {
       if (pending.has(item.preview) && (this.consents.get(item.preview) ?? token) === token) {
         this.consents.set(item.preview, token);
-        if (proof !== undefined) this.proofs.set(item.preview, proof);
+        if (fits(proof, token)) this.proofs.set(item.preview, proof!);
         kept = true;
       }
     }
