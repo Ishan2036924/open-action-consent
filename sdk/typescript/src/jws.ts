@@ -1,7 +1,4 @@
-// Keys, digests and the JWS envelope (RFC 7515 compact). Header = exactly {alg, kid, typ}, JCS-canonical; payload =
-// JCS-canonical JSON; a token whose bytes are not the canonical form of what they parse to is refused.
-// Algorithms: EdDSA (Ed25519, RFC 8037) and ES256 (P-256, raw r||s, low-S only). kid = the RFC 7638 JWK thumbprint.
-// Every trusted key belongs to exactly one issuer, and a token's `iss` must be its key's issuer.
+// Keys, digests and the compact JWS envelope used by every signed OAC object.
 
 import * as crypto from "node:crypto";
 import { OACError } from "./errors.ts";
@@ -76,7 +73,7 @@ export function generate(alg = "EdDSA"): SigningKey {
   throw new OACError("bad_alg", alg);
 }
 
-/** Public keys a verifier trusts, grouped by issuer: {iss: [jwk, ...]}. A kid maps to one key and one issuer. */
+/** Trusted public keys, grouped by issuer: {iss: [jwk, ...]}. Each key has one issuer. */
 export class KeySet {
   private keys = new Map<string, [Jwk & { kid: string }, string]>();
   constructor(byIssuer: Record<string, Jwk[]>) {

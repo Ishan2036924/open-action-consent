@@ -1,4 +1,4 @@
-"""End to end through a real LangGraph StateGraph with a checkpointer (pause with interrupt, resume with Command)."""
+"""A real LangGraph StateGraph: pause with interrupt, resume with Command."""
 
 from __future__ import annotations
 

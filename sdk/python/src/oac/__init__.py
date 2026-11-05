@@ -1,5 +1,4 @@
-"""OAC (Open Action Consent) v0.1 reference SDK: previews, signed consents, mandates, receipts and undo for actions
-agents take for people. Spec: spec/oac-v0.1.md."""
+"""Open Action Consent: previews, signed consents, mandates, receipts and undo for agent actions."""
 
 from oac.consent import MemoryNonces, make_consent, verify_consent
 from oac.errors import CODES, OACError

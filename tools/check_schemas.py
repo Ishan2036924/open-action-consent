@@ -1,5 +1,4 @@
-"""Check schemas/ against the vectors: every object in a passing case validates, and the profile cases the schema can
-express fail. Needs the `jsonschema` package (dev only): `python tools/check_schemas.py`."""
+"""Check schemas/ against the vectors. Needs jsonschema: python tools/check_schemas.py"""
 
 from __future__ import annotations
 

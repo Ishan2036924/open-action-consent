@@ -1,5 +1,4 @@
-"""Business occurrences (spec 5.1): one order, one payment, one booking runs at most once, even across fresh
-Consents after a timeout."""
+"""Business occurrences (spec 5.1): one order or payment runs at most once."""
 
 from __future__ import annotations
 
@@ -14,14 +13,12 @@ Key = tuple[str, str, str]  # (person, tool, occurrence)
 
 class OccurrenceStore(Protocol):
     def claim(self, key: Key) -> str | None:
-        """Atomically mark the key running and return None if it is new or its last attempt failed; otherwise
-        change nothing and return its state (running, unknown or ok)."""
+        """Mark the key running and return None, or return its blocking state. Must be atomic."""
         ...
 
     def finish(self, key: Key, outcome: str) -> None: ...
 
     def release(self, key: Key) -> None:
-        """Drop a claim whose action never started (for example, the Consent was refused)."""
         ...
 
     def state(self, key: Key) -> str | None: ...

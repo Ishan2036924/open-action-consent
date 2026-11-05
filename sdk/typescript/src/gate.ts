@@ -1,6 +1,4 @@
-// A framework-neutral executor gate (twin of gate.py): tier, Preview, Consent hand-over, verification right before
-// the action, run, signed Receipt. A pending Preview is reused for the same person and action until it expires, so
-// a framework that re-runs a step after an interruption gets the Preview the person approved.
+// Executor gate shared by the framework adapters. Same behaviour as gate.py.
 
 import * as crypto from "node:crypto";
 import * as shapes from "./shapes.ts";
@@ -17,8 +15,7 @@ export class NeedsConsent extends Error {
   constructor(preview: Record<string, any>) { super("the person must approve this preview"); this.preview = preview; }
 }
 
-/** Throw from a tool to say the action surely did not happen. For a tool with an occurrence, any other error records
- * the outcome as unknown, so the occurrence cannot run again until it is resolved. */
+/** Throw from a tool when the action surely did not happen. Other errors count as unknown. */
 export class ActionFailed extends Error {}
 
 export type ProfileSpec = {
@@ -135,8 +132,7 @@ export class Gate {
     return [result, this.receipt(o.person, tool, args, tier, authority, pd, result, this.outcome(claimed, undefined))];
   }
 
-  /** Record what the provider says happened to an attempt whose outcome was unknown (ask it with the same
-   * occurrence id). After "ok" the occurrence never runs again; after "failed" a fresh Consent may retry it. */
+  /** Record what the provider says happened to an unknown attempt: ok or failed. */
   resolve(tool: string, occurrence: string, o: { person: string; outcome: "ok" | "failed" }): void {
     const key: OccurrenceKey = [o.person, tool, occurrence];
     if ((o.outcome !== "ok" && o.outcome !== "failed") || this.occurrences.state(key) !== "unknown") {

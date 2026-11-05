@@ -1,9 +1,6 @@
-"""Write vectors/*.json: every valid case and every planted defect the spec says a verifier must refuse.
+"""Write vectors/*.json. Expected results are written by hand from the spec; the SDK must agree.
 
-Run from the repo root: `python tools/make_vectors.py`. The EXPECTED result of each case is written here by hand, from
-the spec, never computed by the SDK; the script then checks that the Python SDK agrees and stops if it does not.
-Keys come from oac.testing.vector_key (public labels), so the output is the same on every run except ES256 signatures,
-which are random by design; those cases only test verification."""
+Run from the repo root: python tools/make_vectors.py"""
 
 from __future__ import annotations
 
@@ -151,7 +148,7 @@ def err(code: str) -> dict[str, Any]:
     return {"error": code}
 
 
-# ---------------------------------------------------------------- canonical JSON, digests, signing, tiers
+# canonical JSON, digests, signing, tiers
 def basics() -> list[dict[str, Any]]:
     c: list[dict[str, Any]] = []
     jcs = [
@@ -221,7 +218,7 @@ def basics() -> list[dict[str, Any]]:
     return c
 
 
-# ---------------------------------------------------------------- consent
+# consent
 def consents() -> list[dict[str, Any]]:
     c: list[dict[str, Any]] = []
     book, pay = ACTIONS["book"], ACTIONS["pay"]
@@ -294,7 +291,6 @@ def consents() -> list[dict[str, Any]]:
          token=consent([p_pay], payment=pay_ref | {"amount_minor": 18000}, jti="n_consent_0000000011"), previews=[p_pay], actions=[pay])
     case("replayed nonce", err("replay"), seen_nonces=["n_consent_0000000001"])
 
-    # added after the 2026-11-04 review
     case("valid: a second trusted signer signs as itself", ok(), token=make_consent(
         key=WALLET, iss=WALLET_ISS, sub=PERSON, aud=EXECUTOR, previews=[p_book], now=NOW - 20, jti="n_consent_0000000012"))
     case("a trusted signer's key signs in another signer's name", err("wrong_issuer"), token=make_consent(
@@ -359,7 +355,7 @@ def consents() -> list[dict[str, Any]]:
     return c
 
 
-# ---------------------------------------------------------------- mandates
+# mandates
 def mandates() -> list[dict[str, Any]]:
     c: list[dict[str, Any]] = []
     holder = {"type": "agent", "id": "lunch-bot"}
@@ -426,7 +422,6 @@ def mandates() -> list[dict[str, Any]]:
     loose("dropping the payee list", old | {"bounds": {k: v for k, v in nb.items() if k != "payees"}}, ["payees"])
     loose("another holder and no site list", old | {"holder": {"type": "agent", "id": "x"}, "bounds": {k: v for k, v in nb.items() if k != "sites"}}, ["holder", "sites"])
 
-    # added after the 2026-11-04 review
     no_rcpt = old | {"bounds": {k: v for k, v in nb.items() if k != "recipients"}}
     c.append({"name": "a recipient list where there was none (none meant nobody)", "op": "loosens",
               "input": {"old": no_rcpt, "new": no_rcpt | {"bounds": no_rcpt["bounds"] | {"recipients": ["@gmail.com"]}}},
@@ -451,7 +446,7 @@ def mandates() -> list[dict[str, Any]]:
     return c
 
 
-# ---------------------------------------------------------------- receipts and undo
+# receipts and undo
 def receipts_and_undo() -> list[dict[str, Any]]:
     c: list[dict[str, Any]] = []
     rs: list[str] = []
@@ -588,7 +583,7 @@ def occurrences() -> list[dict[str, Any]]:
     return c
 
 
-# ---------------------------------------------------------------- status lists, key discovery, seals (0.1 gap closers)
+# status lists, key discovery, seals
 def gap_closers() -> list[dict[str, Any]]:
     import gzip
 

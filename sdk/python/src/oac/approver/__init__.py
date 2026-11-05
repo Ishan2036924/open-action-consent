@@ -1,21 +1,4 @@
-"""OAC Approver: a small self-hostable approval page where a person approves (or declines) an agent's action.
-
-The person's key never leaves their browser: it is a non-extractable WebCrypto P-256 key (OAC `signer.kind`
-"device"), created at enrolment with a one-time code. The page shows the Preview (summary, every field and detail,
-whether it can be undone, the cancellation policy), and on Approve the browser itself signs the Consent JWS and posts
-it here; the Approver checks it and hands it to the executor through `deliver`. It also publishes the person's
-public keys as issuer metadata (spec 3.5) so executors can find them.
-
-    from oac.approver import Approver
-
-    approver = Approver(issuer="https://approve.example", person="person:1",
-                        previews=lambda preview_id: executor.preview(preview_id),
-                        deliver=lambda token: executor.accept_consent(token))
-    app = approver.app()   # a Starlette app; serve it with uvicorn behind HTTPS
-
-0.1 limits: one person per Approver; in-memory state; no payment references in Consents (a pay action needs the
-rail's reference, which this page does not collect yet).
-"""
+"""A small self-hostable approval page. The person's key stays in their browser. See guides/approver.md."""
 
 from __future__ import annotations
 

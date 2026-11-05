@@ -1,4 +1,4 @@
-// OAC (Open Action Consent) v0.1 reference SDK for TypeScript. Spec: spec/oac-v0.1.md.
+// Open Action Consent for TypeScript. Spec: spec/oac-v0.1.md
 
 export { CODES, OACError } from "./errors.ts";
 export { canonical, parse } from "./jcs.ts";

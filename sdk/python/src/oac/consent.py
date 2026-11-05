@@ -1,5 +1,4 @@
-"""Consent (spec section 6): the person's signed yes to one or more Previews. Verified by the executor right before
-it runs the actions; checks run in the spec's order and the first failure is the one reported."""
+"""Consents (spec 6): the person's signed yes to one or more Previews."""
 
 from __future__ import annotations
 
@@ -22,14 +21,12 @@ SKEW_S = 60  # clocks may differ this much
 
 class NonceStore(Protocol):
     def use_once(self, jti: str, exp: int) -> bool:
-        """Record jti until exp and return True, or return False if it was already recorded. Must be atomic: two
-        callers with the same jti can never both get True."""
+        """Record jti until exp. Returns False if it was already there. Must be atomic."""
         ...
 
 
 class MemoryNonces:
-    """In-memory nonce store for tests and examples. Production stores do an atomic insert-if-absent (a unique key)
-    and keep each jti until its exp has passed."""
+    """For tests and examples. A real store does an atomic insert-if-absent."""
 
     def __init__(self, seen: Sequence[str] = ()) -> None:
         self._seen: dict[str, int] = {j: 0 for j in seen}

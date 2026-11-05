@@ -1,7 +1,4 @@
-"""Status lists (spec section 7.5): how a signer publishes which Mandates it has revoked. The list is a bitstring in the
-W3C Bitstring Status List encoding (GZIP, then multibase base64url with prefix "u"; index 0 is the left-most bit; at
-least 16 KB uncompressed), carried in a signed OAC object (typ oac-status+jws) by the same signer that signs Mandates.
-A Mandate names its entry: "status": {"list": <list id>, "index": <n>}."""
+"""Status lists (spec 7.5): which Mandates a signer revoked, as a W3C bitstring."""
 
 from __future__ import annotations
 
@@ -60,8 +57,7 @@ def make_status_list(*, key: SigningKey, iss: str, list_id: str, revoked: Iterab
 
 
 def is_revoked(mandate: Mapping[str, Any], *, lists: Mapping[str, str], keys: KeySet, now: int) -> bool:
-    """For a Mandate that carries `status`: find its list among `lists` (list id -> token), verify it is the
-    Mandate's own signer's, still fresh, then read the bit. Missing, stale or foreign list = status_unknown."""
+    """A missing, stale or foreign list is status_unknown, never a pass."""
     entry = mandate.get("status")
     if entry is None:
         return False

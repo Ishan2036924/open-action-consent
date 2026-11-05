@@ -1,5 +1,4 @@
-// Error codes shared by every OAC implementation (spec section 9). A verifier reports exactly one code: the first
-// check that fails, in the order the spec lists them.
+// Error codes shared by every OAC implementation.
 
 export const CODES = new Set([
   "malformed", "not_canonical", "bad_type", "bad_alg", "unknown_key", "bad_signature",
@@ -10,9 +9,9 @@ export const CODES = new Set([
   "payee_not_allowed", "site_not_allowed", "currency_mismatch", "over_amount", "over_daily_amount", "over_calls",
   "chain_broken", "chain_seq", "chain_issuer", "receipt_invalid", "receipt_mismatch", "not_reversible",
   "undo_mode_mismatch", "undo_window_closed",
-  // added after the 2026-11-04 review
+  // identity, arguments, revocation, undo
   "wrong_issuer", "undeclared_argument", "revoked", "already_undone", "compensation_mismatch",
-  // 0.1 gap closers: status lists and seals
+  // status lists and seals
   "status_unknown", "seal_mismatch",
   // device proofs (WebAuthn)
   "device_proof_missing", "device_proof_mismatch", "unknown_credential", "challenge_mismatch", "wrong_origin",

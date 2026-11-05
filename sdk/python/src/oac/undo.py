@@ -1,6 +1,4 @@
-"""Undo requests (spec section 8.3): the person asks the executor to take one receipt's action back. `native` restores
-the prior state inside the window; `compensate` runs a new action (cancel, refund) that needs its own verified Consent,
-whose action names the receipt; `none` cannot be undone. A receipt is undone at most once."""
+"""Undo requests (spec 8.3)."""
 
 from __future__ import annotations
 
@@ -60,9 +58,7 @@ def check_undo(
     undone: Collection[str] = (),
     compensation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """`undone` = token digests of receipts this executor already undid. For `compensate`, `compensation` is
-    {"consent": <payload returned by verify_consent>, "action": <the compensating action>}, whose args must carry
-    "undoes": <this receipt's token digest>."""
+    """undone: digests of receipts already undone. compensation: {"consent": ..., "action": ...}."""
     p = verify(token, keys, TYP)
     shapes.undo_request(p)
     if p["aud"] != executor:

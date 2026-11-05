@@ -1,6 +1,4 @@
-"""Conformance runner: `python -m oac.conformance <vectors dir>`. Runs every case in vectors/*.json against this SDK and
-exits non-zero if any result differs from the expected one. The case format is in conformance/README.md; the
-TypeScript SDK runs the same files."""
+"""Run the shared vectors: python -m oac.conformance vectors"""
 
 from __future__ import annotations
 

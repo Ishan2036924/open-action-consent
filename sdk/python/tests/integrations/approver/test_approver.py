@@ -1,5 +1,4 @@
-"""The Approver end to end in a real headless Chromium: enrol a browser key, approve and decline previews; the
-browser-made Consent must verify with the Python SDK exactly like any other."""
+"""The Approver in a real headless Chromium."""
 
 from __future__ import annotations
 
@@ -61,8 +60,7 @@ def world() -> Any:
 
 
 def status(page: Any) -> str:
-    """Wait for the page's status line (polled from outside: the page's CSP forbids eval, which Playwright's
-    wait_for_function would need)."""
+    """Poll the status line. The page's CSP blocks the eval wait_for_function needs."""
     for _ in range(100):
         text = page.text_content("#status") or ""
         if text:

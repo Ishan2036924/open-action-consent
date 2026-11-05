@@ -1,5 +1,4 @@
-// Receipts (spec section 8): the executor's signed record of each action, chained per person. prev = digest of the
-// previous receipt's whole token, so a dropped, reordered or edited receipt breaks the chain. Mirrors receipts.py.
+// Receipts (spec 8): the executor's signed record of each action, chained per person.
 
 import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";

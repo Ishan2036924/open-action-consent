@@ -1,15 +1,4 @@
-"""OAC for LangGraph (1.2+). Install: pip install "open-action-consent[langgraph]". Use `gated` inside any node that acts for a person:
-
-    def book(state):
-        result = gated(gate, "book_table", state["args"], book_table, person=state["person"], tainted=state["tainted"])
-        return {"result": result}
-
-Tier A/B run at once (B with a receipt). Tier C pauses the graph with LangGraph's `interrupt`, carrying the OAC
-Preview: `{"oac": "consent", "preview": {...}}`. Resume with `Command(resume={"consent": "<signed JWS>"})`; the action
-runs only if that Consent verifies for exactly this action, otherwise the node returns NOT_APPROVED and nothing runs.
-LangGraph re-runs the node from the top on resume; the Gate reuses the pending Preview, so the person's signature
-still matches.
-"""
+"""OAC for LangGraph: tier C pauses the graph with interrupt. See guides/langgraph.md."""
 
 from __future__ import annotations
 

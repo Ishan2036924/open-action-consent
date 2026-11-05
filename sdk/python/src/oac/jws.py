@@ -1,10 +1,4 @@
-"""Keys, digests and the JWS envelope (RFC 7515 compact) every signed OAC object uses.
-
-Header = exactly {alg, kid, typ}, itself JCS-canonical. Payload = JCS-canonical JSON. A verifier refuses a token whose
-header or payload bytes are not the canonical form of what they parse to, so one object has one encoding.
-Algorithms: EdDSA (Ed25519, RFC 8037) and ES256 (P-256, raw r||s, low-S only so one payload has one signature).
-kid = the RFC 7638 JWK thumbprint. Every trusted key belongs to exactly one issuer, and a token's `iss` must be its
-key's issuer."""
+"""Keys, digests and the compact JWS envelope used by every signed OAC object."""
 
 from __future__ import annotations
 
@@ -108,8 +102,7 @@ def generate(alg: str = "EdDSA") -> SigningKey:
 
 
 class KeySet:
-    """Public keys a verifier trusts, grouped by the issuer each belongs to: {iss: [jwk, ...]}. A kid maps to one
-    key and one issuer; a token signed by that key must name that issuer."""
+    """Trusted public keys, grouped by issuer: {iss: [jwk, ...]}. Each key has one issuer."""
 
     def __init__(self, by_issuer: Mapping[str, Iterable[Mapping[str, Any]]]) -> None:
         self._keys: dict[str, tuple[dict[str, Any], str]] = {}

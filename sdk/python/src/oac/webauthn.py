@@ -21,8 +21,7 @@ USER_PRESENT, USER_VERIFIED = 0x01, 0x04
 
 @dataclass(frozen=True)
 class DeviceCheck:
-    """Set by an executor that requires a passkey: the proof it got, the person's credentials (id -> public JWK),
-    its relying party id, and the origins its approval page runs on."""
+    """What an executor that requires a passkey knows about the person and itself."""
 
     proof: Mapping[str, Any] | None
     credentials: Mapping[str, Mapping[str, Any]]

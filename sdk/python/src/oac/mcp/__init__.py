@@ -1,21 +1,4 @@
-"""OAC for the official MCP Python SDK (`mcp` 2.x, protocol 2026-07-28). Install: pip install "open-action-consent[mcp]".
-
-Add it to any `MCPServer` in a few lines:
-
-    oac = OACExtension(executor="https://tables.example/oac", key=executor_key, signers=signer_keys,
-                       consent_url=lambda preview: f"https://signer.example/consent?r={preview['id']}",
-                       person=lambda ctx: current_user_id(ctx))
-    server = MCPServer("tables", extensions=[oac])
-
-    @server.tool(meta=oac.profile("book_table", effect="write", undo="compensate", window_s=86400,
-                                  binds={"payee": "restaurant", "when": "time", "count": "party"}))
-    async def book_table(restaurant: str, time: str, party: int) -> str: ...
-
-Every tool call then passes OAC's checks (spec/mcp-extension.md): tier A and B run (B with a receipt and an undo
-token), tier C asks the person through a URL-mode elicitation and runs only with a valid signed Consent, tier D and
-tools without a profile never run. The result carries the signed receipt in `_meta["com.atlasiw/oac-receipt"]`.
-The SDK already seals `requestState` (integrity, expiry, principal); OAC keeps only digests in it.
-"""
+"""OAC extension for the official MCP Python SDK. See guides/mcp-python.md."""
 
 from __future__ import annotations
 
@@ -70,14 +53,12 @@ class OACExtension(Extension):
         inspect: Callable[[Mapping[str, Any], ServerRequestContext[Any, Any]], Any] | None = None,
         occurrences: OccurrenceStore | None = None,
     ) -> None:
-        """`inspect(action, ctx)` (optional, may be async) looks at the world the action will touch, for example a
-        browser page. It returns {"evidence": {"screenshot": digest, "dom": digest}} to seal into the Preview, or
-        {"refuse": reason}. It runs when the person is asked and again right before the action runs: if the evidence
-        changed in between (compared on the "dom" digest), the action is refused: the person approved a different page."""
+        """inspect(action, ctx) may return {"evidence": ...} or {"refuse": reason}. It runs before
+        asking and again before running; a changed page is refused."""
         self.executor, self.key, self.signers = executor, key, signers
         self._consent_url, self._person, self._clock = consent_url, person, clock
         self._summarize = summarize or (lambda a: f"{a['tool']} with {json.dumps(a['args'], sort_keys=True)}"[:500])
-        # Spec section 4: taint comes from the host, never the model; unknown = tainted.
+        # taint comes from the host, never the model; unknown means tainted
         self._tainted = tainted or (lambda ctx: True)
         self.policy_floor = policy_floor
         self._inspect_fn = inspect
@@ -88,7 +69,7 @@ class OACExtension(Extension):
         self.occurrences = occurrences or MemoryOccurrences()
         self.receipts: dict[str, list[str]] = {}  # person -> chain
 
-    # ---- setup
+    # setup
     def settings(self) -> dict[str, Any]:
         return {"version": "0.1", "executor": self.executor}
 
@@ -105,13 +86,12 @@ class OACExtension(Extension):
         self.profiles[tool] = shapes.profile(doc)
         return {PROFILE_KEY: doc}
 
-    # ---- the consent page / signer side calls these
+    # the consent page / signer side calls these
     def preview(self, preview_id: str) -> dict[str, Any] | None:
         return next((p for p in self.previews.values() if p["id"] == preview_id), None)
 
     def accept_consent(self, token: str) -> bool:
-        """Keep a Consent only if a trusted signer signed it for this executor over a pending preview; never replace a
-        kept one (a stray post cannot block the person's approval)."""
+        """Keep a valid Consent for a pending preview. Never replaces one already kept."""
         try:
             p = verify(token, self.signers, "oac-consent+jws")
             shapes.consent(p)
@@ -124,7 +104,7 @@ class OACExtension(Extension):
                 kept = True
         return kept
 
-    # ---- the interceptor
+    # the interceptor
     async def intercept_tool_call(self, params: CallToolRequestParams, ctx: ServerRequestContext[Any, Any],
                                   call_next: CallNext) -> HandlerResult:
         profile = self.profiles.get(params.name)
@@ -170,7 +150,7 @@ class OACExtension(Extension):
         token = token or meta.get(CONSENT_KEY)
         if preview is None or token is None:
             return self._ask(action, profile, person, seen.get("evidence"))
-        # "dom" is the comparable state; a screenshot is a record (pixels can differ between two captures)
+        # compare the DOM, not the screenshot: pixels differ between two captures
         if (seen.get("evidence") or {}).get("dom") != (preview.get("evidence") or {}).get("dom"):
             return _refused("Refused (page_changed): what is there now is not what the person approved. Nothing ran.")
         claimed = None
@@ -189,8 +169,7 @@ class OACExtension(Extension):
     async def _run(self, ctx: ServerRequestContext[Any, Any], call_next: CallNext, person: str,
                    profile: Mapping[str, Any], action: Mapping[str, Any], tier: str, authority: dict[str, Any],
                    preview_digest: str | None, claimed: Key | None) -> HandlerResult:
-        # With an occurrence, an error is an unknown outcome unless the tool says it surely failed
-        # (_meta OUTCOME_KEY = "failed"): a timed-out payment may still have gone through.
+        # a timed-out payment may still have gone through, so an error is "unknown" unless the tool says "failed"
         try:
             result = await call_next(ctx)
         except Exception:

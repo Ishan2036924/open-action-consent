@@ -1,8 +1,4 @@
-// OAC for the Vercel AI SDK (ai 7): import from "open-action-consent/vercel-ai". The SDK can pause a tool call for approval (`toolApproval` -> a
-// `tool-approval-request`) and resume when a `tool-approval-response` with `approved: true` is sent back. That
-// approval is a boolean (optionally HMAC-signed by the server). `withOAC` adds OAC: tier C (computed, not the
-// model's say) asks for approval with the Preview's summary as the reason, and the tool's execute runs only if the
-// person's signed Consent verifies for exactly this call; an approval without it runs nothing.
+// OAC for the Vercel AI SDK: an approval runs nothing without a signed Consent. See guides/vercel-ai.md.
 
 import { Gate, NeedsConsent, OACError, type ProfileSpec } from "../index.ts";
 
@@ -12,7 +8,7 @@ type AnyTool = { execute?: (input: any, options: any) => any; [k: string]: any }
 
 export function withOAC<T extends Record<string, AnyTool>>(gate: Gate, tools: T, profiles: { [K in keyof T]: ProfileSpec },
   o: { person: string; tainted?: () => boolean }): { tools: T; toolApproval: (opts: { toolCall: any }) => Promise<any> } {
-  const tainted = o.tainted ?? (() => true); // spec section 4: unknown = tainted
+  const tainted = o.tainted ?? (() => true); // unknown means tainted
   const wrapped: Record<string, AnyTool> = {};
   for (const [name, t] of Object.entries(tools)) {
     gate.profile(name, profiles[name as keyof T]);

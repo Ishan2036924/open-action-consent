@@ -1,16 +1,12 @@
-"""A framework-neutral executor gate: the part every agent framework adapter shares (OpenAI Agents SDK, LangGraph,
-custom loops). It decides the tier, builds and remembers the Preview, keeps Consents handed over by the person's
-signer, verifies the Consent right before the action, runs it, and appends the signed Receipt.
+"""Executor gate shared by the framework adapters.
 
     gate = Gate(executor="https://app.example/oac", key=executor_key, signers=signer_keys)
     gate.profile("send_email", effect="send", binds={"to": "to", "title": "subject"}, other_args=["body"])
     try:
-        result, receipt = gate.run("send_email", args, send, person="person:1", tainted=True)
+        result, receipt = gate.run("send_email", args, send, person="person:1")
     except NeedsConsent as ask:
-        show(ask.preview)  # the person's signer signs a Consent over it -> gate.accept_consent(token) -> run again
-
-A pending Preview is reused for the same person and action until it expires, so a framework that re-runs a step
-after an interruption gets the same Preview the person approved."""
+        show(ask.preview)  # then gate.accept_consent(token) and run again
+"""
 
 from __future__ import annotations
 
@@ -39,8 +35,7 @@ class NeedsConsent(Exception):
 
 
 class ActionFailed(Exception):
-    """Raise from a tool to say the action surely did not happen. For a tool with an occurrence, any other
-    exception records the outcome as unknown, so the occurrence cannot run again until it is resolved."""
+    """Raise from a tool when the action surely did not happen. Other errors count as unknown."""
 
 
 class Gate:
@@ -105,8 +100,7 @@ class Gate:
         return next((p for p in self.pending.values() if p["id"] == preview_id), None)
 
     def accept_consent(self, token: str) -> bool:
-        """Keep a Consent only if a trusted signer signed it for this executor over a pending Preview; never
-        replace one already kept."""
+        """Keep a valid Consent for a pending Preview. Never replaces one already kept."""
         try:
             c = verify(token, self.signers, "oac-consent+jws")
             shapes.consent(c)
@@ -177,8 +171,7 @@ class Gate:
         return result, self._receipt(person, tool, args, tier, authority, pd, result, self._outcome(claimed, None))
 
     def resolve(self, tool: str, occurrence: str, *, person: str, outcome: str) -> None:
-        """Record what the provider says happened to an attempt whose outcome was unknown (ask it with the same
-        occurrence id). After "ok" the occurrence never runs again; after "failed" a fresh Consent may retry it."""
+        """Record what the provider says happened to an unknown attempt: ok or failed."""
         key = (person, tool, occurrence)
         if outcome not in ("ok", "failed") or self.occurrences.state(key) != "unknown":
             raise ValueError("only an unknown outcome can be resolved, to ok or failed")

@@ -1,10 +1,4 @@
-"""Run the Gated Browser as a local stdio MCP server for one person.
-
-    python -m oac.browser --person person:me --signer-metadata signer.json \
-        --consent-url "https://signer.example/consent?r={id}" [--allow-http 127.0.0.1] [--block linkedin.com]
-
-signer.json is the signer's issuer metadata (spec 3.5): the keys whose Consents this browser accepts. The executor
-key is created fresh for each run unless --executor-key points to a 32-byte seed file (keep it private)."""
+"""Run the Gated Browser as a stdio MCP server for one person. See guides/gated-browser.md."""
 
 from __future__ import annotations
 

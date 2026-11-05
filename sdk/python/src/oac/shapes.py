@@ -1,5 +1,4 @@
-"""Field-level checks for every OAC object: the same rules as schemas/*.schema.json, plus the few cross-field rules a
-JSON Schema cannot say (marked "rule"). Every failure is `malformed`. Unknown fields are refused."""
+"""Field checks for every OAC object. Same rules as schemas/, plus the cross-field ones."""
 
 from __future__ import annotations
 
@@ -29,13 +28,12 @@ _DIGEST = re.compile(r"^sha-256:[A-Za-z0-9_-]{43}$")
 _NONCE = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
 _CURRENCY = re.compile(r"^[A-Z]{3}$")
 _HOST = re.compile(r"^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$")
-# one bare ASCII address (no display name, no list, no header tricks); a recipient rule is an address or "@domain".
-# Explicit ASCII classes so every language reads them the same. Internationalized addresses are not in 0.1.
+# one bare ASCII address, no display name or list; a recipient rule may also be "@domain"
 _LOCAL = r"[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}"
 _DOMAIN = r"[A-Za-z0-9]([A-Za-z0-9.-]{0,188}[A-Za-z0-9])?"
 _EMAIL = re.compile(rf"^{_LOCAL}@{_DOMAIN}$")
 _ADDR = re.compile(rf"^({_LOCAL})?@{_DOMAIN}$")
-# characters that let displayed text lie (controls, bidi overrides, zero-width): refused in what a person reads
+# controls, bidi overrides and zero-width characters can make shown text lie
 _UNSAFE = re.compile("[\x00-\x1f\x7f-\x9f\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]")
 _LAST4 = re.compile(r"^[0-9]{4}$")
 _OCCURRENCE = re.compile(r"^[A-Za-z0-9_.:-]{1,128}$")
@@ -113,12 +111,10 @@ PREVIEW_FIELDS: dict[str, Check] = {
     "site": _re(_HOST),
     "count": _int(0),
 }
-# rule: a pay tool must show amount, currency and payee; a send tool must show who receives it
 REQUIRED_BINDS = {"pay": ("amount_minor", "currency", "payee"), "send": ("to",)}
 
 
 def _undo_rule(u: Mapping[str, Any], what: str) -> None:
-    # rule: "none" has no window; native and compensate stay open at least a minute
     if (u["kind"] == "none") != (u["window_s"] == 0) or (u["kind"] != "none" and u["window_s"] < 60):
         raise OACError("malformed", f"{what}: undo window does not fit its kind")
 
@@ -142,10 +138,10 @@ def profile(v: Any) -> dict[str, Any]:
         "action profile",
     )
     _undo_rule(v["undo"], "action profile")
-    if v["effect"] == "read" and v["undo"]["kind"] != "none":  # rule: a read has nothing to undo
+    if v["effect"] == "read" and v["undo"]["kind"] != "none":
         raise OACError("malformed", "action profile: a read declares undo none")
     bound = list(v.get("binds", {}).values())
-    if len(set(bound)) != len(bound) or set(bound) & set(v.get("other_args", [])):  # rule: each argument declared once
+    if len(set(bound)) != len(bound) or set(bound) & set(v.get("other_args", [])):
         raise OACError("malformed", "action profile: an argument is declared twice")
     missing = [f for f in REQUIRED_BINDS.get(v["effect"], ()) if f not in v.get("binds", {})]
     if missing:
@@ -158,8 +154,7 @@ def profile(v: Any) -> dict[str, Any]:
 
 
 def check_action(action_doc: Mapping[str, Any], prof: Mapping[str, Any]) -> None:
-    """Every argument is declared by the profile (bound or other_args); bound values are valid fields; a pay or send
-    action carries its required fields."""
+    """Every argument is declared and every bound value is a valid field."""
     binds, args = prof.get("binds", {}), action_doc["args"]
     declared = set(binds.values()) | set(prof.get("other_args", []))
     extra = sorted(set(args) - declared)
@@ -204,7 +199,7 @@ def preview(v: Any) -> dict[str, Any]:
         "preview",
     )
     _undo_rule(v["undo"], "preview")
-    if not v["iat"] < v["exp"] <= v["iat"] + PREVIEW_MAX_S:  # rule
+    if not v["iat"] < v["exp"] <= v["iat"] + PREVIEW_MAX_S:
         raise OACError("malformed", "preview: exp must be after iat and at most 15 minutes later")
     return v
 
@@ -293,7 +288,7 @@ def status_list(v: Any) -> dict[str, Any]:
         },
         "status list",
     )
-    if not v["iat"] < v["exp"] <= v["iat"] + 7 * 86400:  # rule: a list is re-issued at least weekly
+    if not v["iat"] < v["exp"] <= v["iat"] + 7 * 86400:
         raise OACError("malformed", "status list: exp must be after iat and at most 7 days later")
     return v
 
@@ -363,8 +358,7 @@ def receipt(v: Any) -> dict[str, Any]:
 
 
 def usage(v: Any) -> dict[str, int]:
-    """What a mandate already did, from the executor's own counters (spec 7.3): counts over the last 24 hours and in
-    this run (a run the executor numbered, never the agent)."""
+    """A mandate's use so far, from the executor's own counters (spec 7.3)."""
     if v is None:
         return {}
     check(v, {"calls_today": (False, _int(0)), "calls_this_run": (False, _int(0)), "amount_today_minor": (False, _int(0))}, "usage")

@@ -1,21 +1,18 @@
-// Business occurrences (spec 5.1): one order, one payment, one booking runs at most once, even across fresh
-// Consents after a timeout.
+// Business occurrences (spec 5.1): one order or payment runs at most once.
 
 import { OACError } from "./errors.ts";
 
 export type OccurrenceKey = [person: string, tool: string, occurrence: string];
 
 export interface OccurrenceStore {
-  /** Atomically mark the key running and return null if it is new or its last attempt failed; otherwise change
-   * nothing and return its state (running, unknown or ok). */
+  /** Mark the key running and return null, or return its blocking state. Must be atomic. */
   claim(key: OccurrenceKey): string | null;
   finish(key: OccurrenceKey, outcome: string): void;
-  /** Drop a claim whose action never started (for example, the Consent was refused). */
   release(key: OccurrenceKey): void;
   state(key: OccurrenceKey): string | null;
 }
 
-/** For tests and examples. A production store keeps the same states in a table with a unique key. */
+/** For tests and examples. A real store keeps these states in a table with a unique key. */
 export class MemoryOccurrences implements OccurrenceStore {
   private s = new Map<string, string>();
   constructor(states: Iterable<[OccurrenceKey, string]> = []) { for (const [k, v] of states) this.s.set(JSON.stringify(k), v); }

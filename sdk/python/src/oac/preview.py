@@ -1,6 +1,4 @@
-"""Actions and Previews (spec sections 3 and 5). An action is {tool, args}; a Preview is what the executor shows the
-person before a yes. Every argument is declared by the tool's Action Profile: a bound one appears as a checked field,
-any other one appears unchanged in `details`. So everything that will run is something the person was shown."""
+"""Actions and Previews (spec 5 and 6.1)."""
 
 from __future__ import annotations
 
@@ -62,8 +60,7 @@ def build_preview(
 
 
 def check_binding(preview: Mapping[str, Any], action: Mapping[str, Any], profile: Mapping[str, Any]) -> None:
-    """Raise unless the action is one the profile declares (undeclared_argument / malformed) and every Preview field
-    and detail equals its argument and the undo shown is the profile's own (binding_mismatch)."""
+    """Every shown field and detail must equal its argument, and the undo must be the profile's."""
     shapes.check_action(action, profile)
     binds: Mapping[str, str] = profile.get("binds", {})
     fields: Mapping[str, Any] = preview["fields"]

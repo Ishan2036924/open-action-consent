@@ -1,5 +1,4 @@
-// Consent (spec section 6): the person's signed yes to one or more Previews. Checks run in the spec's order; the
-// first failure is the one reported. Mirrors consent.py.
+// Consents (spec 6): the person's signed yes to one or more Previews.
 
 import * as crypto from "node:crypto";
 import * as shapes from "./shapes.ts";

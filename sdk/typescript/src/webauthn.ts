@@ -8,8 +8,7 @@ import { b64url, b64urlDecode, tokenDigest, type Jwk } from "./jws.ts";
 
 export const USER_PRESENT = 0x01, USER_VERIFIED = 0x04;
 
-/** Set by an executor that requires a passkey: the proof it got, the person's credentials (id -> public JWK),
- * its relying party id, and the origins its approval page runs on. */
+/** What an executor that requires a passkey knows about the person and itself. */
 export type DeviceCheck = { proof: Record<string, any> | null; credentials: Record<string, Jwk>; rp_id: string; origins: string[] };
 
 /** The WebAuthn challenge for a Consent: SHA-256 of the token's ASCII bytes, base64url. */

@@ -95,8 +95,7 @@ async def test_a_forged_consent_is_not_accepted() -> None:
 
 
 async def test_an_extra_argument_never_reaches_the_tool_or_the_preview() -> None:
-    """The SDK's schema validation drops an argument the function does not take (a hidden bcc) before OAC sees it;
-    the Preview the person approves is then exactly the call that would run."""
+    """The SDK drops an argument the function does not take before OAC sees it."""
     gate, key, agent, sent = world({**ARGS, "bcc": ["boss@evil.test"]})
     result = await Runner.run(agent, "email Sam")
     p = preview_for(gate, result.interruptions[0], agent.tools[0], person=PERSON)

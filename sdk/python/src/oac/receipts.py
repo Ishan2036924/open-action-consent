@@ -1,5 +1,4 @@
-"""Receipts (spec section 8): the executor's signed record of each action, chained per person. `prev` is the digest of
-the previous receipt's whole token, so a dropped, reordered or edited receipt breaks the chain."""
+"""Receipts (spec 8): the executor's signed record of each action, chained per person."""
 
 from __future__ import annotations
 
@@ -21,8 +20,7 @@ def make_receipt(*, key: SigningKey, payload: Mapping[str, Any]) -> str:
 
 
 def check_semantics(r: Mapping[str, Any]) -> None:
-    """Rules a schema cannot say: D never runs; B always carries a live Undo (except an undo receipt itself); C names a
-    Consent, a Mandate or a signed Undo request."""
+    """Receipt rules a schema cannot express."""
     tier, kind, undo = r["tier"], r["authority"]["kind"], r["undo"]
     if tier == "D":
         raise OACError("receipt_invalid", "a tier D action never runs")
@@ -57,9 +55,7 @@ def verify_chain(
     seals: Sequence[str] = (),
     seal_keys: KeySet | None = None,
 ) -> list[dict[str, Any]]:
-    """Verify an export: every signature, every link, contiguous seq. A chain may start mid-way (seq > 1) when it is
-    an export from a known point; seq 1 has prev null. Each seal (signed by the person's signer) must name a receipt
-    in this export by its seq and token digest: a rewritten or forked history then fails (seal_mismatch)."""
+    """Verify an export of receipts and any seals over it. It may start after seq 1."""
     out: list[dict[str, Any]] = []
     done: set[tuple[str, str]] = set()
     for i, token in enumerate(tokens):

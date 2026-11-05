@@ -1,9 +1,4 @@
-"""RFC 8785 (JCS) canonical JSON for the OAC subset, plus a strict parser.
-
-OAC objects carry no non-integer numbers: money is integer minor units, times are integer unix seconds. With that rule
-JCS reduces to: object keys sorted by their UTF-16 code units, no whitespace, strings escaped as ECMAScript
-JSON.stringify does, integers in plain decimal. Integers must stay within +-(2**53 - 1) so every language reads them
-exactly."""
+"""RFC 8785 canonical JSON for OAC's integer-only subset, and a strict parser."""
 
 from __future__ import annotations
 

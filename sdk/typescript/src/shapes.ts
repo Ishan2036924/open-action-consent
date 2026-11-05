@@ -1,5 +1,4 @@
-// Field-level checks for every OAC object: the same rules as schemas/*.schema.json plus the cross-field rules a JSON
-// Schema cannot say (marked "rule"). Every failure is `malformed`. Unknown fields are refused. Mirrors shapes.py.
+// Field checks for every OAC object. Same rules as schemas/, plus the cross-field ones.
 
 import { OACError } from "./errors.ts";
 import { canonical } from "./jcs.ts";
@@ -53,12 +52,12 @@ const DIGEST = re(/^sha-256:[A-Za-z0-9_-]{43}$/);
 const NONCE = re(/^[A-Za-z0-9_-]{16,128}$/);
 const CURRENCY = re(/^[A-Z]{3}$/);
 const HOST = re(/^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$/);
-// one bare ASCII address; a recipient rule is an address or "@domain" (same classes as shapes.py)
+// one bare ASCII address, no display name or list; a recipient rule may also be "@domain"
 const LOCAL = "[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]{1,64}";
 const DOMAIN = "[A-Za-z0-9]([A-Za-z0-9.-]{0,188}[A-Za-z0-9])?";
 const EMAIL = re(new RegExp(`^${LOCAL}@${DOMAIN}$`));
 const ADDR = re(new RegExp(`^(${LOCAL})?@${DOMAIN}$`));
-// characters that let displayed text lie (controls, bidi overrides, zero-width): refused in what a person reads
+// controls, bidi overrides and zero-width characters can make shown text lie
 const UNSAFE = /[\x00-\x1f\x7f-\x9f\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/;
 const text = (lo: number, hi: number): Check => (v) => strCp(lo, hi)(v) && !UNSAFE.test(v);
 const LAST4 = re(/^[0-9]{4}$/);
@@ -76,7 +75,6 @@ export const PREVIEW_FIELDS: Record<string, Check> = {
   site: HOST,
   count: int(0),
 };
-// rule: a pay tool must show amount, currency and payee; a send tool must show who receives it
 export const REQUIRED_BINDS: Record<string, string[]> = { pay: ["amount_minor", "currency", "payee"], send: ["to"] };
 const has = (o: object, k: string) => Object.hasOwn(o, k);
 
@@ -110,7 +108,7 @@ export function profile(v: any): Record<string, any> {
   return v;
 }
 
-/** Every argument is declared (bound or other_args); bound values are valid fields; pay/send carry their fields. */
+/** Every argument is declared and every bound value is a valid field. */
 export function checkAction(actionDoc: Record<string, any>, prof: Record<string, any>): void {
   const binds: Record<string, string> = prof.binds ?? {}, args = actionDoc.args;
   const declared = new Set([...Object.values(binds), ...(prof.other_args ?? [])]);

@@ -1,5 +1,4 @@
-// Conformance runner: `node src/conformance.ts <vectors dir>`. Runs every case in vectors/*.json and exits non-zero
-// if any result differs from the expected one. Same files as the Python runner.
+// Run the shared vectors: node src/conformance.ts vectors
 
 import * as fs from "node:fs";
 import * as path from "node:path";

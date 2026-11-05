@@ -1,8 +1,4 @@
-// OAC for the official MCP TypeScript SDK v2 (@modelcontextprotocol/server 2.4+): import from "open-action-consent/mcp". The SDK has no tool-call
-// interceptor, so OAC wraps each tool: `oac.registerTool(server, name, config, profile, handler)`.
-// Tier A/B run (B with a receipt and undo token); tier C answers input_required with a URL-mode elicitation and
-// runs only with a valid signed Consent; tier D, unprofiled tools and undeclared arguments never run. Unlike the
-// Python SDK, v2 does not integrity-protect requestState, so OAC signs its own (HMAC-SHA256, short expiry).
+// OAC for the MCP TypeScript SDK v2. The SDK has no interceptor, so this wraps each tool. See guides/mcp-typescript.md.
 
 import * as crypto from "node:crypto";
 import { inputRequired, inputResponse, type McpServer } from "@modelcontextprotocol/server";
@@ -23,7 +19,7 @@ export interface OACOptions {
   executor: string; key: SigningKey; signers: KeySet;
   consentUrl: (preview: Record<string, any>) => string;
   person: (ctx: Ctx) => string;
-  /** From the host runtime, never the model; default: tainted (spec section 4). */
+  /** From the host, never the model. Defaults to tainted. */
   tainted?: (ctx: Ctx) => boolean;
   summarize?: (action: Record<string, any>) => string;
   policyFloor?: string;
@@ -69,7 +65,7 @@ export class OAC {
 
   preview(id: string): Record<string, any> | undefined { return [...this.previews.values()].find((p) => p.id === id); }
 
-  /** The signer page hands over a Consent: kept only if valid for this executor over a pending preview, never replaced. */
+  /** Keep a valid Consent for a pending preview. Never replaces one already kept. */
   acceptConsent(token: string): boolean {
     let p: Record<string, any>;
     try { p = verify(token, this.o.signers, "oac-consent+jws"); shapes.consent(p); } catch { return false; }
@@ -118,8 +114,7 @@ export class OAC {
     if (!clientCaps?.extensions?.[ID]) missing.extensions = { [ID]: {} };
     if (!clientCaps?.elicitation?.url) missing.elicitation = { url: {} };
     if (Object.keys(missing).length) {
-      // spec mcp-extension 6: never run without a consent page. The v2 SDK turns errors thrown in a tool into tool
-      // results, so the -32021 data travels in the refusal instead of as a protocol error.
+      // the v2 SDK turns thrown errors into tool results, so -32021 travels in the refusal
       return { ...refused("Refused (-32021): this client cannot show an approval page (needs the OAC extension and URL elicitation). Nothing ran."),
         _meta: { [`${ID}-missing`]: missing } };
     }
@@ -145,8 +140,7 @@ export class OAC {
     return this.run(handler, args, ctx, person, profile, action, "C", authority, digest(preview), claimed);
   }
 
-  // With an occurrence, an error is an unknown outcome unless the tool says it surely failed
-  // (_meta[OUTCOME_KEY] = "failed"): a timed-out payment may still have gone through.
+  // a timed-out payment may still have gone through, so an error is "unknown" unless the tool says "failed"
   private async run(handler: (args: any, ctx: Ctx) => Promise<Result>, args: Record<string, unknown>, ctx: Ctx, person: string,
     profile: Record<string, any>, action: Record<string, any>, tier: string, authority: Record<string, unknown>,
     previewDigest: string | null, claimed: OccurrenceKey | null): Promise<Result> {
@@ -167,7 +161,7 @@ export class OAC {
     return outcome;
   }
 
-  /** Record what the provider says happened to an attempt whose outcome was unknown. */
+  /** Record what the provider says happened to an unknown attempt: ok or failed. */
   resolve(tool: string, occurrence: string, o: { person: string; outcome: "ok" | "failed" }): void {
     const key: OccurrenceKey = [o.person, tool, occurrence];
     if ((o.outcome !== "ok" && o.outcome !== "failed") || this.occurrences.state(key) !== "unknown") {

@@ -1,5 +1,4 @@
-"""Every shared vector passes, and the runner really fails when a safety check is switched off (planted defects:
-each mutation below must turn at least one named vector red)."""
+"""All vectors pass, and switching off a check turns named vectors red."""
 
 from __future__ import annotations
 
