@@ -1,6 +1,6 @@
 {
   "name": "open-action-consent",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Open Action Consent: a verifiable yes for actions AI agents take for people. Core SDK plus MCP (SDK v2) and Vercel AI SDK integrations.",
   "license": "Apache-2.0",
   "type": "module",
@@ -38,8 +38,7 @@
     "directory": "sdk/typescript"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "homepage": "https://github.com/Ishan2036924/open-action-consent",
   "peerDependencies": {

@@ -1,7 +1,8 @@
 name: release
 
-# Publishes `open-action-consent` to PyPI and npm when a version tag (v0.2.0, ...) is pushed. No passwords or tokens
-# are stored anywhere: PyPI and npm trust this repository's workflow directly ("trusted publishing"). See RELEASING.md.
+# Publishes `open-action-consent` to PyPI, and stages it on npm for a maintainer's approval, when a version tag (v0.2.0,
+# ...) is pushed. No passwords or tokens are stored anywhere: PyPI and npm trust this repository's workflow directly
+# ("trusted publishing"). See RELEASING.md.
 on:
   push:
     tags: ["v*"]
@@ -51,8 +52,10 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run build
       - run: npm test
-      - name: publish (skipped if this version is already on npm)
+      # npm only lets this workflow *stage* a version; a maintainer then approves it on npmjs.com (Staged Packages tab,
+      # two-factor login), so a compromised workflow alone cannot release anything. Needs npm 11.15 or newer.
+      - name: stage for approval (skipped if this version is already on npm)
         run: |
           version=$(node -p "require('./package.json').version")
           if npm view "open-action-consent@$version" version >/dev/null 2>&1; then echo "skip: already published"; exit 0; fi
-          npm publish --access public
+          npm stage publish --access public --provenance

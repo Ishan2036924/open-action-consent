@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 (2026-11-05)
+
+No code or protocol changes.
+
+- npm releases are now staged by the release workflow and go live only after a maintainer approves them (two-factor
+  login); PyPI keeps publishing directly through trusted publishing.
+- Package metadata now names the author.
+
 ## 0.2.0 (2026-11-05)
 
 Same protocol (OAC 0.1). Everything now ships as one package per language, with optional parts.
