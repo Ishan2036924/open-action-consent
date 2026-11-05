@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 (unreleased)
+## 0.3.0 (2026-11-05)
 
 Changes from an outside review. Breaking for receipts and for `pay` tool profiles.
 
