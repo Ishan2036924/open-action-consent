@@ -4,6 +4,9 @@
 
 - `integrations/mcp-python`: OAC as an extension for the official MCP Python SDK (`mcp` 2.3, protocol 2026-07-28).
 - `integrations/mcp-typescript`: OAC tool wrapper for the official MCP TypeScript SDK v2 (2.4).
+- `integrations/gated-browser`: an MCP browser that stops before every final click; page-change detection, CAPTCHA
+  hand-off, no secrets typed, private-address guard on every request.
+- `oac-mcp`: optional `inspect` hook seals evidence (page digests) into the Preview and refuses if it changed.
 
 ## 0.1.0 (2026-11-04)
 

@@ -19,9 +19,10 @@ The SDK already seals `requestState` (integrity, expiry, principal); OAC keeps o
 
 from __future__ import annotations
 
+import inspect as _inspect
 import json
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 
 from mcp.server.context import CallNext, HandlerResult, ServerRequestContext
@@ -61,13 +62,19 @@ class OACExtension(Extension):
         tainted: Callable[[ServerRequestContext[Any, Any]], bool] | None = None,
         policy_floor: str = "A",
         clock: Callable[[], int] = lambda: int(time.time()),
+        inspect: Callable[[Mapping[str, Any], ServerRequestContext[Any, Any]], Any] | None = None,
     ) -> None:
+        """`inspect(action, ctx)` (optional, may be async) looks at the world the action will touch, for example a
+        browser page. It returns {"evidence": {"screenshot": digest, "dom": digest}} to seal into the Preview, or
+        {"refuse": reason}. It runs when the person is asked and again right before the action runs: if the evidence
+        changed in between (compared on the "dom" digest), the action is refused: the person approved a different page."""
         self.executor, self.key, self.signers = executor, key, signers
         self._consent_url, self._person, self._clock = consent_url, person, clock
         self._summarize = summarize or (lambda a: f"{a['tool']} with {json.dumps(a['args'], sort_keys=True)}"[:500])
         # Spec section 4: taint comes from the host, never the model; unknown = tainted.
         self._tainted = tainted or (lambda ctx: True)
         self.policy_floor = policy_floor
+        self._inspect_fn = inspect
         self.profiles: dict[str, dict[str, Any]] = {}
         self.previews: dict[str, dict[str, Any]] = {}  # preview digest -> preview
         self.consents: dict[str, str] = {}  # preview digest -> consent token
@@ -131,8 +138,11 @@ class OACExtension(Extension):
                 required_capabilities=ClientCapabilities(elicitation=ElicitationCapability(url=UrlElicitationCapability())))
             raise MCPError(code=MISSING_REQUIRED_CLIENT_CAPABILITY, message="OAC needs URL-mode elicitation",
                            data=data.model_dump(by_alias=True, mode="json", exclude_none=True))
+        seen = await self._look(action, ctx)
+        if "refuse" in seen:
+            return _refused(f"Refused: {seen['refuse']}. Nothing ran.")
         if params.request_state is None:
-            return self._ask(action, profile, person)
+            return self._ask(action, profile, person, seen.get("evidence"))
         try:
             state = json.loads(params.request_state)
         except ValueError:
@@ -145,7 +155,10 @@ class OACExtension(Extension):
         meta = dict(ctx.meta or {})
         token = token or meta.get(CONSENT_KEY)
         if preview is None or token is None:
-            return self._ask(action, profile, person)
+            return self._ask(action, profile, person, seen.get("evidence"))
+        # "dom" is the comparable state; a screenshot is a record (pixels can differ between two captures)
+        if (seen.get("evidence") or {}).get("dom") != (preview.get("evidence") or {}).get("dom"):
+            return _refused("Refused (page_changed): what is there now is not what the person approved. Nothing ran.")
         try:
             consent = verify_consent(token, keys=self.signers, executor=self.executor, sub=person, previews=[preview],
                                      actions=[action], profiles=self.profiles, now=self._clock(), nonces=self.nonces,
@@ -155,9 +168,16 @@ class OACExtension(Extension):
         return self._with_receipt(await call_next(ctx), person, profile, action, "C",
                                   {"kind": "consent", "ref": consent["jti"]}, digest(preview))
 
-    def _ask(self, action: dict[str, Any], profile: Mapping[str, Any], person: str) -> InputRequiredResult:
+    async def _look(self, action: Mapping[str, Any], ctx: ServerRequestContext[Any, Any]) -> dict[str, Any]:
+        if self._inspect_fn is None:
+            return {}
+        out = self._inspect_fn(action, ctx)
+        return (await out if _inspect.isawaitable(out) else out) or {}
+
+    def _ask(self, action: dict[str, Any], profile: Mapping[str, Any], person: str,
+             evidence: Mapping[str, Any] | None = None) -> InputRequiredResult:
         p = build_preview(profile=profile, action=action, executor=self.executor, sub=person,
-                          summary=self._summarize(action), now=self._clock())
+                          summary=self._summarize(action), now=self._clock(), evidence=evidence)
         d = digest(p)
         self.previews[d] = p
         ask = ElicitRequest(params=ElicitRequestURLParams(message="Approve: " + p["summary"], url=self._consent_url(p)))

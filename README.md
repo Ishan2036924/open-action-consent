@@ -64,6 +64,7 @@ verify_consent(consent, keys=KeySet({"signer.example": [user_key.jwk]}), executo
 | [conformance/](conformance/) | vector format and how to run it |
 | [integrations/mcp-python/](integrations/mcp-python/) | **plug-in for the official MCP Python SDK**: `MCPServer(extensions=[OACExtension(...)])` |
 | [integrations/mcp-typescript/](integrations/mcp-typescript/) | **plug-in for the official MCP TypeScript SDK v2**: `oac.registerTool(server, ...)` |
+| [integrations/gated-browser/](integrations/gated-browser/) | **Gated Browser**: an MCP browser that stops before every final click (Playwright) |
 | [examples/mcp-server/](examples/mcp-server/) | a small dependency-free MCP server using the extension, and a demo with attacks that fail |
 
 ## Check everything
