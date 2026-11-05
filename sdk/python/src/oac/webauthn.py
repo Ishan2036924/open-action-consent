@@ -44,7 +44,7 @@ def _verify_es256_der(jwk: Mapping[str, Any], data: bytes, sig: bytes) -> None:
             ec.SECP256R1(),
         ).public_key()
         pub.verify(sig, data, ec.ECDSA(hashes.SHA256()))
-    except (InvalidSignature, ValueError) as e:
+    except (InvalidSignature, ValueError, KeyError, TypeError, OACError) as e:
         raise OACError("bad_signature") from e
 
 
@@ -68,7 +68,8 @@ def verify_device_proof(consent_token: str, check: DeviceCheck) -> None:
         raise OACError("malformed", "client data is not an assertion")
     if data.get("challenge") != challenge(consent_token):
         raise OACError("challenge_mismatch")
-    if data.get("origin") not in check.origins or data.get("crossOrigin") is True:
+    origins = [check.origins] if isinstance(check.origins, str) else list(check.origins)
+    if data.get("origin") not in origins or data.get("crossOrigin") is True:
         raise OACError("wrong_origin")
     if auth[:32] != hashlib.sha256(check.rp_id.encode()).digest():
         raise OACError("rp_mismatch")

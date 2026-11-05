@@ -236,7 +236,7 @@ def consents() -> list[dict[str, Any]]:
     p_pay = pv(pay, "Pay Sweetgreen $18.00 for 1 bowl. Refund within 7 days.")
     pay_ref = {"rail": "stripe_link", "ref": "lsrq_test_123", "amount_minor": 1800, "currency": "USD", "payee": "Sweetgreen"}
     case("valid: payment matches the preview", ok(), token=consent([p_pay], payment=pay_ref, jti="n_consent_0000000003"), previews=[p_pay], actions=[pay])
-    case("valid: device key (ES256 passkey-style)", ok(), token=consent([p_book], key=DEVICE, signer_kind="device", jti="n_consent_0000000004"))
+    case("valid: ES256 device key", ok(), token=consent([p_book], key=DEVICE, signer_kind="device", jti="n_consent_0000000004"))
     case("valid: tainted run still runs with a consent", ok(), tainted=True)
 
     # envelope
@@ -580,6 +580,14 @@ def occurrences() -> list[dict[str, Any]]:
               "input": base | {"tokens": [timeout, retry]}, "expect": ok()})
     c.append({"name": "the same order paid twice under two fresh consents", "op": "verify_chain",
               "input": base | {"tokens": [timeout, retry, again]}, "expect": err("duplicate_occurrence")})
+    refund_request = make_undo(key=USER, iss=SIGNER, sub=PERSON, aud=EXECUTOR, receipt_token=retry, mode="compensate",
+                               now=NOW + 1, jti="n_undo_00000000000040", consent="n_consent_0000000043")
+    refund = make_receipt(key=EXEC, payload={
+        "iss": EXECUTOR, "sub": PERSON, "seq": 3, "prev": token_digest(retry), "iat": NOW + 2, "tool": "pay_order", "tier": "C",
+        "authority": {"kind": "undo", "ref": "n_undo_00000000000040", "digest": token_digest(refund_request)}, "action": action_digest(pay),
+        "outcome": "ok", "result": digest(None), "undo": {"kind": "none"}, "undoes": token_digest(retry), "occurrence": "ord_2231"})
+    c.append({"name": "valid: an undo receipt for a paid order is not a second payment", "op": "verify_chain",
+              "input": base | {"tokens": [timeout, retry, refund]}, "expect": ok()})
     return c
 
 

@@ -42,7 +42,8 @@ export function verifyDeviceProof(consentToken: string, check: DeviceCheck): voi
     throw new OACError("malformed", "client data is not an assertion");
   }
   if (data.challenge !== challenge(consentToken)) throw new OACError("challenge_mismatch");
-  if (!check.origins.includes(data.origin) || data.crossOrigin === true) throw new OACError("wrong_origin");
+  const origins: unknown[] = typeof check.origins === "string" ? [check.origins] : [...check.origins];
+  if (!origins.includes(data.origin) || data.crossOrigin === true) throw new OACError("wrong_origin");
   const rpHash = crypto.createHash("sha256").update(check.rp_id).digest();
   if (!Buffer.from(auth.subarray(0, 32)).equals(rpHash)) throw new OACError("rp_mismatch");
   if (!(auth[32] & USER_PRESENT)) throw new OACError("user_not_present");

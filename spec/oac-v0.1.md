@@ -2,6 +2,9 @@
 
 Status: draft. Not endorsed by any standards body. Licensed under CC-BY-4.0 (see LICENSE-SPEC).
 
+This revision (SDKs 0.3.0) is not compatible with receipts and `pay` profiles made by SDKs 0.2.x: receipts now carry
+`authority.digest` and `pay` profiles name an `occurrence`. Objects still say `"oac":"0.1"` while the draft settles.
+
 The key words MUST, MUST NOT, SHOULD, SHOULD NOT and MAY are to be read as described in RFC 2119 and RFC 8174 when,
 and only when, they appear in all capitals.
 
@@ -222,13 +225,18 @@ keeps one record per person, tool and occurrence value, with the state of its la
 1. Before it runs the action (for tier C, before it verifies the Consent, so a refusal does not use up the `jti`), the
    executor claims the record atomically: new or `failed` becomes `running`; `ok` is refused
    (`duplicate_occurrence`); `running` or `unknown` is refused (`occurrence_unresolved`). If the Consent is then
-   refused, the claim is dropped.
+   refused, the claim is dropped. An executor SHOULD make the same check before it asks the person, so nobody approves
+   something that cannot run.
 2. The executor passes the occurrence value to the provider as its idempotency key (Stripe's `Idempotency-Key`, an
    order reference), so the provider can also refuse a second attempt.
 3. When the action ends: success records `ok`; a failure the tool is sure of records `failed`; anything else (a
    timeout, a crash, an unclear error) records `unknown`. The receipt carries the same outcome.
 4. An `unknown` attempt is resolved only by asking the provider, by the same occurrence value, what happened. The
-   executor then records `ok` or `failed`. Only after `failed` may a fresh Consent run the occurrence again.
+   executor then records `ok` or `failed`. Only after `failed` may a fresh Consent run the occurrence again. A
+   `running` record left behind by a crash or a cancelled call is treated as `unknown`.
+5. The occurrence value MUST be one the provider or the executor issued for this order (a checkout, order or booking
+   id), never one the agent made up. An executor MUST refuse a value it cannot confirm with the provider
+   (`malformed`). Otherwise an agent could retry under a new id and the record would not catch it.
 
 A compensation (a refund, a cancel) is a separate action with its own Preview and Consent (8.3), never a retry.
 
@@ -280,8 +288,9 @@ Schema: `schemas/consent.schema.json`. Signed by the person's signer, `typ` `oac
 
 ### 6.3 Verifying a Consent
 
-The executor knows, from its own authentication, the person it acts for (`sub`). It MUST run these checks in
-this order and report the first failure's code:
+The executor knows, from its own authentication, the person it acts for (`sub`). If the action's profile names an
+`occurrence`, the executor first claims it (5.1: `duplicate_occurrence`, `occurrence_unresolved`). It MUST then run
+these checks in this order and report the first failure's code:
 
 1. Envelope (3.3), then the payload's fields (`malformed`).
 2. `aud` is this executor: `wrong_audience`. `sub` is the person this executor acts for: `subject_mismatch`.
@@ -400,7 +409,8 @@ Schema: `schemas/receipt.schema.json`. Signed by the executor, `typ` `oac-receip
 
 ```json
 {"oac":"0.1","type":"receipt","iss":"https://shop.example/oac","sub":"person:7f3a","seq":2,"prev":"sha-256:...",
- "iat":1793836801,"tool":"book_table","tier":"C","authority":{"kind":"consent","ref":"n_consent_0000000001"},
+ "iat":1793836801,"tool":"book_table","tier":"C",
+ "authority":{"kind":"consent","ref":"n_consent_0000000001","digest":"sha-256:..."},
  "action":"sha-256:...","preview":"sha-256:...","outcome":"ok","result":"sha-256:...",
  "undo":{"kind":"compensate","until":1793923200}}
 ```
@@ -430,7 +440,7 @@ and a store holds the details.
 rules of 8.1; `iss` is the expected executor (`chain_issuer`); same `sub` throughout (`subject_mismatch`); the first
 has `prev` null if and only if its `seq` is 1 (`chain_broken`); each later one has `seq` one more than the one before
 (`chain_seq`) and `prev` equal to its `token_digest` (`chain_broken`); no two receipts with outcome `ok` share a tool
-and an `occurrence` (`duplicate_occurrence`).
+and an `occurrence` (`duplicate_occurrence`), not counting undo receipts.
 
 **Seals.** A person's signer MAY countersign the chain from time to time with a **seal**
 (`schemas/seal.schema.json`, `typ` `oac-seal+jws`): `{iss, sub, executor, seq, head, iat}`, where `head` is the
@@ -519,7 +529,8 @@ points to it or exports to it (`mappings.md`).
 - **Signatures are not unique.** One payload can have many valid ES256 tokens (3.3). Single use comes from `jti`;
   references name exact token bytes, and those bytes are kept.
 - **Retries.** A fresh Consent cannot pay the same order twice: the occurrence record refuses it until the first
-  attempt's outcome is known (5.1).
+  attempt's outcome is known (5.1). This holds only if occurrence ids come from the provider or executor, never the
+  agent; an agent that can invent a new id can make a "new" order.
 - **Privacy.** Previews and Receipts can reveal what a person does. Store them per person, encrypted, with retention
   limits; share only what a verifier needs (digests prove a match without the content).
 - **Profiles are claims.** A tool can lie in its Action Profile (claim `native` and do something irreversible).

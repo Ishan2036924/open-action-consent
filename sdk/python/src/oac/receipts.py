@@ -74,7 +74,7 @@ def verify_chain(
                 raise OACError("chain_seq")
             if r["prev"] != token_digest(tokens[i - 1]):
                 raise OACError("chain_broken")
-        if "occurrence" in r and r["outcome"] == "ok":
+        if "occurrence" in r and r["outcome"] == "ok" and r["authority"]["kind"] != "undo":
             if (r["tool"], r["occurrence"]) in done:
                 raise OACError("duplicate_occurrence", "the same occurrence ran twice")
             done.add((r["tool"], r["occurrence"]))

@@ -21,7 +21,7 @@ except ImportError as e:  # the optional dependency is not installed
     raise ImportError('oac.mcp needs the MCP SDK: pip install "open-action-consent[mcp]"') from e
 
 from oac import KeySet, MemoryNonces, OACError, SigningKey, digest, make_receipt, shapes, tier_for, token_digest, verify, verify_consent
-from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, claim, occurrence_key
+from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, check_open, claim, occurrence_key, resolve
 from oac.preview import action_digest, build_preview
 
 ID = "com.atlasiw/oac"
@@ -68,6 +68,7 @@ class OACExtension(Extension):
         self.nonces = MemoryNonces()
         self.occurrences = occurrences or MemoryOccurrences()
         self.receipts: dict[str, list[str]] = {}  # person -> chain
+        self.tokens: dict[str, str] = {}  # authority digest in a receipt -> the exact token
 
     # setup
     def settings(self) -> dict[str, Any]:
@@ -159,10 +160,13 @@ class OACExtension(Extension):
             consent = verify_consent(token, keys=self.signers, executor=self.executor, sub=person, previews=[preview],
                                      actions=[action], profiles=self.profiles, now=self._clock(), nonces=self.nonces,
                                      policy_floor=self.policy_floor, tainted=self._tainted(ctx))
-        except OACError as e:
+        except BaseException as e:
             if claimed:
                 self.occurrences.release(claimed)
-            return _refused(f"Refused ({e.code}). Nothing ran.")
+            if isinstance(e, OACError):
+                return _refused(f"Refused ({e.code}). Nothing ran.")
+            raise
+        self.tokens[token_digest(token)] = token
         authority = {"kind": "consent", "ref": consent["jti"], "digest": token_digest(token)}
         return await self._run(ctx, call_next, person, profile, action, "C", authority, digest(preview), claimed)
 
@@ -172,7 +176,7 @@ class OACExtension(Extension):
         # a timed-out payment may still have gone through, so an error is "unknown" unless the tool says "failed"
         try:
             result = await call_next(ctx)
-        except Exception:
+        except BaseException:  # a cancelled call may still have happened
             self._with_receipt(None, person, profile, action, tier, authority, preview_digest,
                                self._finish(claimed, "unknown" if claimed else "failed"))
             raise
@@ -189,11 +193,8 @@ class OACExtension(Extension):
         return outcome
 
     def resolve(self, tool: str, occurrence: str, *, person: str, outcome: str) -> None:
-        """Record what the provider says happened to an attempt whose outcome was unknown."""
-        key = (person, tool, occurrence)
-        if outcome not in ("ok", "failed") or self.occurrences.state(key) != "unknown":
-            raise ValueError("only an unknown outcome can be resolved, to ok or failed")
-        self.occurrences.finish(key, outcome)
+        """Record what the provider says happened to an unknown attempt: ok or failed."""
+        resolve(self.occurrences, (person, tool, occurrence), outcome)
 
     async def _look(self, action: Mapping[str, Any], ctx: ServerRequestContext[Any, Any]) -> dict[str, Any]:
         if self._inspect_fn is None:
@@ -202,7 +203,11 @@ class OACExtension(Extension):
         return (await out if _inspect.isawaitable(out) else out) or {}
 
     def _ask(self, action: dict[str, Any], profile: Mapping[str, Any], person: str,
-             evidence: Mapping[str, Any] | None = None) -> InputRequiredResult:
+             evidence: Mapping[str, Any] | None = None) -> HandlerResult:
+        try:
+            check_open(self.occurrences, occurrence_key(person, profile, action["args"]))
+        except OACError as e:
+            return _refused(f"Refused ({e.code}). Nothing ran.")
         p = build_preview(profile=profile, action=action, executor=self.executor, sub=person,
                           summary=self._summarize(action), now=self._clock(), evidence=evidence)
         d = digest(p)

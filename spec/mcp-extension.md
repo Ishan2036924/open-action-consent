@@ -98,7 +98,8 @@ way; which signers it trusts is its own policy (spec 3.3).
 
 When the server requires a passkey (spec 3.6), the device proof travels with the Consent: the signer page posts it
 together with the token, or the client attaches `_meta["com.atlasiw/oac-device-proof"]: {...}`. Without a valid proof
-the server refuses with the code from spec 3.6 and runs nothing.
+the server refuses with the code from spec 3.6 and runs nothing. This key is reserved: the reference plug-ins (section
+7) do not read it yet, so a server that needs proofs checks them itself.
 
 ### 3.3 The result carries the receipt
 

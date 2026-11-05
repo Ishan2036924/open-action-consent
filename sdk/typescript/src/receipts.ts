@@ -51,7 +51,7 @@ export function verifyChain(tokens: string[], o: { keys: KeySet; executor: strin
       if (r.seq !== out[out.length - 1].seq + 1) throw new OACError("chain_seq");
       if (r.prev !== tokenDigest(tokens[i - 1])) throw new OACError("chain_broken");
     }
-    if (Object.hasOwn(r, "occurrence") && r.outcome === "ok") {
+    if (Object.hasOwn(r, "occurrence") && r.outcome === "ok" && r.authority.kind !== "undo") {
       const key = JSON.stringify([r.tool, r.occurrence]);
       if (done.has(key)) throw new OACError("duplicate_occurrence", "the same occurrence ran twice");
       done.add(key);

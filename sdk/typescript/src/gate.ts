@@ -5,7 +5,7 @@ import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";
 import { digest, KeySet, tokenDigest, verify, type SigningKey } from "./jws.ts";
 import { MemoryNonces, verifyConsent, type NonceStore } from "./consent.ts";
-import { claim, MemoryOccurrences, occurrenceKey, type OccurrenceKey, type OccurrenceStore } from "./occurrence.ts";
+import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, type OccurrenceKey, type OccurrenceStore } from "./occurrence.ts";
 import { actionDigest, buildPreview } from "./preview.ts";
 import { makeReceipt } from "./receipts.ts";
 import { tierFor } from "./tiers.ts";
@@ -31,6 +31,7 @@ export class Gate {
   readonly pending = new Map<string, Record<string, any>>(); // person \0 action digest -> preview
   readonly consents = new Map<string, string>();
   readonly receipts = new Map<string, string[]>();
+  readonly tokens = new Map<string, string>(); // authority digest in a receipt -> the exact token
   private readonly clock: () => number;
   private readonly summarize: (a: Record<string, any>) => string;
 
@@ -99,7 +100,10 @@ export class Gate {
     const preview = this.preview(tool, args, person);
     const pd = digest(preview);
     const token = this.consents.get(pd);
-    if (!token) throw new NeedsConsent(preview);
+    if (!token) {
+      checkOpen(this.occurrences, occurrence);
+      throw new NeedsConsent(preview);
+    }
     const claimed = claim(this.occurrences, occurrence);
     let c: Record<string, any>;
     try {
@@ -110,6 +114,7 @@ export class Gate {
       throw e;
     }
     this.pending.delete(person + "\0" + actionDigest(action));
+    this.tokens.set(tokenDigest(token), token);
     return ["C", { kind: "consent", ref: c.jti, digest: tokenDigest(token) }, pd, claimed];
   }
 
@@ -134,11 +139,7 @@ export class Gate {
 
   /** Record what the provider says happened to an unknown attempt: ok or failed. */
   resolve(tool: string, occurrence: string, o: { person: string; outcome: "ok" | "failed" }): void {
-    const key: OccurrenceKey = [o.person, tool, occurrence];
-    if ((o.outcome !== "ok" && o.outcome !== "failed") || this.occurrences.state(key) !== "unknown") {
-      throw new Error("only an unknown outcome can be resolved, to ok or failed");
-    }
-    this.occurrences.finish(key, o.outcome);
+    resolve(this.occurrences, [o.person, tool, occurrence], o.outcome);
   }
 
   private receipt(person: string, tool: string, args: Record<string, unknown>, tier: string, authority: Record<string, unknown>,

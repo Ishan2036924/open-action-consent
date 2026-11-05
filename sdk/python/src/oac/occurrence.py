@@ -19,6 +19,7 @@ class OccurrenceStore(Protocol):
     def finish(self, key: Key, outcome: str) -> None: ...
 
     def release(self, key: Key) -> None:
+        """Drop a claim whose action never started."""
         ...
 
     def state(self, key: Key) -> str | None: ...
@@ -56,12 +57,28 @@ def occurrence_key(person: str, profile: Mapping[str, Any], args: Mapping[str, A
     return None if name is None else (person, profile["tool"], args[name])
 
 
+def _refuse(state: str | None) -> None:
+    if state == "ok":
+        raise OACError("duplicate_occurrence", "this occurrence already ran")
+    if state in ("running", "unknown"):
+        raise OACError("occurrence_unresolved", "an earlier attempt has no known outcome yet")
+
+
+def check_open(store: OccurrenceStore, key: Key | None) -> None:
+    """Refuse early, before the person is asked, when the occurrence cannot run now."""
+    if key is not None:
+        _refuse(store.state(key))
+
+
 def claim(store: OccurrenceStore, key: Key | None) -> Key | None:
     if key is None:
         return None
-    state = store.claim(key)
-    if state == "ok":
-        raise OACError("duplicate_occurrence", "this occurrence already ran")
-    if state is not None:
-        raise OACError("occurrence_unresolved", "an earlier attempt has no known outcome yet")
+    _refuse(store.claim(key))
     return key
+
+
+def resolve(store: OccurrenceStore, key: Key, outcome: str) -> None:
+    """Record what the provider says happened. A "running" record left by a crash counts as unknown."""
+    if outcome not in ("ok", "failed") or store.state(key) not in ("running", "unknown"):
+        raise ValueError("only an attempt with no known outcome can be resolved, to ok or failed")
+    store.finish(key, outcome)

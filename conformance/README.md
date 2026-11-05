@@ -18,17 +18,19 @@ op-specific value. Ops:
 | `tier` | `profile`, `policy_floor`, `tainted`, `hint` | `{"tier": "A".."D"}` |
 | `profile` | `profile` | ok / error |
 | `binding` | `preview`, `action`, `profile` | ok / error |
-| `verify_consent` | `token`, `keys`, `executor`, `sub`, `previews`, `actions`, `profiles`, `now`, `seen_nonces`, `policy_floor`, `tainted` | ok / error |
+| `verify_consent` | `token`, `keys`, `executor`, `sub`, `previews`, `actions`, `profiles`, `now`, `seen_nonces`, `policy_floor`, `tainted`, `device` | ok / error |
 | `check_mandate` | `token`, `keys`, `action`, `profile`, `holder`, `sub`, `now`, `tainted`, `usage`, `revoked` | ok / error |
 | `loosens` | `old`, `new` (mandate payloads) | `{"reasons": [sorted]}` |
 | `verify_chain` | `tokens`, `keys`, `executor`, `sub` | ok / error |
 | `check_undo` | `token`, `keys`, `executor`, `receipt_token`, `receipt_keys`, `now`, `seen_nonces`, `undone`, `compensation` | ok / error |
-
+| `claim_occurrence` | `state` (`null`, `running`, `failed`, `unknown` or `ok`: the last attempt's state) | ok / error |
 | `status_bit` | `encoded_list`, `index` | `{"revoked": bool}` |
 | `metadata_url` | `iss` | `{"url": string}` |
 | `keyset_from` | `docs` ([[iss, metadata], ...]), `kid` | `{"issuer": string}` |
 
 `check_mandate` also takes `status_lists` ({list id: token}); `verify_chain` takes `seals` and `seal_keys`.
+`verify_consent`'s optional `device` is `{"proof": <device proof or null>, "credentials": {id: JWK}, "rp_id", "origins"}`
+(spec 3.6); when present, the executor requires a device proof.
 `keys` are grouped by issuer: `{"<iss>": [<public JWK>, ...]}`. Vector files are read with the strict parser.
 
 Test keys: `key` labels map to `sha-256("oac-v0.1 test key: " + label)` as the Ed25519 seed (ES256: that value

@@ -3,7 +3,7 @@
 import * as crypto from "node:crypto";
 import { inputRequired, inputResponse, type McpServer } from "@modelcontextprotocol/server";
 import { actionDigest, buildPreview, digest, KeySet, makeReceipt, MemoryNonces, OACError, shapes, tierFor, tokenDigest, verify, verifyConsent, type SigningKey } from "../index.ts";
-import { claim, MemoryOccurrences, occurrenceKey, type OccurrenceKey, type OccurrenceStore } from "../occurrence.ts";
+import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, type OccurrenceKey, type OccurrenceStore } from "../occurrence.ts";
 
 export const ID = "com.atlasiw/oac";
 export const PROFILE_KEY = `${ID}-profile`, PREVIEW_KEY = `${ID}-preview`, RECEIPT_KEY = `${ID}-receipt`, CONSENT_KEY = `${ID}-consent`;
@@ -33,6 +33,7 @@ export class OAC {
   readonly consents = new Map<string, string>();
   readonly nonces = new MemoryNonces();
   readonly receipts = new Map<string, string[]>();
+  readonly tokens = new Map<string, string>(); // authority digest in a receipt -> the exact token
   readonly occurrences: OccurrenceStore;
   private readonly stateKey = crypto.randomBytes(32);
   readonly o: OACOptions;
@@ -136,6 +137,7 @@ export class OAC {
       if (claimed) this.occurrences.release(claimed);
       return refused(`Refused (${e instanceof OACError ? e.code : "error"}). Nothing ran.`);
     }
+    this.tokens.set(tokenDigest(token), token);
     const authority = { kind: "consent", ref: consent.jti, digest: tokenDigest(token) };
     return this.run(handler, args, ctx, person, profile, action, "C", authority, digest(preview), claimed);
   }
@@ -163,14 +165,13 @@ export class OAC {
 
   /** Record what the provider says happened to an unknown attempt: ok or failed. */
   resolve(tool: string, occurrence: string, o: { person: string; outcome: "ok" | "failed" }): void {
-    const key: OccurrenceKey = [o.person, tool, occurrence];
-    if ((o.outcome !== "ok" && o.outcome !== "failed") || this.occurrences.state(key) !== "unknown") {
-      throw new Error("only an unknown outcome can be resolved, to ok or failed");
-    }
-    this.occurrences.finish(key, o.outcome);
+    resolve(this.occurrences, [o.person, tool, occurrence], o.outcome);
   }
 
   private ask(action: Record<string, any>, profile: Record<string, any>, person: string): any {
+    try { checkOpen(this.occurrences, occurrenceKey(person, profile, action.args)); } catch (e) {
+      return refused(`Refused (${e instanceof OACError ? e.code : "error"}). Nothing ran.`);
+    }
     const summarize = this.o.summarize ?? ((a) => `${a.tool} with ${JSON.stringify(a.args)}`.slice(0, 500));
     const p = buildPreview({ profile, action, executor: this.o.executor, sub: person, summary: summarize(action), now: this.now() });
     const d = digest(p);

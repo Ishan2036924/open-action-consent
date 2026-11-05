@@ -38,7 +38,7 @@ test("gate: a timed-out payment cannot be paid again until it is resolved", asyn
   const tokens: string[] = [];
   const approve = async () => {
     let p: any;
-    await assert.rejects(gate.run("pay_order", args, timeout, { person: PERSON }), (e: any) => { p = e.preview; return e instanceof NeedsConsent; });
+    await assert.rejects(gate.run("pay_order", args, () => null, { person: PERSON }), (e: any) => { p = e.preview; return e instanceof NeedsConsent; });
     tokens.push(makeConsent({ key, iss: SIGNER, sub: PERSON, aud: EX, previews: [p], now: p.iat + 1, payment }));
     assert.ok(gate.acceptConsent(tokens[tokens.length - 1]));
   };
@@ -46,15 +46,16 @@ test("gate: a timed-out payment cannot be paid again until it is resolved", asyn
 
   await approve();
   await assert.rejects(gate.run("pay_order", args, timeout, { person: PERSON }), /did not answer/);
-  await approve();
+  // nobody is asked again while the first attempt's outcome is unknown
   await assert.rejects(gate.run("pay_order", args, () => charged.push("paid"), { person: PERSON }), code("occurrence_unresolved"));
   gate.resolve("pay_order", "ord_1", { person: PERSON, outcome: "failed" });
-  await gate.run("pay_order", args, () => charged.push("paid"), { person: PERSON });
   await approve();
+  await gate.run("pay_order", args, () => charged.push("paid"), { person: PERSON });
   await assert.rejects(gate.run("pay_order", args, () => charged.push("paid"), { person: PERSON }), code("duplicate_occurrence"));
   assert.deepEqual(charged, ["paid"]);
 
   const chain = verifyChain(gate.receipts.get(PERSON)!, { keys: new KeySet({ [EX]: [gate.key.jwk] }), executor: EX });
   assert.deepEqual(chain.map((r) => r.outcome), ["unknown", "ok"]);
-  assert.deepEqual(chain.map((r) => r.authority.digest), [tokenDigest(tokens[0]), tokenDigest(tokens[1])]);
+  assert.deepEqual(chain.map((r) => gate.tokens.get(r.authority.digest)), tokens);
+  assert.deepEqual(chain.map((r) => r.authority.digest), tokens.map(tokenDigest));
 });

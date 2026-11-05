@@ -20,7 +20,7 @@ from oac import shapes
 from oac.consent import MemoryNonces, NonceStore, verify_consent
 from oac.errors import OACError
 from oac.jws import KeySet, SigningKey, digest, token_digest, verify
-from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, claim, occurrence_key
+from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, check_open, claim, occurrence_key, resolve
 from oac.preview import action_digest, build_preview
 from oac.receipts import make_receipt
 from oac.tiers import tier_for
@@ -60,6 +60,7 @@ class Gate:
         self.pending: dict[tuple[str, str], dict[str, Any]] = {}  # (person, action digest) -> preview
         self.consents: dict[str, str] = {}  # preview digest -> consent token
         self.receipts: dict[str, list[str]] = {}  # person -> chain
+        self.tokens: dict[str, str] = {}  # authority digest in a receipt -> the exact token
 
     def profile(self, tool: str, *, effect: str, undo: str = "none", window_s: int = 0, tier_floor: str = "A",
                 binds: Mapping[str, str] | None = None, other_args: list[str] | None = None,
@@ -127,6 +128,7 @@ class Gate:
         pd = digest(preview)
         token = self.consents.get(pd)
         if token is None:
+            check_open(self.occurrences, occurrence)
             raise NeedsConsent(preview)
         claimed = claim(self.occurrences, occurrence)
         try:
@@ -138,9 +140,10 @@ class Gate:
                 self.occurrences.release(claimed)
             raise
         self.pending.pop((person, action_digest(action)), None)
+        self.tokens[token_digest(token)] = token
         return "C", {"kind": "consent", "ref": c["jti"], "digest": token_digest(token)}, pd, claimed
 
-    def _outcome(self, claimed: Key | None, error: Exception | None) -> str:
+    def _outcome(self, claimed: Key | None, error: BaseException | None) -> str:
         if error is None:
             outcome = "ok"
         else:
@@ -154,7 +157,7 @@ class Gate:
         tier, authority, pd, claimed = self._authorize(tool, args, person, tainted)
         try:
             result = fn(**dict(args))
-        except Exception as e:
+        except BaseException as e:
             self._receipt(person, tool, args, tier, authority, pd, None, self._outcome(claimed, e))
             raise
         return result, self._receipt(person, tool, args, tier, authority, pd, result, self._outcome(claimed, None))
@@ -165,17 +168,14 @@ class Gate:
         try:
             out = fn(**dict(args))
             result = await out if inspect.isawaitable(out) else out
-        except Exception as e:
+        except BaseException as e:  # a cancelled call may still have happened
             self._receipt(person, tool, args, tier, authority, pd, None, self._outcome(claimed, e))
             raise
         return result, self._receipt(person, tool, args, tier, authority, pd, result, self._outcome(claimed, None))
 
     def resolve(self, tool: str, occurrence: str, *, person: str, outcome: str) -> None:
         """Record what the provider says happened to an unknown attempt: ok or failed."""
-        key = (person, tool, occurrence)
-        if outcome not in ("ok", "failed") or self.occurrences.state(key) != "unknown":
-            raise ValueError("only an unknown outcome can be resolved, to ok or failed")
-        self.occurrences.finish(key, outcome)
+        resolve(self.occurrences, (person, tool, occurrence), outcome)
 
     def _receipt(self, person: str, tool: str, args: Mapping[str, Any], tier: str, authority: dict[str, Any],
                  preview_digest: str | None, result: Any, outcome: str) -> str:

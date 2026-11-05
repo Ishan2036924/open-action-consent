@@ -1646,6 +1646,39 @@
    "expect": {
     "error": "duplicate_occurrence"
    }
+  },
+  {
+   "name": "valid: an undo receipt for a paid order is not a second payment",
+   "op": "verify_chain",
+   "input": {
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "tokens": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OmstTGNhNjVUZTRCWXp3WU1NcjN4c21qYlVDcjNtaHZ6V0ticjNSanFoYlkiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1NjpvaXBmdjlnS2QyNzlJSkZKdW1sUDVUWDdpLXBzZEdiUURUb0h0blJ3VzEwIiwia2luZCI6ImNvbnNlbnQiLCJyZWYiOiJuX2NvbnNlbnRfMDAwMDAwMDA0MCJ9LCJpYXQiOjE3OTM4MzY4MDAsImlzcyI6Imh0dHBzOi8vc2hvcC5leGFtcGxlL29hYyIsIm9hYyI6IjAuMSIsIm9jY3VycmVuY2UiOiJvcmRfMjIzMSIsIm91dGNvbWUiOiJ1bmtub3duIiwicHJldiI6bnVsbCwicmVzdWx0Ijoic2hhLTI1NjpkQ05PbUtfblNZLTEydkh6YXNMWGlzd3psR1Q1VUhBN2pBR1lrdm1DdVFzIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6InBheV9vcmRlciIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoiY29tcGVuc2F0ZSJ9fQ.CmQSX_JK0SrZdj6Lpw8-e2IHHB-XZ_wx6F7iZe9PKNIOdbWN1k9VjpPmz-Lu53gir9BLXeUIZZlWxALbwGgeBQ",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OmstTGNhNjVUZTRCWXp3WU1NcjN4c21qYlVDcjNtaHZ6V0ticjNSanFoYlkiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1NjpaeXZNc0JxMW1MS2hiNlNlMlVmRWhMUUwxQU5jOG9BZ1piLV9iRDVJV2I4Iiwia2luZCI6ImNvbnNlbnQiLCJyZWYiOiJuX2NvbnNlbnRfMDAwMDAwMDA0MSJ9LCJpYXQiOjE3OTM4MzY4MDEsImlzcyI6Imh0dHBzOi8vc2hvcC5leGFtcGxlL29hYyIsIm9hYyI6IjAuMSIsIm9jY3VycmVuY2UiOiJvcmRfMjIzMSIsIm91dGNvbWUiOiJvayIsInByZXYiOiJzaGEtMjU2OlpvNWxqYzRydUxHWUR3YUgyV2o4NnlGeHVrWV9tbUVia1NoYVZpMS10T00iLCJyZXN1bHQiOiJzaGEtMjU2OmRDTk9tS19uU1ktMTJ2SHphc0xYaXN3emxHVDVVSEE3akFHWWt2bUN1UXMiLCJzZXEiOjIsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkMiLCJ0b29sIjoicGF5X29yZGVyIiwidHlwZSI6InJlY2VpcHQiLCJ1bmRvIjp7ImtpbmQiOiJjb21wZW5zYXRlIiwidW50aWwiOjE3OTQ0NDE2MDB9fQ.TDK5QokuILSG48omGUfRd_e3ijCtegrs7DRH1Zk1hvUPROf-6Xd6mcLHyyUmqQX60oNjSixT3ssWWaGWdRD_BA",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OmstTGNhNjVUZTRCWXp3WU1NcjN4c21qYlVDcjNtaHZ6V0ticjNSanFoYlkiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1NjpoVzhPM1FxN3B1OVJ0Sm82Mmo1NjNxUHI4ckFlQ3Y0NEIwVVR1VWNfNGRnIiwia2luZCI6InVuZG8iLCJyZWYiOiJuX3VuZG9fMDAwMDAwMDAwMDAwNDAifSwiaWF0IjoxNzkzODM2ODAyLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjEiLCJvY2N1cnJlbmNlIjoib3JkXzIyMzEiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpSOXZKamFkYXFtZENfcGY0UWVjQldLWTd4Q284YnAwaVRpS0tqaWNwcUpNIiwicmVzdWx0Ijoic2hhLTI1NjpkQ05PbUtfblNZLTEydkh6YXNMWGlzd3psR1Q1VUhBN2pBR1lrdm1DdVFzIiwic2VxIjozLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6InBheV9vcmRlciIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9LCJ1bmRvZXMiOiJzaGEtMjU2OlI5dkpqYWRhcW1kQ19wZjRRZWNCV0tZN3hDbzhicDBpVGlLS2ppY3BxSk0ifQ.cxCjQK8i_tkDOcBHRT1p43wOrw7633of4XLN8W_ynqCV9HwLugoTnpZfFBZujXKAq9-gj9kXWBNXtnwY7gmCBg"
+    ]
+   },
+   "expect": {
+    "ok": true
+   }
   }
  ]
 }

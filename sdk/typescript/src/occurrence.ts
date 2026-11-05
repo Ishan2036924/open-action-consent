@@ -8,6 +8,7 @@ export interface OccurrenceStore {
   /** Mark the key running and return null, or return its blocking state. Must be atomic. */
   claim(key: OccurrenceKey): string | null;
   finish(key: OccurrenceKey, outcome: string): void;
+  /** Drop a claim whose action never started. */
   release(key: OccurrenceKey): void;
   state(key: OccurrenceKey): string | null;
 }
@@ -31,10 +32,27 @@ export function occurrenceKey(person: string, profile: Record<string, any>, args
   return Object.hasOwn(profile, "occurrence") ? [person, profile.tool, args[profile.occurrence] as string] : null;
 }
 
+function refuse(state: string | null): void {
+  if (state === "ok") throw new OACError("duplicate_occurrence", "this occurrence already ran");
+  if (state === "running" || state === "unknown") throw new OACError("occurrence_unresolved", "an earlier attempt has no known outcome yet");
+}
+
+/** Refuse early, before the person is asked, when the occurrence cannot run now. */
+export function checkOpen(store: OccurrenceStore, key: OccurrenceKey | null): void {
+  if (key !== null) refuse(store.state(key));
+}
+
 export function claim(store: OccurrenceStore, key: OccurrenceKey | null): OccurrenceKey | null {
   if (key === null) return null;
-  const state = store.claim(key);
-  if (state === "ok") throw new OACError("duplicate_occurrence", "this occurrence already ran");
-  if (state !== null) throw new OACError("occurrence_unresolved", "an earlier attempt has no known outcome yet");
+  refuse(store.claim(key));
   return key;
+}
+
+/** Record what the provider says happened. A "running" record left by a crash counts as unknown. */
+export function resolve(store: OccurrenceStore, key: OccurrenceKey, outcome: string): void {
+  const state = store.state(key);
+  if ((outcome !== "ok" && outcome !== "failed") || (state !== "running" && state !== "unknown")) {
+    throw new Error("only an attempt with no known outcome can be resolved, to ok or failed");
+  }
+  store.finish(key, outcome);
 }
