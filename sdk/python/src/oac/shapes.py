@@ -257,8 +257,67 @@ def mandate(v: Any) -> dict[str, Any]:
             "exp": (True, TIME),
             "signer": (True, _obj({"kind": (True, _enum(*SIGNERS))}, "signer")),
             "supersedes": (False, ID),
+            "status": (False, _obj({"list": (True, ID), "index": (True, _int(0, 2 * 1024 * 1024 * 8 - 1))}, "status")),
         },
         "mandate",
+    )
+    return v
+
+
+JWK_FIELDS = {"kty": (True, _enum("OKP", "EC")), "crv": (True, _enum("Ed25519", "P-256")), "x": (True, _str(1, 64)),
+              "y": (False, _str(1, 64)), "kid": (False, _str(1, 64)), "alg": (False, _enum("EdDSA", "ES256")),
+              "use": (False, _const("sig"))}
+
+
+def status_list(v: Any) -> dict[str, Any]:
+    check(
+        v,
+        {
+            "oac": (True, _const(VERSION)),
+            "type": (True, _const("status-list")),
+            "iss": (True, ID),
+            "id": (True, ID),
+            "purpose": (True, _const("revocation")),
+            "encoded_list": (True, _str(2, 4 * 1024 * 1024)),
+            "iat": (True, TIME),
+            "exp": (True, TIME),
+        },
+        "status list",
+    )
+    if not v["iat"] < v["exp"] <= v["iat"] + 7 * 86400:  # rule: a list is re-issued at least weekly
+        raise OACError("malformed", "status list: exp must be after iat and at most 7 days later")
+    return v
+
+
+def issuer_metadata(v: Any) -> dict[str, Any]:
+    check(
+        v,
+        {
+            "oac": (True, _const(VERSION)),
+            "type": (True, _const("issuer-metadata")),
+            "issuer": (True, ID),
+            "keys": (True, _list(_obj(JWK_FIELDS, "jwk"), 1, 20)),
+            "status_lists": (False, _list(ID, 1, 20)),
+        },
+        "issuer metadata",
+    )
+    return v
+
+
+def seal(v: Any) -> dict[str, Any]:
+    check(
+        v,
+        {
+            "oac": (True, _const(VERSION)),
+            "type": (True, _const("seal")),
+            "iss": (True, ID),
+            "sub": (True, ID),
+            "executor": (True, ID),
+            "seq": (True, _int(1)),
+            "head": (True, DIGEST),
+            "iat": (True, TIME),
+        },
+        "seal",
     )
     return v
 

@@ -39,6 +39,8 @@ MUTATIONS = [
     ("tier D treated as C", oac.consent, "tier_for", lambda *a, **k: "C", "tier D never runs, even with a yes"),
     ("any recipient allowed", oac.mandate, "_recipient_ok", lambda *a: True, "recipient outside the list"),
     ("undeclared arguments allowed", oac.shapes, "check_action", _noop, "model adds an undeclared bcc"),
+    ("status bit ignored", oac.mandate, "is_revoked", lambda *a, **k: False, "the mandate's bit is set"),
+    ("seals ignored", oac.receipts, "check_seals", _noop, "rewrote receipt 3 after the seal"),
     ("issuer binding off", oac.jws.KeySet, "issuer", lambda self, kid: "https://atlas.example/signer", "signs in another signer's name"),
     ("receipt rules off", oac.receipts, "check_semantics", _noop, "tier C on the tool's own say-so"),
     ("undo receipt rules off", oac.undo, "check_semantics", _noop, "undo of an invalid receipt"),

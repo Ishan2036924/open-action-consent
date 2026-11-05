@@ -12,6 +12,8 @@ export const CODES = new Set([
   "undo_mode_mismatch", "undo_window_closed",
   // added after the 2026-11-04 review
   "wrong_issuer", "undeclared_argument", "revoked", "already_undone", "compensation_mismatch",
+  // 0.1 gap closers: status lists and seals
+  "status_unknown", "seal_mismatch",
 ]);
 
 /** A refusal. `code` is one of CODES; `detail` is for logs, never for deciding anything. */

@@ -6,6 +6,13 @@ import { OACError } from "./errors.ts";
 import { KeySet, sign, tokenDigest, verify, type SigningKey } from "./jws.ts";
 
 export const TYP = "oac-receipt+jws";
+export const SEAL_TYP = "oac-seal+jws";
+
+/** The person's signer vouches that this person's chain at `executor` reached `seq` with this receipt. */
+export function makeSeal(o: { key: SigningKey; iss: string; sub: string; executor: string; seq: number; headToken: string; now: number }): string {
+  const doc = { oac: shapes.VERSION, type: "seal", iss: o.iss, sub: o.sub, executor: o.executor, seq: o.seq, head: tokenDigest(o.headToken), iat: o.now };
+  return sign(shapes.seal(doc), o.key, SEAL_TYP);
+}
 
 export function makeReceipt(key: SigningKey, payload: Record<string, any>): string {
   const doc = { oac: shapes.VERSION, type: "receipt", ...payload };
@@ -26,7 +33,7 @@ export function checkSemantics(r: Record<string, any>): void {
   if (kind === "undo" && !("undoes" in r)) throw new OACError("receipt_invalid", "an undo receipt names what it undoes");
 }
 
-export function verifyChain(tokens: string[], o: { keys: KeySet; executor: string; sub?: string | null }): Record<string, any>[] {
+export function verifyChain(tokens: string[], o: { keys: KeySet; executor: string; sub?: string | null; seals?: string[]; sealKeys?: KeySet | null }): Record<string, any>[] {
   const out: Record<string, any>[] = [];
   tokens.forEach((token, i) => {
     const r = verify(token, o.keys, TYP);
@@ -42,5 +49,17 @@ export function verifyChain(tokens: string[], o: { keys: KeySet; executor: strin
     }
     out.push(r);
   });
+  if (o.seals && o.seals.length) {
+    if (!o.sealKeys) throw new OACError("malformed", "seals need the signer's keys");
+    const bySeq = new Map(out.map((r, i) => [r.seq, tokens[i]]));
+    for (const token of o.seals) {
+      const s = verify(token, o.sealKeys, SEAL_TYP);
+      shapes.seal(s);
+      if (out.length && s.sub !== out[0].sub) throw new OACError("subject_mismatch");
+      if (s.executor !== o.executor || !bySeq.has(s.seq) || s.head !== tokenDigest(bySeq.get(s.seq)!)) {
+        throw new OACError("seal_mismatch", "the seal does not match this chain");
+      }
+    }
+  }
   return out;
 }

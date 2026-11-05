@@ -20,6 +20,8 @@ from oac import shapes
 from oac.testing import vector_key
 from oac.tiers import tier_for
 from oac.undo import check_undo
+from oac.discovery import keyset_from, metadata_url
+from oac.status import bit, decode
 
 
 def _consent(i: Mapping[str, Any]) -> Any:
@@ -51,12 +53,14 @@ def _mandate(i: Mapping[str, Any]) -> Any:
         tainted=i["tainted"],
         usage=i.get("usage"),
         revoked=i.get("revoked", []),
+        status_lists=i.get("status_lists", {}),
     )
     return {"ok": True}
 
 
 def _chain(i: Mapping[str, Any]) -> Any:
-    verify_chain(i["tokens"], keys=KeySet(i["keys"]), executor=i["executor"], sub=i.get("sub"))
+    verify_chain(i["tokens"], keys=KeySet(i["keys"]), executor=i["executor"], sub=i.get("sub"), seals=i.get("seals", []),
+                 seal_keys=KeySet(i["seal_keys"]) if "seal_keys" in i else None)
     return {"ok": True}
 
 
@@ -100,6 +104,9 @@ OPS: dict[str, Callable[[Mapping[str, Any]], Any]] = {
     "loosens": lambda i: {"reasons": sorted(loosens(i["old"], i["new"]))},
     "verify_chain": _chain,
     "check_undo": _undo,
+    "status_bit": lambda i: {"revoked": bit(decode(i["encoded_list"]), i["index"])},
+    "metadata_url": lambda i: {"url": metadata_url(i["iss"])},
+    "keyset_from": lambda i: {"issuer": keyset_from([(d[0], d[1]) for d in i["docs"]]).issuer(i["kid"])},
 }
 
 

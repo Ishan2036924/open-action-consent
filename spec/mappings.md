@@ -33,5 +33,8 @@ relying on a row.
 | IETF agent audit-trail and SCITT agent drafts | hash-chained logs, COSE records | Receipt chain | export receipts into those logs; OAC does not need its own log format |
 | Acta, delegation and counter-sign receipt drafts | signed receipts | Receipt | export target |
 | ISO/IEC TS 27560 | consent record for personal-data processing | Consent / Mandate | a Mandate can be summarized as a 27560 record for privacy records |
+| W3C Bitstring Status List ([REC, 2025-05-15](https://www.w3.org/TR/vc-bitstring-status-list/)) | `encodedList` (GZIP + multibase base64url), `statusListIndex` | status list `encoded_list`, Mandate `status.index` | same bitstring encoding and bit order; an OAC list can be re-wrapped as a BitstringStatusListCredential |
+| RFC 8414 (OAuth server metadata) | `/.well-known/oauth-authorization-server` with path insertion | `/.well-known/oac-issuer` | same location rule; OAC lists keys inline |
+| IETF SCITT | transparency log of signed statements | seal + receipt | register seals as signed statements for third-party proof of time |
 | Web Bot Auth (IETF WG) | the agent's HTTP message signatures to websites | executor key | the executor may publish one key directory for both |
 | RFC 9396 RAR, OpenID CIBA | typed authorization details; out-of-band approval with a short binding message | Preview fields; URL-mode consent | an authorization server can render a Preview and return a Consent instead of only a token |

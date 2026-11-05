@@ -166,7 +166,38 @@ export function mandate(v: any): Record<string, any> {
     holder: [true, obj({ type: [true, oneOf(...HOLDERS)], id: [true, ID] }, "holder")], goal: [true, strCp(1, 300)],
     tools: [true, list(TOOL, 1, 32)], bounds: [true, obj(bounds, "bounds")], iat: [true, TIME], exp: [true, TIME],
     signer: [true, obj({ kind: [true, oneOf(...SIGNERS)] }, "signer")], supersedes: [false, ID],
+    status: [false, obj({ list: [true, ID], index: [true, int(0, 2 * 1024 * 1024 * 8 - 1)] }, "status")],
   }, "mandate");
+  return v;
+}
+
+const JWK_FIELDS: Fields = {
+  kty: [true, oneOf("OKP", "EC")], crv: [true, oneOf("Ed25519", "P-256")], x: [true, strCp(1, 64)], y: [false, strCp(1, 64)],
+  kid: [false, strCp(1, 64)], alg: [false, oneOf("EdDSA", "ES256")], use: [false, constant("sig")],
+};
+
+export function statusList(v: any): Record<string, any> {
+  check(v, {
+    oac: [true, constant(VERSION)], type: [true, constant("status-list")], iss: [true, ID], id: [true, ID],
+    purpose: [true, constant("revocation")], encoded_list: [true, strCp(2, 4 * 1024 * 1024)], iat: [true, TIME], exp: [true, TIME],
+  }, "status list");
+  if (!(v.iat < v.exp && v.exp <= v.iat + 7 * 86400)) throw new OACError("malformed", "status list: exp must be after iat and at most 7 days later");
+  return v;
+}
+
+export function issuerMetadata(v: any): Record<string, any> {
+  check(v, {
+    oac: [true, constant(VERSION)], type: [true, constant("issuer-metadata")], issuer: [true, ID],
+    keys: [true, list(obj(JWK_FIELDS, "jwk"), 1, 20)], status_lists: [false, list(ID, 1, 20)],
+  }, "issuer metadata");
+  return v;
+}
+
+export function seal(v: any): Record<string, any> {
+  check(v, {
+    oac: [true, constant(VERSION)], type: [true, constant("seal")], iss: [true, ID], sub: [true, ID], executor: [true, ID],
+    seq: [true, int(1)], head: [true, DIGEST], iat: [true, TIME],
+  }, "seal");
   return v;
 }
 

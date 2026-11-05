@@ -76,8 +76,7 @@ the payload's `iss` is the issuer the key belongs to (`wrong_issuer`).
 
 Key sets: a verifier holds, from a source it trusts, public keys **grouped by issuer**: each key belongs to exactly
 one issuer (a person's signer, or one executor). A token signed by a key MUST name that key's issuer as `iss`, so a
-second trusted signer can never sign in the first one's name. OAC 0.1 does not define key discovery. An executor MAY
-publish its keys at the same place as its Web Bot Auth key directory.
+second trusted signer can never sign in the first one's name. Section 3.5 says where issuers publish their keys.
 
 ### 3.4 Signer kinds
 
@@ -89,6 +88,23 @@ publish its keys at the same place as its Web Bot Auth key directory.
 | `device` | the key is on the person's device (e.g. a passkey); the device signs the consent digest |
 
 Verifiers MAY require `device` for some actions (for example any payment).
+
+### 3.5 Issuer metadata (key discovery)
+
+An issuer that wants to be found is identified by `https://host[:port][/path]`: lowercase ASCII host, path segments of
+unreserved characters, no `.` or `..` segments, no query, fragment or credentials. It publishes an issuer metadata
+document (`schemas/issuer-metadata.schema.json`) at
+
+```
+https://host[:port]/.well-known/oac-issuer[/path]
+```
+
+(the well-known form RFC 8414 uses for OAuth servers; a trailing slash on the issuer is dropped). The document's
+`issuer` MUST equal the issuer exactly (`wrong_issuer`); `keys` holds public JWKs only (a private member is
+`malformed`); `status_lists` MAY list the ids of its status lists (7.5). Implementations MUST compute the location
+by matching the text above, not with a URL parser that might normalize it. A fetcher MUST use HTTPS, MUST NOT
+follow redirects, and SHOULD cap the size (64 KB in the SDKs) and time. A verifier MAY cache the document and MUST
+treat a key that disappears from it as no longer trusted.
 
 ## 4. Tiers
 
@@ -256,7 +272,8 @@ use counters. In this order:
 
 1. Envelope and fields, as 6.3 step 1.
 2. `holder` equals the authenticated caller: `holder_mismatch`. `sub` equals the person: `subject_mismatch`.
-3. The id is not revoked and not superseded (7.4): `revoked`.
+3. The id is not revoked and not superseded (7.4), and, when the Mandate names a status entry, its bit is clear
+   (7.5): `revoked`; a missing, stale or foreign status list is `status_unknown`.
 4. Time, as 6.3 step 3, with a maximum lifetime of 30 days.
 5. The action's fields are valid (`malformed`); the tool is in `tools` and is the profile's tool:
    `tool_not_covered`; the profile is valid (`malformed`).
@@ -292,6 +309,21 @@ removed payee or site list. The signer MUST NOT sign a loosening replacement wit
 is present (a new sign-in, a device signature). Narrowing needs no fresh proof. The SDKs' `loosens` function returns
 the list of reasons.
 
+### 7.5 Status lists (revocation)
+
+A signer publishes which Mandates it revoked as a signed **status list** (`schemas/status-list.schema.json`, `typ`
+`oac-status+jws`), using the bitstring encoding of the W3C Bitstring Status List Recommendation (15 May 2025):
+`encoded_list` is `u` + unpadded base64url of the GZIP-compressed bitstring; index 0 is the left-most bit; a set bit
+means revoked; at least 16 KB uncompressed (131,072 entries). A Mandate names its entry with
+`"status": {"list": <list id>, "index": <n>}`.
+
+Checking (7.3 step 3): the list with that id is present (`status_unknown`), verifies under the signer's keys, is
+signed by the Mandate's own `iss` and has the same `id` (`status_unknown`), is fresh (`iat <= now < exp`, and a list
+lives at most 7 days: `status_unknown` when stale), decodes as exactly one gzip member with nothing after it and at
+most 2 MB uncompressed (`malformed`), and the index is inside it (`malformed`). Then the bit decides (`revoked`).
+Revocation is final: a signer MUST NOT clear a bit. A signer SHOULD re-issue lists often (the SDKs default to one
+hour) and assign indexes at random so a list does not reveal how many Mandates a person has.
+
 ## 8. Receipts and Undo
 
 ### 8.1 Receipt
@@ -326,8 +358,13 @@ rules of 8.1; `iss` is the expected executor (`chain_issuer`); same `sub` throug
 has `prev` null if and only if its `seq` is 1 (`chain_broken`); each later one has `seq` one more than the one before
 (`chain_seq`) and `prev` equal to its `token_digest` (`chain_broken`).
 
-A person's signer MAY countersign the chain head from time to time (a seal) so that an executor cannot silently
-rewrite history; OAC 0.1 does not fix the seal's format.
+**Seals.** A person's signer MAY countersign the chain from time to time with a **seal**
+(`schemas/seal.schema.json`, `typ` `oac-seal+jws`): `{iss, sub, executor, seq, head, iat}`, where `head` is the
+`token_digest` of receipt `seq`. When an export is verified with seals, each seal MUST verify under the signer's keys,
+name the same person (`subject_mismatch`) and this executor, and name a receipt in the export whose `token_digest`
+equals `head` (`seal_mismatch`). A seal therefore exposes any later rewrite of the receipts it covers. A seal and
+its receipt MAY also be registered in an IETF SCITT transparency service, so a third party can see that the head
+existed at that time; OAC 0.1 does not require it.
 
 ### 8.3 Undo request
 
@@ -398,8 +435,8 @@ points to it or exports to it (`mappings.md`).
   action. A receipt is undone at most once.
 - **Who signed.** Keys are bound to one issuer each, and every check names the person the executor acts for, so
   one trusted signer cannot speak for another and one person's permission cannot act for someone else.
-- **Revocation.** Executors must refuse revoked and superseded Mandates; how they learn about them is not fixed in
-  0.1 and is the main gap to close next.
+- **Revocation.** Executors refuse revoked and superseded Mandates and read signed status lists (7.5); a missing or
+  stale list refuses rather than allows. Status lists are short-lived so a revocation takes effect within hours.
 - **Time.** Executors need a clock within 60 s of the signer's.
 - **Custodial signers** are only as strong as their sign-in. Prefer `device` for payments and for loosening Mandates.
 - **Privacy.** Previews and Receipts can reveal what a person does. Store them per person, encrypted, with retention

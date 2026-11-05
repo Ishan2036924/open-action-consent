@@ -18,7 +18,8 @@ for s in schemas.values():
     Draft202012Validator.check_schema(s)
 V = {name: Draft202012Validator(s, registry=registry) for name, s in schemas.items()}
 BEYOND_SCHEMA = {"a read that claims an undo", "an argument both bound and listed as other"}  # rules the schema text says it cannot express
-TYP = {"oac-consent+jws": "consent", "oac-mandate+jws": "mandate", "oac-receipt+jws": "receipt", "oac-undo+jws": "undo"}
+TYP = {"oac-consent+jws": "consent", "oac-mandate+jws": "mandate", "oac-receipt+jws": "receipt", "oac-undo+jws": "undo",
+       "oac-status+jws": "status-list", "oac-seal+jws": "seal"}
 
 
 def part(token: str, i: int) -> dict:
@@ -28,19 +29,21 @@ def part(token: str, i: int) -> dict:
 
 def tokens(inp: dict) -> list[str]:
     out = [inp[k] for k in ("token", "receipt_token") if isinstance(inp.get(k), str)]
-    return out + list(inp.get("tokens", []))
+    return out + list(inp.get("tokens", [])) + list(inp.get("seals", [])) + list(inp.get("status_lists", {}).values())
 
 
 checked, errors = 0, []
 for path in sorted((ROOT / "vectors").glob("*.json")):
     for case in json.loads(path.read_text())["cases"]:
-        inp, ok = case["input"], case["expect"] == {"ok": True}
+        inp = case["input"]
+        ok = case["expect"] == {"ok": True} or (case["op"] == "keyset_from" and "error" not in case["expect"])
         objs: list[tuple[str, dict]] = []
         if ok:
             objs += [("preview", p) for p in inp.get("previews", [])]
             objs += [("action-profile", p) for p in inp.get("profiles", {}).values()]
             if "profile" in inp:
                 objs.append(("action-profile", inp["profile"]))
+            objs += [("issuer-metadata", d[1]) for d in inp.get("docs", [])]
             for t in tokens(inp):
                 objs.append((TYP[part(t, 0)["typ"]], part(t, 1)))
         for name, obj in objs:

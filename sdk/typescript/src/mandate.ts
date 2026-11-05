@@ -7,6 +7,7 @@ import { canonical } from "./jcs.ts";
 import { KeySet, sign, verify, type SigningKey } from "./jws.ts";
 import { checkTime } from "./consent.ts";
 import { tierFor } from "./tiers.ts";
+import { isRevoked } from "./status.ts";
 
 export const TYP = "oac-mandate+jws";
 export const MAX_S = 30 * 86400;
@@ -26,13 +27,13 @@ export type Usage = { calls_today?: number; calls_this_run?: number; amount_toda
 
 export function checkMandate(token: string, o: {
   keys: KeySet; action: Record<string, any>; profile: Record<string, any>; holder: Record<string, any>; sub: string;
-  now: number; tainted: boolean; usage?: Usage | null; revoked?: Iterable<string>; policyFloor?: string;
+  now: number; tainted: boolean; usage?: Usage | null; revoked?: Iterable<string>; statusLists?: Record<string, string>; policyFloor?: string;
 }): Record<string, any> {
   const p = verify(token, o.keys, TYP);
   shapes.mandate(p);
   if (canonical(p.holder) !== canonical(o.holder)) throw new OACError("holder_mismatch");
   if (p.sub !== o.sub) throw new OACError("subject_mismatch", "the mandate is another person's");
-  if (new Set(o.revoked ?? []).has(p.id)) throw new OACError("revoked");
+  if (new Set(o.revoked ?? []).has(p.id) || isRevoked(p, { lists: o.statusLists ?? {}, keys: o.keys, now: o.now })) throw new OACError("revoked");
   checkTime(p, o.now, MAX_S);
   shapes.action(o.action);
   const { action, profile } = o;

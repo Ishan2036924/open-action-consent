@@ -14,6 +14,8 @@ import { checkMandate, loosens } from "./mandate.ts";
 import { verifyChain } from "./receipts.ts";
 import { checkUndo } from "./undo.ts";
 import { vectorKey } from "./testing.ts";
+import { bit, decode } from "./status.ts";
+import { keysetFrom, metadataUrl } from "./discovery.ts";
 
 const OK = { ok: true };
 const OPS: Record<string, (i: any) => unknown> = {
@@ -30,14 +32,18 @@ const OPS: Record<string, (i: any) => unknown> = {
   }), OK),
   check_mandate: (i) => (checkMandate(i.token, {
     keys: new KeySet(i.keys), action: i.action, profile: i.profile, holder: i.holder, sub: i.sub, now: i.now,
-    tainted: i.tainted, usage: i.usage, revoked: i.revoked ?? [],
+    tainted: i.tainted, usage: i.usage, revoked: i.revoked ?? [], statusLists: i.status_lists ?? {},
   }), OK),
   loosens: (i) => ({ reasons: loosens(i.old, i.new).sort() }),
-  verify_chain: (i) => (verifyChain(i.tokens, { keys: new KeySet(i.keys), executor: i.executor, sub: i.sub }), OK),
+  verify_chain: (i) => (verifyChain(i.tokens, { keys: new KeySet(i.keys), executor: i.executor, sub: i.sub, seals: i.seals ?? [],
+    sealKeys: i.seal_keys ? new KeySet(i.seal_keys) : null }), OK),
   check_undo: (i) => (checkUndo(i.token, {
     keys: new KeySet(i.keys), executor: i.executor, receiptToken: i.receipt_token, receiptKeys: new KeySet(i.receipt_keys),
     now: i.now, nonces: new MemoryNonces(i.seen_nonces ?? []), undone: i.undone ?? [], compensation: i.compensation,
   }), OK),
+  status_bit: (i) => ({ revoked: bit(decode(i.encoded_list), i.index) }),
+  metadata_url: (i) => ({ url: metadataUrl(i.iss) }),
+  keyset_from: (i) => ({ issuer: keysetFrom(i.docs.map((d: any) => [d[0], d[1]])).issuer(i.kid) }),
 };
 
 export function runCase(c: any): unknown {

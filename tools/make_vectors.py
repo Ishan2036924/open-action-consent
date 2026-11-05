@@ -26,6 +26,8 @@ from oac.preview import action_digest, build_preview  # noqa: E402
 from oac.receipts import make_receipt  # noqa: E402
 from oac.testing import vector_key  # noqa: E402
 from oac.undo import make_undo  # noqa: E402
+from oac.receipts import make_seal  # noqa: E402
+from oac.status import encode, make_status_list  # noqa: E402
 
 NOW = 1793836800  # 2026-11-05T00:00:00Z
 EXECUTOR = "https://shop.example/oac"
@@ -504,10 +506,106 @@ def receipts_and_undo() -> list[dict[str, Any]]:
     return c
 
 
+# ---------------------------------------------------------------- status lists, key discovery, seals (0.1 gap closers)
+def gap_closers() -> list[dict[str, Any]]:
+    import gzip
+
+    c: list[dict[str, Any]] = []
+    enc = encode([0, 7, 9, 131071])
+    for name, idx, want in [("index 0 is the left-most bit", 0, True), ("an unset bit", 1, False), ("bit 7 (end of the first byte)", 7, True),
+                            ("bit 9 (second byte)", 9, True), ("the last bit of a 16 KB list", 131071, True)]:
+        c.append({"name": f"status list: {name}", "op": "status_bit", "input": {"encoded_list": enc, "index": idx}, "expect": {"revoked": want}})
+    raw = bytes(16 * 1024)
+    bad = [("index past the end", enc, 131072),
+           ("no multibase prefix", enc[1:], 0),
+           ("shorter than 16 KB", "u" + b64url(gzip.compress(bytes(1024), mtime=0)), 0),
+           ("inflates past 2 MB (zip bomb)", "u" + b64url(gzip.compress(bytes(3 * 1024 * 1024), mtime=0)), 0),
+           ("two gzip members", "u" + b64url(gzip.compress(raw, mtime=0) + gzip.compress(raw, mtime=0)), 0),
+           ("bytes after the gzip member", "u" + b64url(gzip.compress(raw, mtime=0) + bytes(4)), 0),
+           ("not gzip", "u" + b64url(raw), 0)]
+    for name, e, idx in bad:
+        c.append({"name": f"status list: {name}", "op": "status_bit", "input": {"encoded_list": e, "index": idx}, "expect": err("malformed")})
+
+    holder = {"type": "agent", "id": "lunch-bot"}
+    lid = "https://atlas.example/signer/status/1"
+    body = {"id": "md_status_1", "iss": SIGNER, "sub": PERSON, "holder": holder, "goal": "Book lunch.", "tools": ["book_table"],
+            "bounds": {"calls": {"per_day": 5}, "sites": ["nobu.example"]}, "iat": NOW - 3600, "exp": NOW + 86400,
+            "signer": {"kind": "custodial"}, "status": {"list": lid, "index": 42}}
+    m = make_mandate(key=USER, payload=body)
+    live = make_status_list(key=USER, iss=SIGNER, list_id=lid, revoked=[41, 43], now=NOW - 60)
+    gone = make_status_list(key=USER, iss=SIGNER, list_id=lid, revoked=[42], now=NOW - 60)
+    base = {"token": m, "keys": USER_KEYS, "action": ACTIONS["book"], "profile": PROFILES["book_table"], "holder": holder, "sub": PERSON,
+            "now": NOW, "tainted": False}
+
+    def case(name: str, expect: dict[str, Any], **change: Any) -> None:
+        c.append({"name": name, "op": "check_mandate", "input": {**base, **change}, "expect": expect})
+
+    case("status list: the mandate's bit is clear", ok(), status_lists={lid: live})
+    case("status list: the mandate's bit is set (revoked)", err("revoked"), status_lists={lid: gone})
+    case("status list: the list is not available", err("status_unknown"))
+    case("status list: the list is stale", err("status_unknown"), status_lists={lid: make_status_list(key=USER, iss=SIGNER, list_id=lid, revoked=[], now=NOW - 7200, ttl=3600)})
+    case("status list: another list given under this id", err("status_unknown"),
+         status_lists={lid: make_status_list(key=USER, iss=SIGNER, list_id="https://atlas.example/signer/status/2", revoked=[], now=NOW - 60)})
+    case("status list: signed by another trusted signer", err("status_unknown"),
+         status_lists={lid: make_status_list(key=WALLET, iss=WALLET_ISS, list_id=lid, revoked=[], now=NOW - 60)})
+    case("status list: claims the mandate's signer but uses another key", err("wrong_issuer"),
+         status_lists={lid: make_status_list(key=WALLET, iss=SIGNER, list_id=lid, revoked=[], now=NOW - 60)})
+
+    for name, iss, want in [("an issuer with a path", "https://atlas.example/signer", {"url": "https://atlas.example/.well-known/oac-issuer/signer"}),
+                            ("an issuer without a path", "https://wallet.example", {"url": "https://wallet.example/.well-known/oac-issuer"}),
+                            ("a port is kept", "https://atlas.example:8443/s", {"url": "https://atlas.example:8443/.well-known/oac-issuer/s"}),
+                            ("http is refused", "http://atlas.example/signer", err("malformed")),
+                            ("a query is refused", "https://atlas.example/signer?x=1", err("malformed")),
+                            ("credentials are refused", "https://u:p@atlas.example/signer", err("malformed")),
+                            ("not a URL", "person:7f3a", err("malformed")),
+                            ("a trailing slash is dropped", "https://atlas.example/signer/", {"url": "https://atlas.example/.well-known/oac-issuer/signer"}),
+                            ("port 443 is kept as written", "https://atlas.example:443", {"url": "https://atlas.example:443/.well-known/oac-issuer"}),
+                            ("an uppercase host is refused", "https://Atlas.example/signer", err("malformed")),
+                            ("a non-ASCII host is refused", "https://ätlas.example", err("malformed")),
+                            ("a fragment is refused", "https://atlas.example/signer#x", err("malformed")),
+                            ("a dot-dot path segment is refused", "https://atlas.example/a/../b", err("malformed")),
+                            ("a single-dot segment is refused", "https://atlas.example/./b", err("malformed")),
+                            ("dots inside a segment are fine", "https://atlas.example/v1.2", {"url": "https://atlas.example/.well-known/oac-issuer/v1.2"})]:
+        c.append({"name": f"issuer metadata URL: {name}", "op": "metadata_url", "input": {"iss": iss}, "expect": want})
+    meta = {"oac": "0.1", "type": "issuer-metadata", "issuer": SIGNER, "keys": [USER.jwk, DEVICE.jwk], "status_lists": [lid]}
+    c.append({"name": "issuer metadata: keys become that issuer's", "op": "keyset_from", "input": {"docs": [[SIGNER, meta]], "kid": DEVICE.kid}, "expect": {"issuer": SIGNER}})
+    c.append({"name": "issuer metadata: a document naming another issuer", "op": "keyset_from", "input": {"docs": [[WALLET_ISS, meta]], "kid": USER.kid}, "expect": err("wrong_issuer")})
+    c.append({"name": "issuer metadata: a private key member is refused", "op": "keyset_from",
+              "input": {"docs": [[SIGNER, meta | {"keys": [USER.jwk | {"d": "AAAA"}]}]], "kid": USER.kid}, "expect": err("malformed")})
+    c.append({"name": "issuer metadata: one key claimed by two issuers", "op": "keyset_from",
+              "input": {"docs": [[SIGNER, meta], [WALLET_ISS, meta | {"issuer": WALLET_ISS}]], "kid": USER.kid}, "expect": err("malformed")})
+
+    rs: list[str] = []
+    res = digest({"ok": True})
+    task = {"tool": "add_task", "args": {"title": "Call the dentist"}}
+    for n in range(3):
+        rs.append(make_receipt(key=EXEC, payload={"iss": EXECUTOR, "sub": PERSON, "seq": n + 1, "prev": token_digest(rs[-1]) if rs else None,
+                  "iat": NOW + n, "tool": "add_task", "tier": "A", "authority": {"kind": "tier"}, "action": action_digest(task),
+                  "outcome": "ok", "result": res, "undo": {"kind": "none"}}))
+    seal = make_seal(key=USER, iss=SIGNER, sub=PERSON, executor=EXECUTOR, seq=3, head_token=rs[2], now=NOW + 10)
+    sbase = {"tokens": rs, "keys": EXEC_KEYS, "executor": EXECUTOR, "seals": [seal], "seal_keys": USER_KEYS}
+    forged_r3 = make_receipt(key=EXEC, payload=payload_of(rs[2]) | {"tool": "add_task", "iat": NOW + 99})
+
+    def chain(name: str, expect: dict[str, Any], **change: Any) -> None:
+        c.append({"name": name, "op": "verify_chain", "input": {**sbase, **change}, "expect": expect})
+
+    chain("seal: matches the chain head", ok())
+    chain("seal: the executor rewrote receipt 3 after the seal", err("seal_mismatch"), tokens=[rs[0], rs[1], forged_r3])
+    chain("seal: names a receipt the export does not contain", err("seal_mismatch"), tokens=rs[:2])
+    chain("seal: for another executor", err("seal_mismatch"),
+          seals=[make_seal(key=USER, iss=SIGNER, sub=PERSON, executor=OTHER_EXECUTOR, seq=3, head_token=rs[2], now=NOW + 10)])
+    chain("seal: for another person", err("subject_mismatch"),
+          seals=[make_seal(key=USER, iss=SIGNER, sub="person:other", executor=EXECUTOR, seq=3, head_token=rs[2], now=NOW + 10)])
+    chain("seal: signed by an unknown key", err("unknown_key"),
+          seals=[make_seal(key=ATTACKER, iss=SIGNER, sub=PERSON, executor=EXECUTOR, seq=3, head_token=rs[2], now=NOW + 10)])
+    return c
+
+
 def main() -> int:
     out = ROOT / "vectors"
     out.mkdir(exist_ok=True)
-    groups = {"basics": basics(), "consent": consents(), "mandate": mandates(), "receipts-undo": receipts_and_undo()}
+    groups = {"basics": basics(), "consent": consents(), "mandate": mandates(), "receipts-undo": receipts_and_undo(),
+              "status-keys-seals": gap_closers()}
     bad = 0
     for name, cases in groups.items():
         for case in cases:

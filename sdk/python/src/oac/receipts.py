@@ -11,6 +11,7 @@ from oac.errors import OACError
 from oac.jws import KeySet, SigningKey, sign, token_digest, verify
 
 TYP = "oac-receipt+jws"
+SEAL_TYP = "oac-seal+jws"
 
 
 def make_receipt(*, key: SigningKey, payload: Mapping[str, Any]) -> str:
@@ -39,11 +40,25 @@ def check_semantics(r: Mapping[str, Any]) -> None:
         raise OACError("receipt_invalid", "an undo receipt names what it undoes")
 
 
+def make_seal(*, key: SigningKey, iss: str, sub: str, executor: str, seq: int, head_token: str, now: int) -> str:
+    """The person's signer vouches that this person's chain at `executor` reached `seq` with this receipt."""
+    doc = {"oac": shapes.VERSION, "type": "seal", "iss": iss, "sub": sub, "executor": executor, "seq": seq,
+           "head": token_digest(head_token), "iat": now}
+    return sign(shapes.seal(doc), key, SEAL_TYP)
+
+
 def verify_chain(
-    tokens: Sequence[str], *, keys: KeySet, executor: str, sub: str | None = None
+    tokens: Sequence[str],
+    *,
+    keys: KeySet,
+    executor: str,
+    sub: str | None = None,
+    seals: Sequence[str] = (),
+    seal_keys: KeySet | None = None,
 ) -> list[dict[str, Any]]:
     """Verify an export: every signature, every link, contiguous seq. A chain may start mid-way (seq > 1) when it is
-    an export from a known point; seq 1 has prev null."""
+    an export from a known point; seq 1 has prev null. Each seal (signed by the person's signer) must name a receipt
+    in this export by its seq and token digest: a rewritten or forked history then fails (seal_mismatch)."""
     out: list[dict[str, Any]] = []
     for i, token in enumerate(tokens):
         r = verify(token, keys, TYP)
@@ -62,4 +77,20 @@ def verify_chain(
             if r["prev"] != token_digest(tokens[i - 1]):
                 raise OACError("chain_broken")
         out.append(r)
+    if seals:
+        check_seals(out, tokens, seals=seals, seal_keys=seal_keys, executor=executor)
     return out
+
+
+def check_seals(chain: Sequence[Mapping[str, Any]], tokens: Sequence[str], *, seals: Sequence[str],
+                seal_keys: KeySet | None, executor: str) -> None:
+    if seal_keys is None:
+        raise OACError("malformed", "seals need the signer's keys")
+    by_seq = {r["seq"]: tokens[i] for i, r in enumerate(chain)}
+    for token in seals:
+        s = verify(token, seal_keys, SEAL_TYP)
+        shapes.seal(s)
+        if chain and s["sub"] != chain[0]["sub"]:
+            raise OACError("subject_mismatch")
+        if s["executor"] != executor or s["seq"] not in by_seq or s["head"] != token_digest(by_seq[s["seq"]]):
+            raise OACError("seal_mismatch", "the seal does not match this chain")

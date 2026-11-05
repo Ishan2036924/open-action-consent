@@ -24,6 +24,11 @@ op-specific value. Ops:
 | `verify_chain` | `tokens`, `keys`, `executor`, `sub` | ok / error |
 | `check_undo` | `token`, `keys`, `executor`, `receipt_token`, `receipt_keys`, `now`, `seen_nonces`, `undone`, `compensation` | ok / error |
 
+| `status_bit` | `encoded_list`, `index` | `{"revoked": bool}` |
+| `metadata_url` | `iss` | `{"url": string}` |
+| `keyset_from` | `docs` ([[iss, metadata], ...]), `kid` | `{"issuer": string}` |
+
+`check_mandate` also takes `status_lists` ({list id: token}); `verify_chain` takes `seals` and `seal_keys`.
 `keys` are grouped by issuer: `{"<iss>": [<public JWK>, ...]}`. Vector files are read with the strict parser.
 
 Test keys: `key` labels map to `sha-256("oac-v0.1 test key: " + label)` as the Ed25519 seed (ES256: that value

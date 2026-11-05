@@ -157,6 +157,25 @@
     },
     "supersedes": {
       "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "status": {
+      "description": "Where the signer publishes this Mandate's revocation bit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "list",
+        "index"
+      ],
+      "properties": {
+        "list": {
+          "$ref": "urn:oac:0.1:common#/$defs/id"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777215
+        }
+      }
     }
   }
 }

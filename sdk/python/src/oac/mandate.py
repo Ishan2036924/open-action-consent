@@ -11,6 +11,7 @@ from oac.consent import check_time
 from oac.errors import OACError
 from oac.jcs import canonical
 from oac.jws import KeySet, SigningKey, sign, verify
+from oac.status import is_revoked
 from oac.tiers import tier_for
 
 TYP = "oac-mandate+jws"
@@ -47,18 +48,20 @@ def check_mandate(
     tainted: bool,
     usage: Mapping[str, int] | None = None,
     revoked: Collection[str] = (),
+    status_lists: Mapping[str, str] | None = None,
     policy_floor: str = "A",
 ) -> dict[str, Any]:
     """`holder` and `sub` come from the executor's own authentication; `tainted` from the host runtime that saw what
     entered the run (never from the model), and it has no default on purpose; `usage` from the executor's own
-    counters; `revoked` = ids the signer revoked or a later mandate superseded."""
+    counters; `revoked` = ids the signer revoked or a later mandate superseded; `status_lists` = list id -> signed
+    status list token, needed when the mandate carries `status`."""
     p = verify(token, keys, TYP)
     shapes.mandate(p)
     if canonical(p["holder"]) != canonical(holder):
         raise OACError("holder_mismatch")
     if p["sub"] != sub:
         raise OACError("subject_mismatch", "the mandate is another person's")
-    if p["id"] in revoked:
+    if p["id"] in revoked or is_revoked(p, lists=status_lists or {}, keys=keys, now=now):
         raise OACError("revoked")
     check_time(p, now, MAX_S)
     shapes.action(dict(action))

@@ -56,6 +56,9 @@ CODES = frozenset(
         "revoked",
         "already_undone",
         "compensation_mismatch",
+        # 0.1 gap closers: status lists and seals
+        "status_unknown",
+        "seal_mismatch",
     }
 )
 

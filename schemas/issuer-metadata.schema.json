@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oac:0.1:issuer-metadata",
+  "title": "OAC v0.1 Issuer metadata",
+  "description": "Published by a signer or executor at https://host[:port]/.well-known/oac-issuer[/path] for issuer https://host[:port][/path] (the RFC 8414 pattern). issuer must equal the issuer exactly. Public keys only: a private member such as d is refused. One key belongs to one issuer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "oac",
+    "type",
+    "issuer",
+    "keys"
+  ],
+  "properties": {
+    "oac": {
+      "$ref": "urn:oac:0.1:common#/$defs/version"
+    },
+    "type": {
+      "const": "issuer-metadata"
+    },
+    "issuer": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "keys": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kty",
+          "crv",
+          "x"
+        ],
+        "properties": {
+          "kty": {
+            "enum": [
+              "OKP",
+              "EC"
+            ]
+          },
+          "crv": {
+            "enum": [
+              "Ed25519",
+              "P-256"
+            ]
+          },
+          "x": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "y": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "kid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "alg": {
+            "enum": [
+              "EdDSA",
+              "ES256"
+            ]
+          },
+          "use": {
+            "const": "sig"
+          }
+        }
+      }
+    },
+    "status_lists": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "urn:oac:0.1:common#/$defs/id"
+      }
+    }
+  }
+}

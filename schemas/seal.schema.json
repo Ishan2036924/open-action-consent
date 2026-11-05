@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oac:0.1:seal",
+  "title": "OAC v0.1 Seal (JWS payload, typ oac-seal+jws)",
+  "description": "Signed by the person's signer: this person's receipt chain at this executor reached seq with the receipt whose token_digest is head. A verifier holding a seal detects any later rewrite of receipts up to seq.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "oac",
+    "type",
+    "iss",
+    "sub",
+    "executor",
+    "seq",
+    "head",
+    "iat"
+  ],
+  "properties": {
+    "oac": {
+      "$ref": "urn:oac:0.1:common#/$defs/version"
+    },
+    "type": {
+      "const": "seal"
+    },
+    "iss": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "sub": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "executor": {
+      "$ref": "urn:oac:0.1:common#/$defs/id"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "head": {
+      "$ref": "urn:oac:0.1:common#/$defs/digest"
+    },
+    "iat": {
+      "$ref": "urn:oac:0.1:common#/$defs/time"
+    }
+  }
+}
