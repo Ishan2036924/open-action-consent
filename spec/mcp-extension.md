@@ -17,7 +17,7 @@ each request's `_meta`:
   "io.modelcontextprotocol/protocolVersion": "2026-07-28",
   "io.modelcontextprotocol/clientCapabilities": {
     "elicitation": {"url": {}},
-    "extensions": {"com.atlasiw/oac": {"version": "0.1"}}
+    "extensions": {"com.atlasiw/oac": {"version": "0.2"}}
   }
 }}
 ```
@@ -26,7 +26,7 @@ A server advertises it in `server/discover` → `capabilities.extensions`:
 
 ```json
 {"resultType": "complete", "supportedVersions": ["2026-07-28"],
- "capabilities": {"tools": {}, "extensions": {"com.atlasiw/oac": {"version": "0.1", "executor": "https://shop.example/oac"}}}}
+ "capabilities": {"tools": {}, "extensions": {"com.atlasiw/oac": {"version": "0.2", "executor": "https://shop.example/oac"}}}}
 ```
 
 `executor` is the value Consents must carry in `aud`.
@@ -37,7 +37,7 @@ Each tool in `tools/list` carries its Action Profile:
 
 ```json
 {"name": "book_table", "description": "Book a table", "inputSchema": {"type": "object"},
- "_meta": {"com.atlasiw/oac-profile": {"oac": "0.1", "type": "action-profile", "tool": "book_table",
+ "_meta": {"com.atlasiw/oac-profile": {"oac": "0.2", "type": "action-profile", "tool": "book_table",
    "effect": "write", "undo": {"kind": "compensate", "window_s": 86400}, "tier_floor": "A",
    "binds": {"payee": "restaurant", "when": "time", "count": "party"}}}}
 ```
@@ -63,7 +63,7 @@ signer (a page the model cannot read or drive), which shows the Preview and sign
       "url": "https://signer.example/oac/consent?r=pv_3f9a",
       "message": "Approve: Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancellation until 24 h before."}}},
   "requestState": "<integrity-protected blob>",
-  "_meta": {"com.atlasiw/oac-preview": {"oac": "0.1", "type": "preview", "...": "..."}}
+  "_meta": {"com.atlasiw/oac-preview": {"oac": "0.2", "type": "preview", "...": "..."}}
 }}
 ```
 
@@ -72,7 +72,7 @@ signer (a page the model cannot read or drive), which shows the Preview and sign
 - The Preview in `_meta` lets the client show the same fields; the signer's page is what the person approves.
 - The URL MUST NOT carry personal data or a pre-authenticated session (MCP's URL-mode rules).
 - How the signer hands the Consent to the executor (a server-to-server post, or the executor fetching it by preview
-  id) is between them; OAC 0.1 does not fix that endpoint.
+  id) is between them; OAC 0.2 does not fix that endpoint.
 
 ### 3.2 Retry: the server verifies and runs
 
@@ -98,8 +98,8 @@ way; which signers it trusts is its own policy (spec 3.3).
 
 When the server requires a passkey (spec 3.6), the device proof travels with the Consent: the signer page posts it
 together with the token, or the client attaches `_meta["com.atlasiw/oac-device-proof"]: {...}`. Without a valid proof
-the server refuses with the code from spec 3.6 and runs nothing. This key is reserved: the reference plug-ins (section
-7) do not read it yet, so a server that needs proofs checks them itself.
+the server refuses with the code from spec 3.6 and runs nothing. A proof posted with the token wins over one in
+`_meta`. The server keeps the proof with the token, next to the receipt.
 
 ### 3.3 The result carries the receipt
 
@@ -158,9 +158,9 @@ still keeps its receipt and undo for the person, even if the client never sees t
 
 `oac.mcp` in the Python package (official Python SDK, which has an extension interceptor and seals `requestState`) and
 `open-action-consent/mcp` in the npm package (official TypeScript SDK v2, which has neither, so the plug-in wraps each tool and signs
-its own state) implement this binding and are tested end to end through each SDK's in-memory client. Both handle occurrences (3.4);
-neither asks for device proofs yet. An executor that needs them calls `verify_consent` / `verifyConsent` with a
-device check itself.
+its own state) implement this binding and are tested end to end through each SDK's in-memory client. Both handle occurrences (3.4)
+and device proofs: the server's `device` option returns the passkey check an action needs (or none), and the plug-in
+fills in the proof that came with the Consent.
 
 ## 8. Relation to SEP-2848
 

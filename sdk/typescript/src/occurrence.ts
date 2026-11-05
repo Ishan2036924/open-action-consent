@@ -2,7 +2,7 @@
 
 import { OACError } from "./errors.ts";
 
-export type OccurrenceKey = [person: string, tool: string, occurrence: string];
+export type OccurrenceKey = [person: string, scope: string, occurrence: string];
 
 export interface OccurrenceStore {
   /** Mark the key running and return null, or return its blocking state. Must be atomic. */
@@ -28,8 +28,11 @@ export class MemoryOccurrences implements OccurrenceStore {
   state(key: OccurrenceKey): string | null { return this.s.get(JSON.stringify(key)) ?? null; }
 }
 
+/** Where the profile's occurrence ids are unique: its occurrence_scope, else the tool itself. */
+export const scope = (profile: Record<string, any>): string => profile.occurrence_scope ?? profile.tool;
+
 export function occurrenceKey(person: string, profile: Record<string, any>, args: Record<string, unknown>): OccurrenceKey | null {
-  return Object.hasOwn(profile, "occurrence") ? [person, profile.tool, args[profile.occurrence] as string] : null;
+  return Object.hasOwn(profile, "occurrence") ? [person, scope(profile), args[profile.occurrence] as string] : null;
 }
 
 function refuse(state: string | null): void {

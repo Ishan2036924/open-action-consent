@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:oac:0.1:receipt",
-  "title": "OAC v0.1 Receipt (JWS payload, typ oac-receipt+jws)",
+  "$id": "urn:oac:0.2:receipt",
+  "title": "OAC 0.2 Receipt (JWS payload, typ oac-receipt+jws)",
   "description": "The executor's signed record of one action, chained per person: prev = sha-256 of the previous receipt's whole compact token (null for seq 1). Rules beyond the schema: tier D never appears; authority kind tier only for tiers A and B; tier B (except an undo receipt) carries a native undo with until and token; undo none carries no until or token; an undo receipt names what it undoes.",
   "type": "object",
   "additionalProperties": false,
@@ -23,16 +23,16 @@
   ],
   "properties": {
     "oac": {
-      "$ref": "urn:oac:0.1:common#/$defs/version"
+      "$ref": "urn:oac:0.2:common#/$defs/version"
     },
     "type": {
       "const": "receipt"
     },
     "iss": {
-      "$ref": "urn:oac:0.1:common#/$defs/id"
+      "$ref": "urn:oac:0.2:common#/$defs/id"
     },
     "sub": {
-      "$ref": "urn:oac:0.1:common#/$defs/id"
+      "$ref": "urn:oac:0.2:common#/$defs/id"
     },
     "seq": {
       "type": "integer",
@@ -45,18 +45,18 @@
           "type": "null"
         },
         {
-          "$ref": "urn:oac:0.1:common#/$defs/digest"
+          "$ref": "urn:oac:0.2:common#/$defs/digest"
         }
       ]
     },
     "iat": {
-      "$ref": "urn:oac:0.1:common#/$defs/time"
+      "$ref": "urn:oac:0.2:common#/$defs/time"
     },
     "tool": {
-      "$ref": "urn:oac:0.1:common#/$defs/tool"
+      "$ref": "urn:oac:0.2:common#/$defs/tool"
     },
     "tier": {
-      "$ref": "urn:oac:0.1:common#/$defs/tier"
+      "$ref": "urn:oac:0.2:common#/$defs/tier"
     },
     "authority": {
       "type": "object",
@@ -80,7 +80,7 @@
         },
         "digest": {
           "description": "token_digest of the exact Consent, Mandate or Undo token the executor verified. The executor keeps that token.",
-          "$ref": "urn:oac:0.1:common#/$defs/digest"
+          "$ref": "urn:oac:0.2:common#/$defs/digest"
         }
       },
       "allOf": [
@@ -118,10 +118,10 @@
       ]
     },
     "action": {
-      "$ref": "urn:oac:0.1:common#/$defs/digest"
+      "$ref": "urn:oac:0.2:common#/$defs/digest"
     },
     "preview": {
-      "$ref": "urn:oac:0.1:common#/$defs/digest"
+      "$ref": "urn:oac:0.2:common#/$defs/digest"
     },
     "outcome": {
       "description": "unknown: the executor cannot tell whether the action happened (for example, the provider timed out).",
@@ -132,7 +132,7 @@
       ]
     },
     "result": {
-      "$ref": "urn:oac:0.1:common#/$defs/digest"
+      "$ref": "urn:oac:0.2:common#/$defs/digest"
     },
     "undo": {
       "type": "object",
@@ -149,7 +149,7 @@
           ]
         },
         "until": {
-          "$ref": "urn:oac:0.1:common#/$defs/time"
+          "$ref": "urn:oac:0.2:common#/$defs/time"
         },
         "token": {
           "type": "string",
@@ -159,7 +159,7 @@
       }
     },
     "undoes": {
-      "$ref": "urn:oac:0.1:common#/$defs/digest"
+      "$ref": "urn:oac:0.2:common#/$defs/digest"
     },
     "payment": {
       "type": "object",
@@ -195,7 +195,16 @@
     },
     "occurrence": {
       "description": "The occurrence id from the action's arguments, when the tool's profile names one.",
-      "$ref": "urn:oac:0.1:common#/$defs/occurrence"
+      "$ref": "urn:oac:0.2:common#/$defs/occurrence"
+    },
+    "occurrence_scope": {
+      "description": "The profile's occurrence scope, when it names one. Chain checks compare occurrences within a scope (the tool's name when absent).",
+      "$ref": "urn:oac:0.2:common#/$defs/occurrence"
     }
+  },
+  "dependentRequired": {
+    "occurrence_scope": [
+      "occurrence"
+    ]
   }
 }

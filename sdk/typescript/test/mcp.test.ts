@@ -3,15 +3,17 @@ import assert from "node:assert/strict";
 import * as z from "zod";
 import { McpServer, InMemoryTransport } from "@modelcontextprotocol/server";
 import { Client } from "@modelcontextprotocol/client";
-import { generate, KeySet, makeConsent, verify, verifyChain } from "../src/index.ts";
+import { generate, KeySet, makeConsent, verify, verifyChain, type DeviceCheck } from "../src/index.ts";
+import { passkeyProof } from "../src/testing.ts";
 import { ID, OAC, PREVIEW_KEY, RECEIPT_KEY } from "../src/mcp/index.ts";
 
 const EXECUTOR = "https://tables.example/oac", SIGNER = "https://signer.example", PERSON = "person:1";
 
-async function setup(opts: { approve?: boolean; tainted?: boolean; speaksOAC?: boolean } = {}) {
+async function setup(opts: { approve?: boolean; tainted?: boolean; speaksOAC?: boolean; device?: DeviceCheck; passkey?: any } = {}) {
   const personKey = generate();
   const oac = new OAC({ executor: EXECUTOR, key: generate(), signers: new KeySet({ [SIGNER]: [personKey.jwk] }),
-    consentUrl: (p) => `https://signer.example/consent?r=${p.id}`, person: () => PERSON, tainted: () => opts.tainted ?? false });
+    consentUrl: (p) => `https://signer.example/consent?r=${p.id}`, person: () => PERSON, tainted: () => opts.tainted ?? false,
+    device: opts.device ? () => opts.device! : undefined });
   const server = new McpServer({ name: "tables", version: "0.1.0" }, { capabilities: { tools: {}, extensions: { [ID]: oac.settings() } } as any });
   const log: string[] = [];
   oac.registerTool(server, "book_table", { description: "Book a table", inputSchema: z.object({ restaurant: z.string(), time: z.string(), party: z.number() }) },
@@ -26,7 +28,10 @@ async function setup(opts: { approve?: boolean; tainted?: boolean; speaksOAC?: b
   if (opts.speaksOAC !== false) client.setRequestHandler("elicitation/create", async (req: any) => {
     const preview = oac.preview(String(req.params.url).split("=").pop()!);
     seen.push(preview);
-    if (opts.approve !== false) oac.acceptConsent(makeConsent({ key: personKey, iss: SIGNER, sub: PERSON, aud: EXECUTOR, previews: [preview!], now: preview!.iat + 1 }));
+    if (opts.approve !== false) {
+      const token = makeConsent({ key: personKey, iss: SIGNER, sub: PERSON, aud: EXECUTOR, previews: [preview!], now: preview!.iat + 1 });
+      oac.acceptConsent(token, opts.passkey ? passkeyProof(token, opts.passkey) : undefined);
+    }
     return { action: opts.approve === false ? "decline" : "accept" } as any;
   });
   const [ct, st] = InMemoryTransport.createLinkedPair();
@@ -125,4 +130,21 @@ test("a tool error with an occurrence blocks a repeat until it is resolved", asy
   assert.deepEqual(log, ["held s_1"]);
   const chain = verifyChain(oac.receipts.get(PERSON)!, { keys: new KeySet({ [EXECUTOR]: [oac.o.key.jwk] }), executor: EXECUTOR });
   assert.deepEqual(chain.map((r) => r.outcome), ["unknown", "ok"]);
+});
+
+test("a server that needs a passkey runs only with a proof", async () => {
+  const passkey = generate("ES256");
+  const device: DeviceCheck = { proof: null, credentials: { "cred-1": passkey.jwk }, rp_id: "app.example", origins: ["https://app.example"] };
+  const book = { name: "book_table", arguments: { restaurant: "Nobu", time: "Fri 7:30 pm", party: 2 } };
+  const a = await setup({ device });
+  const without: any = await a.client.callTool(book);
+  assert.equal(without.isError, true);
+  assert.match(without.content[0].text, /device_proof_missing/);
+  assert.deepEqual(a.log, []);
+  const b = await setup({ device, passkey });
+  const r: any = await b.client.callTool(book);
+  assert.equal(r.isError ?? false, false);
+  assert.deepEqual(b.log, ["booked Nobu 2"]);
+  const authority = verify(r._meta[RECEIPT_KEY], new KeySet({ [EXECUTOR]: [b.oac.o.key.jwk] }), "oac-receipt+jws").authority;
+  assert.equal(b.oac.deviceProofs.get(authority.digest)!.consent, authority.digest);
 });

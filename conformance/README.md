@@ -1,9 +1,9 @@
 # Conformance
 
-`vectors/*.json` are the test cases every OAC 0.1 implementation must pass. Each file is:
+`vectors/*.json` are the test cases every OAC 0.2 implementation must pass. Each file is:
 
 ```json
-{"oac": "0.1", "about": "...", "cases": [{"name": "...", "op": "verify_consent", "input": {...}, "expect": {"ok": true}}]}
+{"oac": "0.2", "about": "...", "cases": [{"name": "...", "op": "verify_consent", "input": {...}, "expect": {"ok": true}}]}
 ```
 
 `expect` is `{"ok": true}`, `{"error": "<code>"}` (the first failing check, spec section 6.3, 7.3, 8.2, 8.3), or an
@@ -29,7 +29,7 @@ op-specific value. Ops:
 | `keyset_from` | `docs` ([[iss, metadata], ...]), `kid` | `{"issuer": string}` |
 
 `check_mandate` also takes `status_lists` ({list id: token}); `verify_chain` takes `seals` and `seal_keys`.
-`verify_consent`'s optional `device` is `{"proof": <device proof or null>, "credentials": {id: JWK}, "rp_id", "origins"}`
+`verify_consent`'s optional `device` is `{"proof": <device proof or null>, "credentials": {id: JWK}, "rp_id", "origins", "device_bound"?}`
 (spec 3.6); when present, the executor requires a device proof.
 `keys` are grouped by issuer: `{"<iss>": [<public JWK>, ...]}`. Vector files are read with the strict parser.
 

@@ -9,7 +9,7 @@ from typing import Any
 from oac.errors import OACError
 from oac.jcs import canonical
 
-VERSION = "0.1"
+VERSION = "0.2"
 EFFECTS = ("read", "write", "send", "pay", "delete")
 UNDO_KINDS = ("native", "compensate", "none")
 TIERS = ("A", "B", "C", "D")
@@ -134,6 +134,7 @@ def profile(v: Any) -> dict[str, Any]:
             "binds": (False, binds),
             "other_args": (False, others),
             "occurrence": (False, _re(_ARG)),
+            "occurrence_scope": (False, _re(_OCCURRENCE)),
         },
         "action profile",
     )
@@ -150,6 +151,8 @@ def profile(v: Any) -> dict[str, Any]:
         raise OACError("malformed", "action profile: a pay tool names its occurrence argument")
     if "occurrence" in v and v["occurrence"] not in set(bound) | set(v.get("other_args", [])):
         raise OACError("malformed", "action profile: the occurrence argument is not declared")
+    if "occurrence_scope" in v and "occurrence" not in v:
+        raise OACError("malformed", "action profile: an occurrence scope needs an occurrence")
     return v
 
 
@@ -351,9 +354,12 @@ def receipt(v: Any) -> dict[str, Any]:
             "undoes": (False, DIGEST),
             "payment": (False, _obj(payment, "payment")),
             "occurrence": (False, _re(_OCCURRENCE)),
+            "occurrence_scope": (False, _re(_OCCURRENCE)),
         },
         "receipt",
     )
+    if "occurrence_scope" in v and "occurrence" not in v:
+        raise OACError("malformed", "receipt: an occurrence scope needs an occurrence")
     return v
 
 

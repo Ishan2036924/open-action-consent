@@ -9,7 +9,7 @@ A JSON object, `"type": "dispute-pack"`:
 
 | Field | Holds |
 |---|---|
-| `oac`, `type` | `"0.1"`, `"dispute-pack"` |
+| `oac`, `type` | `"0.2"`, `"dispute-pack"` |
 | `sub` | the person |
 | `claim` | `{"kind": "not_authorized" \| "not_as_described" \| "not_received" \| "not_cancelled", "receipt": <token_digest>}` |
 | `mandate` | the Mandate token, if one was used |

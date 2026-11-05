@@ -6,10 +6,11 @@ import asyncio
 
 import pytest
 
-from oac import KeySet, OACError, generate, make_consent, token_digest, verify_chain
+from oac import DeviceCheck, KeySet, OACError, generate, make_consent, token_digest, verify_chain
 from oac.gate import ActionFailed, Gate, NeedsConsent
 from oac.jcs import parse
 from oac.jws import b64url_decode
+from oac.testing import passkey_proof
 
 EX, SIGNER, PERSON = "https://app.example/oac", "https://signer.example", "person:1"
 
@@ -186,3 +187,38 @@ def test_an_error_the_tool_marks_as_failed_allows_a_retry() -> None:
     with pytest.raises(ActionFailed):
         gate.run("book", {"slot": "s_1"}, full, person=PERSON, tainted=False)
     gate.run("book", {"slot": "s_1"}, lambda **a: "booked", person=PERSON, tainted=False)
+
+
+def test_a_gate_that_needs_a_passkey_runs_only_with_a_proof_over_that_consent() -> None:
+    key, passkey = generate(), generate("ES256")
+    need = DeviceCheck(None, {"cred-1": passkey.jwk}, "app.example", ["https://app.example"])
+    gate = Gate(executor=EX, key=generate(), signers=KeySet({SIGNER: [key.jwk]}),
+                device=lambda person, action: need if action["tool"] == "send_email" else None)
+    gate.profile("send_email", effect="send", binds={"to": "to", "title": "subject"}, other_args=["body"])
+    args = {"to": ["sam@example.com"], "subject": "Hi", "body": "See you at 6"}
+    sent: list[str] = []
+    with pytest.raises(NeedsConsent) as ask:
+        gate.run("send_email", args, lambda **a: sent.append("sent"), person=PERSON)
+    p = ask.value.preview
+    token = make_consent(key=key, iss=SIGNER, sub=PERSON, aud=EX, previews=[p], now=p["iat"] + 1)
+    assert gate.accept_consent(token)
+    assert code_of(lambda: gate.run("send_email", args, lambda **a: sent.append("sent"), person=PERSON)) == "device_proof_missing"
+    other = make_consent(key=key, iss=SIGNER, sub=PERSON, aud=EX, previews=[p], now=p["iat"] + 2)
+    assert not gate.accept_consent(other, proof=passkey_proof(other, passkey))  # never replaces the kept token
+    proof = passkey_proof(token, passkey)
+    assert gate.accept_consent(token, proof=proof)  # the same token may bring its proof later
+    _, receipt = gate.run("send_email", args, lambda **a: sent.append("sent"), person=PERSON)
+    assert sent == ["sent"] and gate.device_proofs[token_digest(token)] == proof
+
+
+def test_two_pay_tools_with_one_provider_scope_share_an_order() -> None:
+    gate, key = world()
+    binds = {"amount_minor": "amount", "currency": "currency", "payee": "shop"}
+    for tool in ("pay_order", "pay_express"):
+        gate.profile(tool, effect="pay", undo="compensate", window_s=86400, other_args=["order"], occurrence="order",
+                     occurrence_scope="stripe:acct_1", binds=binds)
+    approve_payment(gate, key)
+    _, receipt = gate.run("pay_order", PAY, lambda **a: "paid", person=PERSON)
+    assert parse(b64url_decode(receipt.split(".")[1]))["occurrence_scope"] == "stripe:acct_1"
+    # refused before the person is asked: the order already ran through the other tool
+    assert code_of(lambda: gate.run("pay_express", PAY, lambda **a: "paid", person=PERSON)) == "duplicate_occurrence"

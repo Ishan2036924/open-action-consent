@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:oac:0.1:device-proof",
-  "title": "OAC v0.1 Device Proof",
+  "$id": "urn:oac:0.2:device-proof",
+  "title": "OAC 0.2 Device Proof",
   "description": "A WebAuthn assertion from the person's passkey over one exact Consent token (spec 3.6). Not signed by OAC itself: the authenticator's signature covers authenticator_data followed by SHA-256(client_data_json), and the client data's challenge is SHA-256 of the Consent token's bytes.",
   "type": "object",
   "additionalProperties": false,
@@ -16,14 +16,14 @@
   ],
   "properties": {
     "oac": {
-      "$ref": "urn:oac:0.1:common#/$defs/version"
+      "$ref": "urn:oac:0.2:common#/$defs/version"
     },
     "type": {
       "const": "device-proof"
     },
     "consent": {
       "description": "token_digest of the Consent token this proof is for.",
-      "$ref": "urn:oac:0.1:common#/$defs/digest"
+      "$ref": "urn:oac:0.2:common#/$defs/digest"
     },
     "credential": {
       "description": "The credential id, base64url.",

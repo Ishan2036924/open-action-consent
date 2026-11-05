@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:oac:0.1:issuer-metadata",
-  "title": "OAC v0.1 Issuer metadata",
+  "$id": "urn:oac:0.2:issuer-metadata",
+  "title": "OAC 0.2 Issuer metadata",
   "description": "Published by a signer or executor at https://host[:port]/.well-known/oac-issuer[/path] for issuer https://host[:port][/path] (the RFC 8414 pattern). issuer must equal the issuer exactly. Public keys only: a private member such as d is refused. One key belongs to one issuer.",
   "type": "object",
   "additionalProperties": false,
@@ -13,13 +13,13 @@
   ],
   "properties": {
     "oac": {
-      "$ref": "urn:oac:0.1:common#/$defs/version"
+      "$ref": "urn:oac:0.2:common#/$defs/version"
     },
     "type": {
       "const": "issuer-metadata"
     },
     "issuer": {
-      "$ref": "urn:oac:0.1:common#/$defs/id"
+      "$ref": "urn:oac:0.2:common#/$defs/id"
     },
     "keys": {
       "type": "array",
@@ -79,7 +79,7 @@
       "maxItems": 20,
       "uniqueItems": true,
       "items": {
-        "$ref": "urn:oac:0.1:common#/$defs/id"
+        "$ref": "urn:oac:0.2:common#/$defs/id"
       }
     }
   }

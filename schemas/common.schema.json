@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:oac:0.1:common",
-  "title": "OAC v0.1 shared definitions",
+  "$id": "urn:oac:0.2:common",
+  "title": "OAC 0.2 shared definitions",
   "description": "Every OAC number is an integer (money in minor units, time in unix seconds) within +-(2^53 - 1). Every signed object is a JWS (RFC 7515 compact) whose header is exactly {alg, kid, typ} and whose header and payload are RFC 8785 (JCS) canonical JSON. Every argument of an action is declared by its tool's Action Profile.",
   "$defs": {
     "version": {
-      "const": "0.1"
+      "const": "0.2"
     },
     "id": {
       "type": "string",

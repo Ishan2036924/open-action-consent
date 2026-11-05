@@ -4,7 +4,7 @@
 
 Agents can open pages, read them, fill fields and follow links on their own. Anything final (Book, Pay, Send,
 Submit, Delete, Sign up...) goes through one tool, `submit`, which needs the person's signed yes for *that exact
-page*, using Open Action Consent ([spec](../spec/oac-v0.1.md)).
+page*, using Open Action Consent ([spec](../spec/oac.md)).
 
 Install: `pip install "open-action-consent[browser]"`, then `playwright install chromium`.
 
@@ -45,4 +45,4 @@ headless Chromium and a local test site (a booking form, a page with hidden inje
 a sign-in form). `test_load_bearing.py` switches the final-button detector, the page-change check and the
 CAPTCHA detector off one at a time and proves a test then fails.
 
-Status: 0.1, one person per process, state in memory. Not yet for unattended production use.
+Status: early, one person per process, state in memory. Not yet for unattended production use.

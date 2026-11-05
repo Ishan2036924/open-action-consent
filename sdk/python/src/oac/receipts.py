@@ -75,9 +75,10 @@ def verify_chain(
             if r["prev"] != token_digest(tokens[i - 1]):
                 raise OACError("chain_broken")
         if "occurrence" in r and r["outcome"] == "ok" and r["authority"]["kind"] != "undo":
-            if (r["tool"], r["occurrence"]) in done:
+            key = (r.get("occurrence_scope", r["tool"]), r["occurrence"])
+            if key in done:
                 raise OACError("duplicate_occurrence", "the same occurrence ran twice")
-            done.add((r["tool"], r["occurrence"]))
+            done.add(key)
         out.append(r)
     if seals:
         check_seals(out, tokens, seals=seals, seal_keys=seal_keys, executor=executor)

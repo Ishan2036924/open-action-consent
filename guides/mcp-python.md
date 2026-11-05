@@ -36,5 +36,13 @@ signed Consent (it is verified on arrival and never replaced). A client that doe
 elicitation gets `-32021`. The SDK seals `requestState` itself, so a retry with changed arguments is refused even
 before OAC's own check.
 
-Tests: `sdk/python/tests/integrations/mcp` (end to end through the SDK's in-memory client). Stores are in memory in 0.1;
+**Passkeys.** To require a passkey for some actions, pass `device=lambda person, action: DeviceCheck(None,
+credentials, rp_id, origins)` (or `None` when no passkey is needed). The signer page posts the proof with the token,
+`oac.accept_consent(token, proof=proof)`, or the client sends it in `_meta["com.atlasiw/oac-device-proof"]`. Without a
+valid proof nothing runs (spec 3.6). `oac.device_proofs` keeps each proof by the token's digest, next to `oac.tokens`.
+
+**Orders across tools.** Two pay tools that use one provider account pass the same `occurrence_scope` to
+`oac.profile(...)`, so an order paid through one cannot be paid again through the other (spec 5.1).
+
+Tests: `sdk/python/tests/integrations/mcp` (end to end through the SDK's in-memory client). Stores are in memory for now;
 production servers keep previews, consents, nonces (atomic) and receipts in their own database.

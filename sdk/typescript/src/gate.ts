@@ -5,10 +5,11 @@ import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";
 import { digest, KeySet, tokenDigest, verify, type SigningKey } from "./jws.ts";
 import { MemoryNonces, verifyConsent, type NonceStore } from "./consent.ts";
-import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, type OccurrenceKey, type OccurrenceStore } from "./occurrence.ts";
+import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, scope, type OccurrenceKey, type OccurrenceStore } from "./occurrence.ts";
 import { actionDigest, buildPreview } from "./preview.ts";
 import { makeReceipt } from "./receipts.ts";
 import { tierFor } from "./tiers.ts";
+import type { DeviceCheck } from "./webauthn.ts";
 
 export class NeedsConsent extends Error {
   readonly preview: Record<string, any>;
@@ -18,9 +19,12 @@ export class NeedsConsent extends Error {
 /** Throw from a tool when the action surely did not happen. Other errors count as unknown. */
 export class ActionFailed extends Error {}
 
+/** Returns the passkey check a tier C action needs (its proof is filled in by the gate), or null when none is needed. */
+export type DevicePolicy = (person: string, action: Record<string, any>) => DeviceCheck | null;
+
 export type ProfileSpec = {
   effect: string; undo?: string; windowS?: number; tierFloor?: string; binds?: Record<string, string>; otherArgs?: string[];
-  occurrence?: string;
+  occurrence?: string; occurrenceScope?: string;
 };
 
 export class Gate {
@@ -32,11 +36,15 @@ export class Gate {
   readonly consents = new Map<string, string>();
   readonly receipts = new Map<string, string[]>();
   readonly tokens = new Map<string, string>(); // authority digest in a receipt -> the exact token
+  readonly proofs = new Map<string, Record<string, any>>(); // preview digest -> device proof sent with the consent
+  readonly deviceProofs = new Map<string, Record<string, any>>(); // authority digest -> the passkey proof that came with it
+  private readonly device?: DevicePolicy;
   private readonly clock: () => number;
   private readonly summarize: (a: Record<string, any>) => string;
 
   constructor(o: { executor: string; key: SigningKey; signers: KeySet; nonces?: NonceStore; occurrences?: OccurrenceStore;
-    policyFloor?: string; summarize?: (a: Record<string, any>) => string; clock?: () => number }) {
+    policyFloor?: string; summarize?: (a: Record<string, any>) => string; clock?: () => number; device?: DevicePolicy }) {
+    this.device = o.device;
     this.executor = o.executor; this.key = o.key; this.signers = o.signers; this.nonces = o.nonces ?? new MemoryNonces();
     this.occurrences = o.occurrences ?? new MemoryOccurrences();
     this.policyFloor = o.policyFloor ?? "A"; this.clock = o.clock ?? (() => Math.floor(Date.now() / 1000));
@@ -44,10 +52,11 @@ export class Gate {
   }
 
   profile(tool: string, p: ProfileSpec): Record<string, any> {
-    const doc: Record<string, any> = { oac: "0.1", type: "action-profile", tool, effect: p.effect, undo: { kind: p.undo ?? "none", window_s: p.windowS ?? 0 },
+    const doc: Record<string, any> = { oac: shapes.VERSION, type: "action-profile", tool, effect: p.effect, undo: { kind: p.undo ?? "none", window_s: p.windowS ?? 0 },
       tier_floor: p.tierFloor ?? "A", binds: { ...(p.binds ?? {}) } };
     if (p.otherArgs?.length) doc.other_args = [...p.otherArgs];
     if (p.occurrence) doc.occurrence = p.occurrence;
+    if (p.occurrenceScope) doc.occurrence_scope = p.occurrenceScope;
     this.profiles[tool] = shapes.profile(doc);
     return doc;
   }
@@ -79,13 +88,19 @@ export class Gate {
 
   previewById(id: string): Record<string, any> | undefined { return [...this.pending.values()].find((p) => p.id === id); }
 
-  acceptConsent(token: string): boolean {
+  /** Keep a valid Consent, and the passkey proof sent with it, for a pending Preview.
+   * Never replaces a different token already kept; the same token may bring a new proof. */
+  acceptConsent(token: string, proof?: Record<string, any>): boolean {
     let c: Record<string, any>;
     try { c = verify(token, this.signers, "oac-consent+jws"); shapes.consent(c); } catch { return false; }
     const pending = new Set([...this.pending.values()].map(digest));
     let kept = false;
     for (const item of c.aud === this.executor ? c.items : []) {
-      if (pending.has(item.preview) && !this.consents.has(item.preview)) { this.consents.set(item.preview, token); kept = true; }
+      if (pending.has(item.preview) && (this.consents.get(item.preview) ?? token) === token) {
+        this.consents.set(item.preview, token);
+        if (proof !== undefined) this.proofs.set(item.preview, proof);
+        kept = true;
+      }
     }
     return kept;
   }
@@ -104,17 +119,20 @@ export class Gate {
       checkOpen(this.occurrences, occurrence);
       throw new NeedsConsent(preview);
     }
+    const need = this.device?.(person, action) ?? null;
+    const device = need ? { ...need, proof: this.proofs.get(pd) ?? null } : undefined;
     const claimed = claim(this.occurrences, occurrence);
     let c: Record<string, any>;
     try {
       c = verifyConsent(token, { keys: this.signers, executor: this.executor, sub: person, previews: [preview], actions: [action],
-        profiles: this.profiles, now: this.clock(), nonces: this.nonces, policyFloor: this.policyFloor, tainted });
+        profiles: this.profiles, now: this.clock(), nonces: this.nonces, policyFloor: this.policyFloor, tainted, device });
     } catch (e) {
       if (claimed) this.occurrences.release(claimed);
       throw e;
     }
     this.pending.delete(person + "\0" + actionDigest(action));
     this.tokens.set(tokenDigest(token), token);
+    if (device?.proof) this.deviceProofs.set(tokenDigest(token), device.proof);
     return ["C", { kind: "consent", ref: c.jti, digest: tokenDigest(token) }, pd, claimed];
   }
 
@@ -139,7 +157,7 @@ export class Gate {
 
   /** Record what the provider says happened to an unknown attempt: ok or failed. */
   resolve(tool: string, occurrence: string, o: { person: string; outcome: "ok" | "failed" }): void {
-    resolve(this.occurrences, [o.person, tool, occurrence], o.outcome);
+    resolve(this.occurrences, [o.person, scope(this.prof(tool)), occurrence], o.outcome);
   }
 
   private receipt(person: string, tool: string, args: Record<string, unknown>, tier: string, authority: Record<string, unknown>,
@@ -159,6 +177,7 @@ export class Gate {
       iat: now, tool, tier, authority, action: actionDigest({ tool, args: { ...args } }), outcome, result: rd, undo };
     if (pd) payload.preview = pd;
     if (Object.hasOwn(profile, "occurrence")) payload.occurrence = args[profile.occurrence];
+    if (Object.hasOwn(profile, "occurrence_scope")) payload.occurrence_scope = profile.occurrence_scope;
     const r = makeReceipt(this.key, payload);
     chain.push(r);
     return r;

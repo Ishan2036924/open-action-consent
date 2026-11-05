@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:oac:0.1:mandate",
-  "title": "OAC v0.1 Mandate (JWS payload, typ oac-mandate+jws)",
+  "$id": "urn:oac:0.2:mandate",
+  "title": "OAC 0.2 Mandate (JWS payload, typ oac-mandate+jws)",
   "description": "A standing, bounded, expiring permission for one holder. Covers tier C only; never tier D; never waives the taint floor. Rules beyond the schema: exp - iat <= 30 days; a pay tool needs amount.per_call_minor, amount.per_day_minor and payees; a tool that sends to people needs recipients; a loosening replacement needs fresh proof of the person.",
   "type": "object",
   "additionalProperties": false,
@@ -21,19 +21,19 @@
   ],
   "properties": {
     "oac": {
-      "$ref": "urn:oac:0.1:common#/$defs/version"
+      "$ref": "urn:oac:0.2:common#/$defs/version"
     },
     "type": {
       "const": "mandate"
     },
     "id": {
-      "$ref": "urn:oac:0.1:common#/$defs/id"
+      "$ref": "urn:oac:0.2:common#/$defs/id"
     },
     "iss": {
-      "$ref": "urn:oac:0.1:common#/$defs/id"
+      "$ref": "urn:oac:0.2:common#/$defs/id"
     },
     "sub": {
-      "$ref": "urn:oac:0.1:common#/$defs/id"
+      "$ref": "urn:oac:0.2:common#/$defs/id"
     },
     "holder": {
       "type": "object",
@@ -51,7 +51,7 @@
           ]
         },
         "id": {
-          "$ref": "urn:oac:0.1:common#/$defs/id"
+          "$ref": "urn:oac:0.2:common#/$defs/id"
         }
       }
     },
@@ -66,7 +66,7 @@
       "maxItems": 32,
       "uniqueItems": true,
       "items": {
-        "$ref": "urn:oac:0.1:common#/$defs/tool"
+        "$ref": "urn:oac:0.2:common#/$defs/tool"
       }
     },
     "bounds": {
@@ -104,13 +104,13 @@
           "minProperties": 2,
           "properties": {
             "currency": {
-              "$ref": "urn:oac:0.1:common#/$defs/currency"
+              "$ref": "urn:oac:0.2:common#/$defs/currency"
             },
             "per_call_minor": {
-              "$ref": "urn:oac:0.1:common#/$defs/minor"
+              "$ref": "urn:oac:0.2:common#/$defs/minor"
             },
             "per_day_minor": {
-              "$ref": "urn:oac:0.1:common#/$defs/minor"
+              "$ref": "urn:oac:0.2:common#/$defs/minor"
             }
           }
         },
@@ -141,22 +141,22 @@
           "maxItems": 100,
           "uniqueItems": true,
           "items": {
-            "$ref": "urn:oac:0.1:common#/$defs/host"
+            "$ref": "urn:oac:0.2:common#/$defs/host"
           }
         }
       }
     },
     "iat": {
-      "$ref": "urn:oac:0.1:common#/$defs/time"
+      "$ref": "urn:oac:0.2:common#/$defs/time"
     },
     "exp": {
-      "$ref": "urn:oac:0.1:common#/$defs/time"
+      "$ref": "urn:oac:0.2:common#/$defs/time"
     },
     "signer": {
-      "$ref": "urn:oac:0.1:common#/$defs/signer"
+      "$ref": "urn:oac:0.2:common#/$defs/signer"
     },
     "supersedes": {
-      "$ref": "urn:oac:0.1:common#/$defs/id"
+      "$ref": "urn:oac:0.2:common#/$defs/id"
     },
     "status": {
       "description": "Where the signer publishes this Mandate's revocation bit.",
@@ -168,7 +168,7 @@
       ],
       "properties": {
         "list": {
-          "$ref": "urn:oac:0.1:common#/$defs/id"
+          "$ref": "urn:oac:0.2:common#/$defs/id"
         },
         "index": {
           "type": "integer",

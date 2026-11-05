@@ -20,7 +20,7 @@ from oac import (
 from oac.jws import b64url_decode
 
 PROFILE = {
-    "oac": "0.1",
+    "oac": "0.2",
     "type": "action-profile",
     "tool": "send_email",
     "effect": "send",
@@ -35,8 +35,8 @@ ACTION = {"tool": "send_email", "args": {"to": ["sam@example.com"], "subject": "
 @pytest.mark.parametrize("alg", ["EdDSA", "ES256"])
 def test_sign_verify_round_trip(alg: str) -> None:
     key = generate(alg)
-    token = sign({"oac": "0.1", "n": 1, "iss": "me"}, key, "t+jws")
-    assert verify(token, KeySet({"me": [key.jwk]}), "t+jws") == {"oac": "0.1", "n": 1, "iss": "me"}
+    token = sign({"oac": "0.2", "n": 1, "iss": "me"}, key, "t+jws")
+    assert verify(token, KeySet({"me": [key.jwk]}), "t+jws") == {"oac": "0.2", "n": 1, "iss": "me"}
     with pytest.raises(OACError) as e:
         verify(token, KeySet({"me": [generate(alg).jwk]}), "t+jws")
     assert e.value.code == "unknown_key"

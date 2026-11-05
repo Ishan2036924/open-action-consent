@@ -13,8 +13,9 @@ from mcp.server.mcpserver import MCPServer
 from mcp.shared.exceptions import MCPError
 from mcp_types import ElicitResult
 
-from oac import KeySet, generate, make_consent, verify, verify_chain
+from oac import DeviceCheck, KeySet, generate, make_consent, token_digest, verify, verify_chain
 from oac.mcp import ID, PREVIEW_KEY, RECEIPT_KEY, OACExtension
+from oac.testing import passkey_proof
 
 EXECUTOR, SIGNER, PERSON = "https://tables.example/oac", "https://signer.example", "person:1"
 pytestmark = pytest.mark.anyio
@@ -24,10 +25,10 @@ class SpeaksOAC(ClientExtension):
     identifier = ID
 
 
-def build(person_key: Any, *, tainted: bool = False) -> tuple[MCPServer, OACExtension, list[str]]:
+def build(person_key: Any, *, tainted: bool = False, device: Any = None) -> tuple[MCPServer, OACExtension, list[str]]:
     oac = OACExtension(executor=EXECUTOR, key=generate(), signers=KeySet({SIGNER: [person_key.jwk]}),
                        consent_url=lambda p: f"https://signer.example/consent?r={p['id']}", person=lambda ctx: PERSON,
-                       tainted=lambda ctx: tainted)
+                       tainted=lambda ctx: tainted, device=device)
     server = MCPServer("tables", extensions=[oac])
     log: list[str] = []
 
@@ -50,16 +51,18 @@ def build(person_key: Any, *, tainted: bool = False) -> tuple[MCPServer, OACExte
     return server, oac, log
 
 
-def approver(oac: OACExtension, person_key: Any, *, approve: bool = True, seen: list[dict] | None = None):
-    """Plays the person's signer page: shows the preview, signs, posts the Consent to the executor."""
+def approver(oac: OACExtension, person_key: Any, *, approve: bool = True, seen: list[dict] | None = None,
+             passkey: Any = None):
+    """Plays the person's signer page: shows the preview, signs, posts the Consent (and a passkey proof) to the executor."""
 
     async def callback(context: Any, params: Any) -> ElicitResult:
         preview = oac.preview(params.url.rsplit("=", 1)[1])
         if seen is not None:
             seen.append(preview)
         if approve:
-            oac.accept_consent(make_consent(key=person_key, iss=SIGNER, sub=PERSON, aud=EXECUTOR, previews=[preview],
-                                            now=preview["iat"] + 1))
+            token = make_consent(key=person_key, iss=SIGNER, sub=PERSON, aud=EXECUTOR, previews=[preview],
+                                 now=preview["iat"] + 1)
+            oac.accept_consent(token, proof=passkey_proof(token, passkey) if passkey else None)
         return ElicitResult(action="accept" if approve else "decline")
 
     return callback
@@ -165,3 +168,19 @@ async def test_a_tool_error_with_an_occurrence_blocks_a_repeat_until_resolved() 
     assert again.is_error and "duplicate_occurrence" in again.content[0].text
     chain = verify_chain(oac.receipts[PERSON], keys=KeySet({EXECUTOR: [oac.key.jwk]}), executor=EXECUTOR)
     assert [r["outcome"] for r in chain] == ["unknown", "ok"]
+
+
+async def test_a_server_that_needs_a_passkey_runs_only_with_a_proof() -> None:
+    key, passkey = generate(), generate("ES256")
+    need = DeviceCheck(None, {"cred-1": passkey.jwk}, "app.example", ["https://app.example"])
+    server, oac, log = build(key, device=lambda person, action: need)
+    book = {"restaurant": "Nobu", "time": "Fri 7:30 pm", "party": 2}
+    async with Client(server, extensions=[SpeaksOAC()], elicitation_callback=approver(oac, key)) as c:
+        without = await c.call_tool("book_table", book)
+    assert without.is_error and "device_proof_missing" in without.content[0].text and log == []
+    server, oac, log = build(key, device=lambda person, action: need)
+    async with Client(server, extensions=[SpeaksOAC()], elicitation_callback=approver(oac, key, passkey=passkey)) as c:
+        r = await c.call_tool("book_table", book)
+    assert not r.is_error and log == ["booked Nobu 2"]
+    authority = verify(r.meta[RECEIPT_KEY], KeySet({EXECUTOR: [oac.key.jwk]}), "oac-receipt+jws")["authority"]
+    assert oac.device_proofs[authority["digest"]]["consent"] == authority["digest"]

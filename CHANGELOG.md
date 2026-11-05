@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.4.0 (2026-11-05)
+
+Closes five of the six known gaps listed in 0.3.0. Breaking: objects now say `"oac":"0.2"`.
+
+- Wire version: every object is labelled `"oac":"0.2"`, and `"0.1"` objects are refused, so data from SDKs up to
+  0.3.0 cannot be mistaken for this draft. The spec moved to `spec/oac.md`; the old path points there. Schema ids
+  are now `urn:oac:0.2:...`.
+- Device proofs in the gates and MCP plug-ins: a `device` option returns the passkey check an action needs.
+  `accept_consent(token, proof)` / `acceptConsent(token, proof)` takes the proof from the signer page; the MCP
+  plug-ins also read `_meta["com.atlasiw/oac-device-proof"]`. Proofs are kept in `device_proofs` / `deviceProofs`.
+  The same token may be posted again to bring its proof; a different token still never replaces a kept one.
+- Occurrence scope: a profile may name `occurrence_scope` (for example one provider account). Tools with the same
+  scope share one record per order, so two pay tools cannot each pay the same order. Receipts carry the scope, and
+  chain verification compares occurrences within it.
+- WebAuthn backup flags: a proof whose BS flag is set without BE is malformed. `DeviceCheck.device_bound` refuses
+  passkeys that can sync (`not_device_bound`, new error code).
+- SDK parity: Python exports `Gate`, `NeedsConsent`, `ActionFailed`, `MemoryOccurrences` and `OccurrenceStore` at
+  the top level, like TypeScript. TypeScript gains `passkeyProof` in `open-action-consent/testing`, like Python's
+  `oac.testing.passkey_proof`.
+- 10 new shared test vectors (240 in total).
+
+Still open: the exact mapping between a device proof and an EP authorization context.
+
 ## 0.3.0 (2026-11-05)
 
 Changes from an outside review. Breaking for receipts and for `pay` tool profiles.

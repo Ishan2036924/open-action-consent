@@ -2,15 +2,15 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildPreview, canonical, generate, KeySet, makeConsent, MemoryNonces, OACError, parse, sign, verify, verifyConsent } from "../src/index.ts";
 
-const PROFILE = { oac: "0.1", type: "action-profile", tool: "send_email", effect: "send", undo: { kind: "none", window_s: 0 }, tier_floor: "A", binds: { to: "to", title: "subject" }, other_args: ["body"] };
+const PROFILE = { oac: "0.2", type: "action-profile", tool: "send_email", effect: "send", undo: { kind: "none", window_s: 0 }, tier_floor: "A", binds: { to: "to", title: "subject" }, other_args: ["body"] };
 const ACTION = { tool: "send_email", args: { to: ["sam@example.com"], subject: "Hi", body: "See you" } };
 const code = (f: () => unknown) => { try { f(); } catch (e) { if (e instanceof OACError) return e.code; throw e; } return "no error"; };
 
 for (const alg of ["EdDSA", "ES256"]) {
   test(`${alg} round trip and unknown key`, () => {
     const key = generate(alg);
-    const token = sign({ oac: "0.1", n: 1, iss: "me" }, key, "t+jws");
-    assert.deepEqual(verify(token, new KeySet({ me: [key.jwk] }), "t+jws"), { oac: "0.1", n: 1, iss: "me" });
+    const token = sign({ oac: "0.2", n: 1, iss: "me" }, key, "t+jws");
+    assert.deepEqual(verify(token, new KeySet({ me: [key.jwk] }), "t+jws"), { oac: "0.2", n: 1, iss: "me" });
     assert.equal(code(() => verify(token, new KeySet({ me: [generate(alg).jwk] }), "t+jws")), "unknown_key");
     assert.equal(code(() => verify(token, new KeySet({ someone: [key.jwk] }), "t+jws")), "wrong_issuer");
   });

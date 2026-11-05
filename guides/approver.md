@@ -34,5 +34,5 @@ on every POST, single-use enrolment code compared in constant time, everything r
 Tests (`sdk/python/tests/integrations/approver`) drive a real headless Chromium through enrolment, approval, decline, hostile preview
 text and cross-origin posts, and verify the browser-made Consent with the Python SDK.
 
-0.1 limits: one person per Approver, in-memory state, no payment references yet (a pay action needs the rail's
+Current limits: one person per Approver, in-memory state, no payment references yet (a pay action needs the rail's
 reference, which this page does not collect), no key recovery: losing the browser profile means enrolling again.

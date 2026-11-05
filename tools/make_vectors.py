@@ -26,7 +26,7 @@ from oac.undo import make_undo  # noqa: E402
 from oac.receipts import make_seal  # noqa: E402
 from oac.status import encode, make_status_list  # noqa: E402
 from oac.testing import passkey_proof  # noqa: E402
-from oac.webauthn import USER_PRESENT, USER_VERIFIED  # noqa: E402
+from oac.webauthn import BACKED_UP, BACKUP_ELIGIBLE, USER_PRESENT, USER_VERIFIED  # noqa: E402
 
 NOW = 1793836800  # 2026-11-05T00:00:00Z
 EXECUTOR = "https://shop.example/oac"
@@ -50,7 +50,7 @@ CONSENT_TYP, MANDATE_TYP, RECEIPT_TYP = "oac-consent+jws", "oac-mandate+jws", "o
 def profile(tool: str, effect: str, kind: str, window: int, binds: dict[str, str], floor: str = "A",
             others: list[str] | None = None, occurrence: str | None = None) -> dict[str, Any]:
     doc = {
-        "oac": "0.1",
+        "oac": "0.2",
         "type": "action-profile",
         "tool": tool,
         "effect": effect,
@@ -178,7 +178,7 @@ def basics() -> list[dict[str, Any]]:
         c.append({"name": name, "op": "parse", "input": {"text": text}, "expect": want})
     value = {"tool": "book_table", "args": {"party": 2, "restaurant": "Nobu Boston"}}
     c.append({"name": "digest is sha-256 over JCS bytes", "op": "digest", "input": {"value": value}, "expect": {"digest": digest(value)}})
-    payload = {"oac": "0.1", "type": "consent", "note": "deterministic EdDSA"}
+    payload = {"oac": "0.2", "type": "consent", "note": "deterministic EdDSA"}
     c.append({"name": "EdDSA signing is deterministic across SDKs", "op": "sign",
               "input": {"key": "signer", "typ": CONSENT_TYP, "payload": payload}, "expect": {"token": sign(payload, USER, CONSENT_TYP)}})
     tiers = [
@@ -211,8 +211,13 @@ def basics() -> list[dict[str, Any]]:
         ("an argument both bound and listed as other", {**PROFILES["send_email"], "other_args": ["body", "to"]}),
         ("a pay tool that names no occurrence", {k: v for k, v in PROFILES["pay_order"].items() if k != "occurrence"}),
         ("an occurrence argument the tool does not declare", {**PROFILES["pay_order"], "occurrence": "cart"}),
+        ("an occurrence scope without an occurrence", {**PROFILES["add_task"], "occurrence_scope": "shop.example"}),
+        ("an occurrence scope that is not an id", {**PROFILES["pay_order"], "occurrence_scope": "two words"}),
+        ("an object labelled with the older wire version 0.1", {**PROFILES["add_task"], "oac": "0.1"}),
     ]
     c.append({"name": "a valid profile", "op": "profile", "input": {"profile": PROFILES["book_table"]}, "expect": ok()})
+    c.append({"name": "valid: a pay profile that shares occurrences with other tools of one provider account", "op": "profile",
+              "input": {"profile": {**PROFILES["pay_order"], "occurrence_scope": "stripe:acct_1"}}, "expect": ok()})
     for name, p in bad_profiles:
         c.append({"name": name, "op": "profile", "input": {"profile": p}, "expect": err("malformed")})
     return c
@@ -331,8 +336,11 @@ def consents() -> list[dict[str, Any]]:
     signed = consent([p_book], jti="n_consent_0000000030")
     creds = {"cred-1": PASSKEY.jwk}
 
-    def device(name: str, expect: dict[str, Any], proof: dict[str, Any] | None, token: str = signed, **change: Any) -> None:
+    def device(name: str, expect: dict[str, Any], proof: dict[str, Any] | None, token: str = signed, bound: bool | None = None,
+               **change: Any) -> None:
         check = {"proof": proof, "credentials": creds, "rp_id": "app.example", "origins": ["https://app.example"]}
+        if bound is not None:
+            check["device_bound"] = bound
         case(name, expect, token=token, device=check, **change)
 
     device("valid: passkey proof over the exact consent", ok(), passkey_proof(signed, PASSKEY))
@@ -352,6 +360,13 @@ def consents() -> list[dict[str, Any]]:
     device("user present but not verified (no PIN or biometric)", err("user_not_verified"),
            passkey_proof(signed, PASSKEY, flags=USER_PRESENT))
     device("a registration, not an assertion", err("malformed"), passkey_proof(signed, PASSKEY, type_="webauthn.create"))
+    uv = USER_PRESENT | USER_VERIFIED
+    device("valid: a synced passkey when the executor allows one", ok(),
+           passkey_proof(signed, PASSKEY, flags=uv | BACKUP_ELIGIBLE | BACKED_UP))
+    device("flags say backed up but not backup eligible", err("malformed"), passkey_proof(signed, PASSKEY, flags=uv | BACKED_UP))
+    device("a passkey that can sync, when the executor wants one bound to the device", err("not_device_bound"),
+           passkey_proof(signed, PASSKEY, flags=uv | BACKUP_ELIGIBLE), bound=True)
+    device("valid: a device-bound passkey when the executor wants one", ok(), passkey_proof(signed, PASSKEY, flags=uv), bound=True)
     return c
 
 
@@ -408,7 +423,7 @@ def mandates() -> list[dict[str, Any]]:
     case("a consent-typed token", err("bad_type"), token=sign(payload_of(good), USER, CONSENT_TYP))
 
     # loosening: a signer must ask for fresh proof before signing any non-empty answer
-    old = {"oac": "0.1", "type": "mandate", **body}
+    old = {"oac": "0.2", "type": "mandate", **body}
 
     def loose(name: str, new: dict[str, Any], reasons: list[str]) -> None:
         c.append({"name": name, "op": "loosens", "input": {"old": old, "new": new}, "expect": {"reasons": sorted(reasons)}})
@@ -588,6 +603,25 @@ def occurrences() -> list[dict[str, Any]]:
         "outcome": "ok", "result": digest(None), "undo": {"kind": "none"}, "undoes": token_digest(retry), "occurrence": "ord_2231"})
     c.append({"name": "valid: an undo receipt for a paid order is not a second payment", "op": "verify_chain",
               "input": base | {"tokens": [timeout, retry, refund]}, "expect": ok()})
+
+    # two pay tools of one provider account share a scope, so one order runs once across both
+    def paid(chain: list[str], tool: str, jti: str, scope: str | None) -> list[str]:
+        token = consent([pv(pay, "Pay Sweetgreen $18.00")], jti=jti)
+        payload = {
+            "iss": EXECUTOR, "sub": PERSON, "seq": len(chain) + 1, "prev": token_digest(chain[-1]) if chain else None,
+            "iat": NOW + len(chain), "tool": tool, "tier": "C", "authority": {"kind": "consent", "ref": jti, "digest": token_digest(token)},
+            "action": action_digest({**pay, "tool": tool}), "outcome": "ok", "result": digest(None),
+            "undo": {"kind": "compensate", "until": NOW + 604800}, "occurrence": "ord_7310"}
+        if scope:
+            payload["occurrence_scope"] = scope
+        return [*chain, make_receipt(key=EXEC, payload=payload)]
+
+    shared = paid(paid([], "pay_order", "n_consent_0000000044", "stripe:acct_1"), "pay_order_express", "n_consent_0000000045", "stripe:acct_1")
+    c.append({"name": "one order paid through two tools that share a provider scope", "op": "verify_chain",
+              "input": base | {"tokens": shared}, "expect": err("duplicate_occurrence")})
+    apart = paid(paid([], "pay_order", "n_consent_0000000046", "stripe:acct_1"), "pay_order_express", "n_consent_0000000047", "stripe:acct_2")
+    c.append({"name": "valid: the same order id in two different provider scopes", "op": "verify_chain",
+              "input": base | {"tokens": apart}, "expect": ok()})
     return c
 
 
@@ -652,7 +686,7 @@ def gap_closers() -> list[dict[str, Any]]:
                             ("a single-dot segment is refused", "https://atlas.example/./b", err("malformed")),
                             ("dots inside a segment are fine", "https://atlas.example/v1.2", {"url": "https://atlas.example/.well-known/oac-issuer/v1.2"})]:
         c.append({"name": f"issuer metadata URL: {name}", "op": "metadata_url", "input": {"iss": iss}, "expect": want})
-    meta = {"oac": "0.1", "type": "issuer-metadata", "issuer": SIGNER, "keys": [USER.jwk, DEVICE.jwk], "status_lists": [lid]}
+    meta = {"oac": "0.2", "type": "issuer-metadata", "issuer": SIGNER, "keys": [USER.jwk, DEVICE.jwk], "status_lists": [lid]}
     c.append({"name": "issuer metadata: keys become that issuer's", "op": "keyset_from", "input": {"docs": [[SIGNER, meta]], "kid": DEVICE.kid}, "expect": {"issuer": SIGNER}})
     c.append({"name": "issuer metadata: a document naming another issuer", "op": "keyset_from", "input": {"docs": [[WALLET_ISS, meta]], "kid": USER.kid}, "expect": err("wrong_issuer")})
     c.append({"name": "issuer metadata: a private key member is refused", "op": "keyset_from",
@@ -698,7 +732,7 @@ def main() -> int:
             if got != case["expect"]:
                 bad += 1
                 print(f"SDK DISAGREES {name} :: {case['name']}: expected {case['expect']}, got {got}")
-        doc = {"oac": shapes.VERSION, "about": f"OAC v0.1 conformance vectors: {name}. Keys: oac.testing.vector_key labels "
+        doc = {"oac": shapes.VERSION, "about": f"OAC 0.2 conformance vectors: {name}. Keys: oac.testing.vector_key labels "
                "(test only). Time is unix seconds; NOW = 1793836800.", "cases": cases}
         (out / f"{name}.json").write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
     total = sum(len(v) for v in groups.values())

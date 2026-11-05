@@ -50,7 +50,7 @@ ask for it.
 ```python
 from oac import build_preview, make_consent, verify_consent, generate, KeySet, MemoryNonces
 
-profile = {"oac": "0.1", "type": "action-profile", "tool": "send_email", "effect": "send",
+profile = {"oac": "0.2", "type": "action-profile", "tool": "send_email", "effect": "send",
            "undo": {"kind": "none", "window_s": 0}, "tier_floor": "A",
            "binds": {"to": "to", "title": "subject"}, "other_args": ["body"]}
 action = {"tool": "send_email", "args": {"to": ["sam@example.com"], "subject": "Lunch?", "body": "Friday 1 pm?"}}
@@ -69,12 +69,12 @@ verify_consent(consent, keys=KeySet({"signer.example": [user_key.jwk]}), executo
 
 | Path | What |
 |---|---|
-| [spec/oac-v0.1.md](spec/oac-v0.1.md) | the specification (normative) |
+| [spec/oac.md](spec/oac.md) | the specification (normative) |
 | [spec/mcp-extension.md](spec/mcp-extension.md) | how OAC rides on MCP 2026-07-28 (URL-mode elicitation, `_meta`), built to fit SEP-2848 and SEP-2793 |
 | [spec/mappings.md](spec/mappings.md) | AP2, Verifiable Intent, Stripe, ACP, UCP, A2A, IETF receipt drafts |
 | [spec/profiles/dispute.md](spec/profiles/dispute.md) | Dispute Evidence Pack |
 | [schemas/](schemas/) | JSON Schema 2020-12 for every object |
-| [vectors/](vectors/) | 230 conformance cases: valid ones and planted defects (forged signature, changed arguments, hidden bcc, two addresses in one, replay, expired, revoked or widened mandate, one signer speaking for another, signature twins, broken receipt chain, rewritten history under a seal, revoked bit, double undo, a passkey proof from the wrong origin or without user verification, the same order paid twice, ...) |
+| [vectors/](vectors/) | 240 conformance cases: valid ones and planted defects (forged signature, changed arguments, hidden bcc, two addresses in one, replay, expired, revoked or widened mandate, one signer speaking for another, signature twins, broken receipt chain, rewritten history under a seal, revoked bit, double undo, a passkey proof from the wrong origin or without user verification, the same order paid twice, ...) |
 | [sdk/python/](sdk/python/) | reference SDK (needs `cryptography`) |
 | [sdk/typescript/](sdk/typescript/) | reference SDK (no dependencies, Node 23.6+) |
 | [conformance/](conformance/) | vector format and how to run it |
@@ -95,7 +95,7 @@ and confirm a vector fails, so a check that quietly stops working is caught.
 
 ## Status
 
-Spec draft 0.1, packages 0.3.0 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback,
+Spec draft 0.2, packages 0.4.0 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback,
 implementations and reviews are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), and report vulnerabilities privately
 as described in [SECURITY.md](SECURITY.md).
 
@@ -106,12 +106,13 @@ change lands (spec, vectors, both SDKs).
 
 | Gap | Today | Where |
 |---|---|---|
-| Device proofs in the MCP plug-ins | `verify_consent` / `verifyConsent` check passkey proofs, but `oac.mcp` and `open-action-consent/mcp` do not ask for them yet | spec 3.6, `spec/mcp-extension.md` 3.2 |
 | Mapping to EP authorization receipts | the exact signed-byte mapping between a device proof and an EP authorization context is open; shared test vectors are proposed | `spec/mappings.md` |
-| Wire version | objects still say `"oac":"0.1"` although 0.3.0 receipts and `pay` profiles are not compatible with 0.2.x | spec header |
-| Occurrence scope | an order id is tracked per tool, so two different pay tools could each run the same order | spec 5.1 |
-| WebAuthn backup flags | the optional check that BS is not set without BE is not done | spec 3.6 |
-| SDK parity | small API differences: TypeScript exports `MemoryOccurrences` and `ActionFailed` at the top level, Python keeps them in submodules; only Python has a passkey test helper | `sdk/` |
+| Mandates in the gates and MCP plug-ins | `check_mandate` / `checkMandate` work, but the reference gates and plug-ins only accept a Consent per action | spec 7.3 |
+| Durable stores | the reference nonce, occurrence and receipt stores live in memory; a production executor needs database-backed ones with the same atomic rules | spec 5.1, 6.3 |
+| More passkey types | device proofs accept ES256 credentials only, and the signature counter is not checked | spec 3.6 |
+
+Closed in 0.4.0: device proofs in the gates and MCP plug-ins, the wire version label, occurrence scope across tools,
+WebAuthn backup flags, and Python/TypeScript export parity.
 
 **OAC-conformant:** an implementation that passes every case in `vectors/` may say so and link to this repository.
 

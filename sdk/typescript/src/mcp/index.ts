@@ -3,11 +3,12 @@
 import * as crypto from "node:crypto";
 import { inputRequired, inputResponse, type McpServer } from "@modelcontextprotocol/server";
 import { actionDigest, buildPreview, digest, KeySet, makeReceipt, MemoryNonces, OACError, shapes, tierFor, tokenDigest, verify, verifyConsent, type SigningKey } from "../index.ts";
-import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, type OccurrenceKey, type OccurrenceStore } from "../occurrence.ts";
+import type { DevicePolicy } from "../gate.ts";
+import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, scope, type OccurrenceKey, type OccurrenceStore } from "../occurrence.ts";
 
 export const ID = "com.atlasiw/oac";
 export const PROFILE_KEY = `${ID}-profile`, PREVIEW_KEY = `${ID}-preview`, RECEIPT_KEY = `${ID}-receipt`, CONSENT_KEY = `${ID}-consent`;
-export const OUTCOME_KEY = `${ID}-outcome`;
+export const OUTCOME_KEY = `${ID}-outcome`, DEVICE_KEY = `${ID}-device-proof`;
 const ASK = "oac_consent";
 const STATE_TTL_S = 900;
 
@@ -25,6 +26,8 @@ export interface OACOptions {
   policyFloor?: string;
   clock?: () => number;
   occurrences?: OccurrenceStore;
+  /** The passkey check a tier C action needs (its proof is filled in here), or null when none is needed. */
+  device?: DevicePolicy;
 }
 
 export class OAC {
@@ -34,6 +37,8 @@ export class OAC {
   readonly nonces = new MemoryNonces();
   readonly receipts = new Map<string, string[]>();
   readonly tokens = new Map<string, string>(); // authority digest in a receipt -> the exact token
+  readonly proofs = new Map<string, Record<string, any>>(); // preview digest -> device proof sent with the consent
+  readonly deviceProofs = new Map<string, Record<string, any>>(); // authority digest -> the passkey proof that came with it
   readonly occurrences: OccurrenceStore;
   private readonly stateKey = crypto.randomBytes(32);
   readonly o: OACOptions;
@@ -42,16 +47,17 @@ export class OAC {
   private now(): number { return (this.o.clock ?? (() => Math.floor(Date.now() / 1000)))(); }
 
   /** Capability settings to put under `capabilities.extensions[ID]`. */
-  settings(): Record<string, unknown> { return { version: "0.1", executor: this.o.executor }; }
+  settings(): Record<string, unknown> { return { version: shapes.VERSION, executor: this.o.executor }; }
 
   profile(tool: string, p: {
     effect: string; undo?: string; windowS?: number; tierFloor?: string; binds?: Record<string, string>; otherArgs?: string[];
-    occurrence?: string;
+    occurrence?: string; occurrenceScope?: string;
   }): Record<string, unknown> {
-    const doc: Record<string, any> = { oac: "0.1", type: "action-profile", tool, effect: p.effect, undo: { kind: p.undo ?? "none", window_s: p.windowS ?? 0 },
+    const doc: Record<string, any> = { oac: shapes.VERSION, type: "action-profile", tool, effect: p.effect, undo: { kind: p.undo ?? "none", window_s: p.windowS ?? 0 },
       tier_floor: p.tierFloor ?? "A", binds: { ...(p.binds ?? {}) } };
     if (p.otherArgs?.length) doc.other_args = [...p.otherArgs];
     if (p.occurrence) doc.occurrence = p.occurrence;
+    if (p.occurrenceScope) doc.occurrence_scope = p.occurrenceScope;
     this.profiles[tool] = shapes.profile(doc);
     return { [PROFILE_KEY]: doc };
   }
@@ -66,13 +72,18 @@ export class OAC {
 
   preview(id: string): Record<string, any> | undefined { return [...this.previews.values()].find((p) => p.id === id); }
 
-  /** Keep a valid Consent for a pending preview. Never replaces one already kept. */
-  acceptConsent(token: string): boolean {
+  /** Keep a valid Consent, and the passkey proof sent with it, for a pending preview.
+   * Never replaces a different token already kept; the same token may bring a new proof. */
+  acceptConsent(token: string, proof?: Record<string, any>): boolean {
     let p: Record<string, any>;
     try { p = verify(token, this.o.signers, "oac-consent+jws"); shapes.consent(p); } catch { return false; }
     let kept = false;
     for (const item of p.aud === this.o.executor ? p.items : []) {
-      if (this.previews.has(item.preview) && !this.consents.has(item.preview)) { this.consents.set(item.preview, token); kept = true; }
+      if (this.previews.has(item.preview) && (this.consents.get(item.preview) ?? token) === token) {
+        this.consents.set(item.preview, token);
+        if (proof !== undefined) this.proofs.set(item.preview, proof);
+        kept = true;
+      }
     }
     return kept;
   }
@@ -127,17 +138,21 @@ export class OAC {
     const preview = this.previews.get(state.preview);
     const token = this.consents.get(state.preview) ?? ctx.mcpReq?._meta?.[CONSENT_KEY];
     if (!preview || !token) return this.ask(action, profile, person);
+    const need = this.o.device?.(person, action) ?? null;
+    const proof = this.proofs.get(state.preview) ?? ctx.mcpReq?._meta?.[DEVICE_KEY] ?? null;
+    const device = need ? { ...need, proof } : undefined;
     let consent: Record<string, any>;
     let claimed: OccurrenceKey | null = null;
     try {
       claimed = claim(this.occurrences, occurrenceKey(person, profile, args));
       consent = verifyConsent(token, { keys: this.o.signers, executor: this.o.executor, sub: person, previews: [preview], actions: [action],
-        profiles: this.profiles, now: this.now(), nonces: this.nonces, policyFloor: this.o.policyFloor, tainted });
+        profiles: this.profiles, now: this.now(), nonces: this.nonces, policyFloor: this.o.policyFloor, tainted, device });
     } catch (e) {
       if (claimed) this.occurrences.release(claimed);
       return refused(`Refused (${e instanceof OACError ? e.code : "error"}). Nothing ran.`);
     }
     this.tokens.set(tokenDigest(token), token);
+    if (device?.proof) this.deviceProofs.set(tokenDigest(token), device.proof);
     const authority = { kind: "consent", ref: consent.jti, digest: tokenDigest(token) };
     return this.run(handler, args, ctx, person, profile, action, "C", authority, digest(preview), claimed);
   }
@@ -165,7 +180,9 @@ export class OAC {
 
   /** Record what the provider says happened to an unknown attempt: ok or failed. */
   resolve(tool: string, occurrence: string, o: { person: string; outcome: "ok" | "failed" }): void {
-    resolve(this.occurrences, [o.person, tool, occurrence], o.outcome);
+    const profile = Object.hasOwn(this.profiles, tool) ? this.profiles[tool] : undefined;
+    if (!profile) throw new OACError("unknown_tool", `${tool} has no OAC profile`);
+    resolve(this.occurrences, [o.person, scope(profile), occurrence], o.outcome);
   }
 
   private ask(action: Record<string, any>, profile: Record<string, any>, person: string): any {
@@ -198,6 +215,7 @@ export class OAC {
       result: digest(JSON.parse(JSON.stringify(result?.content ?? []))) };
     if (previewDigest) payload.preview = previewDigest;
     if (Object.hasOwn(profile, "occurrence")) payload.occurrence = action.args[profile.occurrence];
+    if (Object.hasOwn(profile, "occurrence_scope")) payload.occurrence_scope = profile.occurrence_scope;
     const receipt = makeReceipt(this.o.key, payload);
     chain.push(receipt);
     if (result === null) return null;

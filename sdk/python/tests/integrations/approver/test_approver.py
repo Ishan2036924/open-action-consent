@@ -21,7 +21,7 @@ from oac.preview import build_preview
 from oac.approver import Approver
 
 ISSUER, PERSON, EXECUTOR = "https://approve.example", "person:1", "https://tables.example/oac"
-PROFILE = {"oac": "0.1", "type": "action-profile", "tool": "book_table", "effect": "write",
+PROFILE = {"oac": "0.2", "type": "action-profile", "tool": "book_table", "effect": "write",
            "undo": {"kind": "compensate", "window_s": 86400}, "tier_floor": "A",
            "binds": {"payee": "restaurant", "when": "time", "count": "party"}, "other_args": ["note"]}
 

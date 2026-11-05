@@ -13,6 +13,7 @@ from __future__ import annotations
 import inspect
 import secrets
 import time
+from dataclasses import replace
 from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 
@@ -20,10 +21,11 @@ from oac import shapes
 from oac.consent import MemoryNonces, NonceStore, verify_consent
 from oac.errors import OACError
 from oac.jws import KeySet, SigningKey, digest, token_digest, verify
-from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, check_open, claim, occurrence_key, resolve
+from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, check_open, claim, occurrence_key, resolve, scope
 from oac.preview import action_digest, build_preview
 from oac.receipts import make_receipt
 from oac.tiers import tier_for
+from oac.webauthn import DeviceCheck
 
 
 class NeedsConsent(Exception):
@@ -50,8 +52,12 @@ class Gate:
         policy_floor: str = "A",
         summarize: Callable[[Mapping[str, Any]], str] | None = None,
         clock: Callable[[], int] = lambda: int(time.time()),
+        device: Callable[[str, Mapping[str, Any]], DeviceCheck | None] | None = None,
     ) -> None:
+        """device(person, action) returns the passkey check a tier C action needs (its proof is
+        filled in here), or None when no passkey is needed."""
         self.executor, self.key, self.signers = executor, key, signers
+        self._device = device
         self.nonces = nonces or MemoryNonces()
         self.occurrences = occurrences or MemoryOccurrences()
         self.policy_floor, self._clock = policy_floor, clock
@@ -59,18 +65,22 @@ class Gate:
         self.profiles: dict[str, dict[str, Any]] = {}
         self.pending: dict[tuple[str, str], dict[str, Any]] = {}  # (person, action digest) -> preview
         self.consents: dict[str, str] = {}  # preview digest -> consent token
+        self.proofs: dict[str, Mapping[str, Any]] = {}  # preview digest -> device proof sent with the consent
         self.receipts: dict[str, list[str]] = {}  # person -> chain
         self.tokens: dict[str, str] = {}  # authority digest in a receipt -> the exact token
+        self.device_proofs: dict[str, Any] = {}  # same digest -> the passkey proof that came with it
 
     def profile(self, tool: str, *, effect: str, undo: str = "none", window_s: int = 0, tier_floor: str = "A",
                 binds: Mapping[str, str] | None = None, other_args: list[str] | None = None,
-                occurrence: str | None = None) -> dict[str, Any]:
-        doc: dict[str, Any] = {"oac": "0.1", "type": "action-profile", "tool": tool, "effect": effect,
+                occurrence: str | None = None, occurrence_scope: str | None = None) -> dict[str, Any]:
+        doc: dict[str, Any] = {"oac": shapes.VERSION, "type": "action-profile", "tool": tool, "effect": effect,
                                "undo": {"kind": undo, "window_s": window_s}, "tier_floor": tier_floor, "binds": dict(binds or {})}
         if other_args:
             doc["other_args"] = list(other_args)
         if occurrence:
             doc["occurrence"] = occurrence
+        if occurrence_scope:
+            doc["occurrence_scope"] = occurrence_scope
         self.profiles[tool] = shapes.profile(doc)
         return doc
 
@@ -100,8 +110,9 @@ class Gate:
     def preview_by_id(self, preview_id: str) -> dict[str, Any] | None:
         return next((p for p in self.pending.values() if p["id"] == preview_id), None)
 
-    def accept_consent(self, token: str) -> bool:
-        """Keep a valid Consent for a pending Preview. Never replaces one already kept."""
+    def accept_consent(self, token: str, proof: Mapping[str, Any] | None = None) -> bool:
+        """Keep a valid Consent, and the passkey proof sent with it, for a pending Preview.
+        Never replaces a different token already kept; the same token may bring a new proof."""
         try:
             c = verify(token, self.signers, "oac-consent+jws")
             shapes.consent(c)
@@ -110,8 +121,10 @@ class Gate:
         pending = {digest(p) for p in self.pending.values()}
         kept = False
         for item in c["items"] if c["aud"] == self.executor else []:
-            if item["preview"] in pending and item["preview"] not in self.consents:
+            if item["preview"] in pending and self.consents.get(item["preview"], token) == token:
                 self.consents[item["preview"]] = token
+                if proof is not None:
+                    self.proofs[item["preview"]] = proof
                 kept = True
         return kept
 
@@ -130,17 +143,21 @@ class Gate:
         if token is None:
             check_open(self.occurrences, occurrence)
             raise NeedsConsent(preview)
+        need = self._device(person, action) if self._device else None
+        device = replace(need, proof=self.proofs.get(pd)) if need else None
         claimed = claim(self.occurrences, occurrence)
         try:
             c = verify_consent(token, keys=self.signers, executor=self.executor, sub=person, previews=[preview],
                                actions=[action], profiles=self.profiles, now=self._clock(), nonces=self.nonces,
-                               policy_floor=self.policy_floor, tainted=tainted)
+                               policy_floor=self.policy_floor, tainted=tainted, device=device)
         except BaseException:
             if claimed:
                 self.occurrences.release(claimed)
             raise
         self.pending.pop((person, action_digest(action)), None)
         self.tokens[token_digest(token)] = token
+        if device:
+            self.device_proofs[token_digest(token)] = device.proof
         return "C", {"kind": "consent", "ref": c["jti"], "digest": token_digest(token)}, pd, claimed
 
     def _outcome(self, claimed: Key | None, error: BaseException | None) -> str:
@@ -175,7 +192,7 @@ class Gate:
 
     def resolve(self, tool: str, occurrence: str, *, person: str, outcome: str) -> None:
         """Record what the provider says happened to an unknown attempt: ok or failed."""
-        resolve(self.occurrences, (person, tool, occurrence), outcome)
+        resolve(self.occurrences, (person, scope(self._profile(tool)), occurrence), outcome)
 
     def _receipt(self, person: str, tool: str, args: Mapping[str, Any], tier: str, authority: dict[str, Any],
                  preview_digest: str | None, result: Any, outcome: str) -> str:
@@ -198,6 +215,8 @@ class Gate:
         }
         if "occurrence" in profile:
             payload["occurrence"] = args[profile["occurrence"]]
+        if "occurrence_scope" in profile:
+            payload["occurrence_scope"] = profile["occurrence_scope"]
         if preview_digest:
             payload["preview"] = preview_digest
         receipt = make_receipt(key=self.key, payload=payload)

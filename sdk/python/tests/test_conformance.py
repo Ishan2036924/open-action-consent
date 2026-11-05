@@ -13,6 +13,7 @@ import oac.mandate
 import oac.occurrence
 import oac.receipts
 import oac.undo
+import oac.webauthn
 from oac.conformance import run
 
 VECTORS = Path(__file__).resolve().parents[3] / "vectors"
@@ -46,6 +47,8 @@ MUTATIONS = [
     ("undo receipt rules off", oac.undo, "check_semantics", _noop, "undo of an invalid receipt"),
     ("device proof ignored", oac.consent, "verify_device_proof", _noop, "user present but not verified"),
     ("occurrence state ignored", oac.occurrence, "_refuse", _noop, "last attempt is unknown"),
+    ("backup flags ignored", oac.webauthn, "BACKED_UP", 0, "backed up but not backup eligible"),
+    ("device binding ignored", oac.webauthn, "BACKUP_ELIGIBLE", 0, "executor wants one bound to the device"),
 ]
 
 

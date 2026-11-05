@@ -46,7 +46,7 @@ class Approver:
         self.well_known_path = urlsplit(metadata_url(issuer)).path
 
     def metadata(self) -> dict[str, Any]:
-        return {"oac": "0.1", "type": "issuer-metadata", "issuer": self.issuer, "keys": list(self.keys)}
+        return {"oac": shapes.VERSION, "type": "issuer-metadata", "issuer": self.issuer, "keys": list(self.keys)}
 
     def keyset(self) -> KeySet:
         return KeySet({self.issuer: self.keys})

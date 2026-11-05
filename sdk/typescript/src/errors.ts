@@ -15,7 +15,7 @@ export const CODES = new Set([
   "status_unknown", "seal_mismatch",
   // device proofs (WebAuthn)
   "device_proof_missing", "device_proof_mismatch", "unknown_credential", "challenge_mismatch", "wrong_origin",
-  "rp_mismatch", "user_not_present", "user_not_verified",
+  "rp_mismatch", "user_not_present", "user_not_verified", "not_device_bound",
   // business occurrences
   "occurrence_unresolved", "duplicate_occurrence",
 ]);

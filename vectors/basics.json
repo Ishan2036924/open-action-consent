@@ -1,6 +1,6 @@
 {
- "oac": "0.1",
- "about": "OAC v0.1 conformance vectors: basics. Keys: oac.testing.vector_key labels (test only). Time is unix seconds; NOW = 1793836800.",
+ "oac": "0.2",
+ "about": "OAC 0.2 conformance vectors: basics. Keys: oac.testing.vector_key labels (test only). Time is unix seconds; NOW = 1793836800.",
  "cases": [
   {
    "name": "sorts keys",
@@ -219,13 +219,13 @@
     "key": "signer",
     "typ": "oac-consent+jws",
     "payload": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "consent",
      "note": "deterministic EdDSA"
     }
    },
    "expect": {
-    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJub3RlIjoiZGV0ZXJtaW5pc3RpYyBFZERTQSIsIm9hYyI6IjAuMSIsInR5cGUiOiJjb25zZW50In0.lZi1BDNhsdX1pACvb0t8U0Fq8DHP9kAXFJNfd5kFaxHUXQ-peNmxpmuoHeSry4Zq7Zz_neVEX2Op4Qn091KbBw"
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJub3RlIjoiZGV0ZXJtaW5pc3RpYyBFZERTQSIsIm9hYyI6IjAuMiIsInR5cGUiOiJjb25zZW50In0.oFFZja_TTQYG05msySpqA5cNSNYCLCcvtLXEOjOGX-gqkXAL6AvQE2wbJhHYeWPyeDZ6l65sYp1Q_MGQdsT6DQ"
    }
   },
   {
@@ -233,7 +233,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "read_calendar",
      "effect": "read",
@@ -254,7 +254,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "add_task",
      "effect": "write",
@@ -277,7 +277,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "book_table",
      "effect": "write",
@@ -303,7 +303,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "send_email",
      "effect": "send",
@@ -330,7 +330,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "pay_order",
      "effect": "pay",
@@ -360,7 +360,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "solve_captcha",
      "effect": "write",
@@ -384,7 +384,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "book_table",
      "effect": "write",
@@ -411,7 +411,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "add_task",
      "effect": "write",
@@ -435,7 +435,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "add_task",
      "effect": "write",
@@ -459,7 +459,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "read_calendar",
      "effect": "read",
@@ -481,7 +481,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "read_calendar",
      "effect": "read",
@@ -503,7 +503,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "read_calendar",
      "effect": "read",
@@ -525,7 +525,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "read_calendar",
      "effect": "read",
@@ -547,7 +547,7 @@
    "op": "tier",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "read_calendar",
      "effect": "read",
@@ -569,7 +569,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "book_table",
      "effect": "write",
@@ -591,11 +591,42 @@
    }
   },
   {
+   "name": "valid: a pay profile that shares occurrences with other tools of one provider account",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.2",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     },
+     "other_args": [
+      "items",
+      "order"
+     ],
+     "occurrence": "order",
+     "occurrence_scope": "stripe:acct_1"
+    }
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
    "name": "a read that claims an undo",
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "read_calendar",
      "effect": "read",
@@ -616,7 +647,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "send_email",
      "effect": "send",
@@ -643,7 +674,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "add_task",
      "effect": "write",
@@ -666,7 +697,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "add_task",
      "effect": "teleport",
@@ -689,7 +720,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "add_task",
      "effect": "write",
@@ -712,7 +743,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "add_task",
      "effect": "write",
@@ -736,7 +767,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "add_task",
      "effect": "write",
@@ -760,7 +791,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "pay_order",
      "effect": "pay",
@@ -789,7 +820,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "send_email",
      "effect": "send",
@@ -815,7 +846,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "send_email",
      "effect": "send",
@@ -843,7 +874,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "pay_order",
      "effect": "pay",
@@ -872,7 +903,7 @@
    "op": "profile",
    "input": {
     "profile": {
-     "oac": "0.1",
+     "oac": "0.2",
      "type": "action-profile",
      "tool": "pay_order",
      "effect": "pay",
@@ -891,6 +922,84 @@
       "order"
      ],
      "occurrence": "cart"
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "an occurrence scope without an occurrence",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.2",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     },
+     "occurrence_scope": "shop.example"
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "an occurrence scope that is not an id",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.2",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     },
+     "other_args": [
+      "items",
+      "order"
+     ],
+     "occurrence": "order",
+     "occurrence_scope": "two words"
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "an object labelled with the older wire version 0.1",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     }
     }
    },
    "expect": {
