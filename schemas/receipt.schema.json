@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oac:0.1:receipt",
+  "title": "OAC v0.1 Receipt (JWS payload, typ oac-receipt+jws)",
+  "description": "The executor's signed record of one action, chained per person: prev = sha-256 of the previous receipt's whole compact token (null for seq 1). Rules beyond the schema: tier D never appears; authority kind tier only for tiers A and B; tier B (except an undo receipt) carries a native undo with until and token; undo none carries no until or token; an undo receipt names what it undoes.",
+  "type": "object", "additionalProperties": false,
+  "required": ["oac", "type", "iss", "sub", "seq", "prev", "iat", "tool", "tier", "authority", "action", "outcome", "result", "undo"],
+  "properties": {
+    "oac": {"$ref": "urn:oac:0.1:common#/$defs/version"},
+    "type": {"const": "receipt"},
+    "iss": {"$ref": "urn:oac:0.1:common#/$defs/id"},
+    "sub": {"$ref": "urn:oac:0.1:common#/$defs/id"},
+    "seq": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+    "prev": {"oneOf": [{"type": "null"}, {"$ref": "urn:oac:0.1:common#/$defs/digest"}]},
+    "iat": {"$ref": "urn:oac:0.1:common#/$defs/time"},
+    "tool": {"$ref": "urn:oac:0.1:common#/$defs/tool"},
+    "tier": {"$ref": "urn:oac:0.1:common#/$defs/tier"},
+    "authority": {
+      "type": "object", "additionalProperties": false, "required": ["kind"],
+      "properties": {"kind": {"enum": ["consent", "mandate", "tier", "undo"]}, "ref": {"type": "string", "minLength": 1, "maxLength": 256}}
+    },
+    "action": {"$ref": "urn:oac:0.1:common#/$defs/digest"},
+    "preview": {"$ref": "urn:oac:0.1:common#/$defs/digest"},
+    "outcome": {"enum": ["ok", "failed"]},
+    "result": {"$ref": "urn:oac:0.1:common#/$defs/digest"},
+    "undo": {
+      "type": "object", "additionalProperties": false, "required": ["kind"],
+      "properties": {
+        "kind": {"enum": ["native", "compensate", "none"]},
+        "until": {"$ref": "urn:oac:0.1:common#/$defs/time"},
+        "token": {"type": "string", "minLength": 1, "maxLength": 512}
+      }
+    },
+    "undoes": {"$ref": "urn:oac:0.1:common#/$defs/digest"},
+    "payment": {
+      "type": "object", "additionalProperties": false, "required": ["rail", "ref"],
+      "properties": {
+        "rail": {"enum": ["stripe_link", "ap2", "vi", "other"]},
+        "ref": {"type": "string", "minLength": 1, "maxLength": 256},
+        "last4": {"type": "string", "pattern": "^[0-9]{4}$"},
+        "order": {"type": "string", "minLength": 1, "maxLength": 256}
+      }
+    }
+  }
+}

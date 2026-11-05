@@ -1,0 +1,1851 @@
+{
+ "oac": "0.1",
+ "about": "OAC v0.1 conformance vectors: mandate. Keys: oac.testing.vector_key labels (test only). Time is unix seconds; NOW = 1793836800.",
+ "cases": [
+  {
+   "name": "valid: booking inside the bounds",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "valid: payment inside the bounds",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "pay_order",
+     "args": {
+      "amount_minor": 1800,
+      "currency": "USD",
+      "merchant": "Sweetgreen",
+      "items": [
+       "bowl"
+      ]
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "valid: email to an allowed domain",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "send_email",
+     "args": {
+      "to": [
+       "sam1@example.com"
+      ],
+      "subject": "Re: plan 1",
+      "body": "Sounds good."
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "another agent holds it",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "other-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "holder_mismatch"
+   }
+  },
+  {
+   "name": "expired",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1794528000
+   },
+   "expect": {
+    "error": "expired"
+   }
+  },
+  {
+   "name": "lives longer than 30 days",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NjUxMTYwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.C7UHtwCK2b0K3Lqusr1KsnI29Ub6Z5q-rYdle2I07ZSGckp6oXex5VHMpGQowd5dQB9YxcGQR_8vXpL_7weZAg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "lifetime_too_long"
+   }
+  },
+  {
+   "name": "tool not in the mandate",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "add_task",
+     "args": {
+      "title": "x"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "tool_not_covered"
+   }
+  },
+  {
+   "name": "tier D tool, even when listed",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "solve_captcha",
+     "args": {
+      "page": "https://x.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "solve_captcha",
+     "effect": "write",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "D",
+     "binds": {}
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "tier_d"
+   }
+  },
+  {
+   "name": "tainted run: a mandate never waives the ask",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800,
+    "tainted": true
+   },
+   "expect": {
+    "error": "tainted"
+   }
+  },
+  {
+   "name": "pay mandate without a daily cap",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIlN3ZWV0Z3JlZW4iXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.YA9M_XcXqckIdp10WSSBNJTUPUbjPaLKsp1_BxfsNAJu2vyGT5nYVMMlVchh-OSj397QG8j9u7O-RxUHa6b3DA",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "pay_order",
+     "args": {
+      "amount_minor": 1800,
+      "currency": "USD",
+      "merchant": "Sweetgreen",
+      "items": [
+       "bowl"
+      ]
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "pay_without_caps"
+   }
+  },
+  {
+   "name": "recipient outside the list",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "send_email",
+     "args": {
+      "to": [
+       "boss@evil.test"
+      ],
+      "subject": "Re: plan 1",
+      "body": "Sounds good."
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "recipient_not_allowed"
+   }
+  },
+  {
+   "name": "sending to people needs a recipient list",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PCQd93O8dHWXejrEwXpfEBe0xgxtVEP_bKVmrpfD4EZXXDzHIK1Ka6zDlw-4IOC3pFSIHmompRU0zDNTTJqIDQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "send_email",
+     "args": {
+      "to": [
+       "sam1@example.com"
+      ],
+      "subject": "Re: plan 1",
+      "body": "Sounds good."
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "recipient_not_allowed"
+   }
+  },
+  {
+   "name": "payee outside the list",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "pay_order",
+     "args": {
+      "amount_minor": 1800,
+      "currency": "USD",
+      "merchant": "Gadget Store",
+      "items": [
+       "bowl"
+      ]
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "payee_not_allowed"
+   }
+  },
+  {
+   "name": "site outside the list",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "evil.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "site_not_allowed"
+   }
+  },
+  {
+   "name": "currency differs",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "pay_order",
+     "args": {
+      "amount_minor": 1800,
+      "currency": "EUR",
+      "merchant": "Sweetgreen",
+      "items": [
+       "bowl"
+      ]
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "currency_mismatch"
+   }
+  },
+  {
+   "name": "over the per-call amount",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "pay_order",
+     "args": {
+      "amount_minor": 3000,
+      "currency": "USD",
+      "merchant": "Sweetgreen",
+      "items": [
+       "bowl"
+      ]
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "over_amount"
+   }
+  },
+  {
+   "name": "over the daily amount",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "pay_order",
+     "args": {
+      "amount_minor": 1800,
+      "currency": "USD",
+      "merchant": "Sweetgreen",
+      "items": [
+       "bowl"
+      ]
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800,
+    "usage": {
+     "amount_today_minor": 4000
+    }
+   },
+   "expect": {
+    "error": "over_daily_amount"
+   }
+  },
+  {
+   "name": "over the daily call count",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.PEV1IfzGiucuQi4V8pu0HHCxpCjm2EZqQeA9Hz8_t_I99gLBXmgIAYmiSUA7I1ziEbXQNp2lC6FwqU3E9lXJDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800,
+    "usage": {
+     "calls_today": 5
+    }
+   },
+   "expect": {
+    "error": "over_calls"
+   }
+  },
+  {
+   "name": "over the per-run call count",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1LCJwZXJfcnVuIjoxfSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.9uJSZjcWldoJNyaIebdDXVmm9G_FKzSnQx3uItFPiZ5hQkuJFRWTvsMBMnyf7E1xaZOicuyzvLiuY7WsYwc3Cg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800,
+    "usage": {
+     "calls_this_run": 1
+    }
+   },
+   "expect": {
+    "error": "over_calls"
+   }
+  },
+  {
+   "name": "forged signature",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.CTLdPDeedkjFIx9IZu2DJbUR4zgKAbxY2STTefGIx7QsZvjaeRiZe6cW4LTUnhC6-DgiIpDYPsfsh7D3qgaoAw",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "bad_signature"
+   }
+  },
+  {
+   "name": "a consent-typed token",
+   "op": "check_mandate",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJib3VuZHMiOnsiYW1vdW50Ijp7ImN1cnJlbmN5IjoiVVNEIiwicGVyX2NhbGxfbWlub3IiOjI1MDAsInBlcl9kYXlfbWlub3IiOjUwMDB9LCJjYWxscyI6eyJwZXJfZGF5Ijo1fSwicGF5ZWVzIjpbIk5vYnUgQm9zdG9uIiwiU3dlZXRncmVlbiJdLCJyZWNpcGllbnRzIjpbIkBleGFtcGxlLmNvbSJdLCJzaXRlcyI6WyJub2J1LmV4YW1wbGUiXX0sImV4cCI6MTc5NDQzODAwMCwiZ29hbCI6IkJvb2sgYW5kIHBheSBmb3IgbHVuY2ggb24gd2Vla2RheXMsIHVwIHRvICQyNS4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4xIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJib29rX3RhYmxlIiwicGF5X29yZGVyIiwic2VuZF9lbWFpbCIsInNvbHZlX2NhcHRjaGEiXSwidHlwZSI6Im1hbmRhdGUifQ.a5DcaOf-74e1nQwXBVdC7T1eNt2MxZmnDe4kMJpmY1U3-d3R5zDfgXRsqTpUc4X0Kc0puSDrFOWzNrc4-rOmAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "action": {
+     "tool": "book_table",
+     "args": {
+      "restaurant": "Nobu Boston",
+      "time": "2026-11-06T19:30-05:00",
+      "party": 2,
+      "site": "nobu.example"
+     }
+    },
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "holder": {
+     "type": "agent",
+     "id": "lunch-bot"
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "bad_type"
+   }
+  },
+  {
+   "name": "narrowing is not loosening",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 2
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": []
+   }
+  },
+  {
+   "name": "a new tool",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha",
+      "add_task"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "tools"
+    ]
+   }
+  },
+  {
+   "name": "a higher per-call amount",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 9900,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "amount.per_call_minor"
+    ]
+   }
+  },
+  {
+   "name": "a new recipient",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com",
+       "@gmail.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "recipients"
+    ]
+   }
+  },
+  {
+   "name": "a later expiry",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794524400,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "exp"
+    ]
+   }
+  },
+  {
+   "name": "dropping the payee list",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "payees"
+    ]
+   }
+  },
+  {
+   "name": "another holder and no site list",
+   "op": "loosens",
+   "input": {
+    "old": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "lunch-bot"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ],
+      "sites": [
+       "nobu.example"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    },
+    "new": {
+     "oac": "0.1",
+     "type": "mandate",
+     "id": "md_lunch_1",
+     "iss": "https://atlas.example/signer",
+     "sub": "person:7f3a",
+     "holder": {
+      "type": "agent",
+      "id": "x"
+     },
+     "goal": "Book and pay for lunch on weekdays, up to $25.",
+     "tools": [
+      "book_table",
+      "pay_order",
+      "send_email",
+      "solve_captcha"
+     ],
+     "bounds": {
+      "calls": {
+       "per_day": 5
+      },
+      "amount": {
+       "currency": "USD",
+       "per_call_minor": 2500,
+       "per_day_minor": 5000
+      },
+      "payees": [
+       "Nobu Boston",
+       "Sweetgreen"
+      ],
+      "recipients": [
+       "@example.com"
+      ]
+     },
+     "iat": 1793833200,
+     "exp": 1794438000,
+     "signer": {
+      "kind": "custodial"
+     }
+    }
+   },
+   "expect": {
+    "reasons": [
+     "holder",
+     "sites"
+    ]
+   }
+  }
+ ]
+}

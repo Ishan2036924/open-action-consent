@@ -1,0 +1,37 @@
+# How OAC maps to other work
+
+Informative. Facts as read on 2026-11-04 from the linked pages; these projects move fast, so check the source before
+relying on a row.
+
+## Payment and commerce
+
+| Other | Its object | OAC counterpart | How they meet |
+|---|---|---|---|
+| AP2 v0.2 ([ap2-protocol.org](https://ap2-protocol.org/), Apache-2.0) | Checkout and Payment mandates, each open (constraints, agent key) then closed (bound to the checkout by hash); user-signed SD-JWT | Mandate ≈ open mandate; Consent with `payment` ≈ closed mandate | `payment.rail = "ap2"`, `payment.ref` = the mandate id. OAC adds the Preview, the undo kind and the receipt chain; AP2 stays the payment proof |
+| Mastercard Verifiable Intent draft 0.1 ([repo](https://github.com/agent-intent/verifiable-intent), Apache-2.0) | L2 user-signed intent: immediate (final values) or autonomous (constraints); disputes out of scope | Consent ≈ L2 immediate; Mandate ≈ L2 autonomous | `payment.rail = "vi"`. OAC's dispute profile covers what VI leaves out |
+| Stripe Link agent wallet ([docs](https://docs.stripe.com/agentic-commerce/link-cli/use-link-wallet-pay-online)) | spend request the person approves in Link; one-time credential to the agent | Consent `payment` points to the spend request | `payment.rail = "stripe_link"`, `ref` = spend request id; the credential goes to the executor, never the model (spec 9) |
+| Stripe Shared Payment Token ([docs](https://docs.stripe.com/agentic-commerce/concepts/shared-payment-tokens)) | scoped token with amount and expiry limits | the rail's second lock (spec 9 rule 4) | limits must equal the signed Preview |
+| ACP ([repo](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol), Apache-2.0) | merchant checkout sessions, order webhooks | Receipt `payment.order` | refunds and cancels use ACP's order flow; OAC records them as compensating actions |
+| UCP ([ucp.dev](https://ucp.dev)) | catalog, cart, checkout, orders; AP2 for payment | same as ACP | same as ACP |
+| x402 v2 ([repo](https://github.com/x402-foundation/x402), Apache-2.0) | per-request payment payload and settle response | Consent `payment.rail = "other"` | x402 has no user consent object; OAC can supply one |
+
+## Agents and tools
+
+| Other | Its object | OAC counterpart | How they meet |
+|---|---|---|---|
+| MCP 2026-07-28 ([spec](https://modelcontextprotocol.io/specification/2026-07-28)) | URL-mode elicitation (accept/decline/cancel, unsigned); tool annotations (hints) | Consent (signed); Action Profile | `mcp-extension.md` |
+| MCP SEP-2848 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848)) | async approval via Tasks; args digest; unsigned | Consent as the approval evidence | `mcp-extension.md` section 7 |
+| MCP SEP-2793 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2793)) | `reversibility` auto/manual/none, `approvalRecommendation` | `undo.kind` native/compensate/none; tiers | one to one for reversibility; OAC tiers are computed, not recommended |
+| A2A v1.0 ([spec](https://a2a-protocol.org/latest/specification/), Apache-2.0) | `INPUT_REQUIRED` task state; extensions; JWS over JCS for Agent Cards | Preview / Consent | carry the Preview when a task is `INPUT_REQUIRED` for approval, and the Consent and Receipt as extension data; same JWS + JCS building blocks |
+| OpenAI Agents SDK, LangGraph | in-process approvals and interrupts, unsigned | Consent | wrap their approval step: build a Preview, get a Consent, verify before resuming |
+
+## Receipts, consent records, identity
+
+| Other | Its object | OAC counterpart | How they meet |
+|---|---|---|---|
+| IETF draft-schrock-ep-authorization-receipts-13 ([datatracker](https://datatracker.ietf.org/doc/draft-schrock-ep-authorization-receipts/)) | authorization context over a JCS action; WebAuthn challenge = context hash | Consent with `signer.kind = "device"` | a device signer can use the consent digest as the WebAuthn challenge; OAC adds the bound Preview fields and the MCP binding |
+| IETF agent audit-trail and SCITT agent drafts | hash-chained logs, COSE records | Receipt chain | export receipts into those logs; OAC does not need its own log format |
+| Acta, delegation and counter-sign receipt drafts | signed receipts | Receipt | export target |
+| ISO/IEC TS 27560 | consent record for personal-data processing | Consent / Mandate | a Mandate can be summarized as a 27560 record for privacy records |
+| Web Bot Auth (IETF WG) | the agent's HTTP message signatures to websites | executor key | the executor may publish one key directory for both |
+| RFC 9396 RAR, OpenID CIBA | typed authorization details; out-of-band approval with a short binding message | Preview fields; URL-mode consent | an authorization server can render a Preview and return a Consent instead of only a token |

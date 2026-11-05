@@ -1,0 +1,354 @@
+# Open Action Consent (OAC) 0.1
+
+Status: draft. Not endorsed by any standards body. Licensed under CC-BY-4.0 (see LICENSE-SPEC).
+
+The key words MUST, MUST NOT, SHOULD, SHOULD NOT and MAY are to be read as described in RFC 2119 and RFC 8174 when,
+and only when, they appear in all capitals.
+
+## 1. What OAC is for
+
+An AI agent increasingly acts for a person: it sends mail, books tables, deletes files, pays. Today the person's "yes"
+is usually a button whose meaning no one else can check. OAC makes that yes portable and verifiable:
+
+1. Before an action that matters, the **executor** (the tool side, never the model) builds a **Preview** of exactly
+   what will happen, with every structured field bound to the call's own arguments.
+2. The person signs a **Consent** over the digest of that Preview, or a **Mandate** they signed earlier covers it.
+3. The executor runs the action only if the signature, the binding and the limits all check out.
+4. The executor signs a **Receipt**, chained to the previous one, that says what ran and how to **Undo** it.
+
+OAC does not move money, identify bots, define checkout, or set liability. It sits beside the protocols that do
+(section 11) and points to them.
+
+## 2. Roles
+
+| Role | Does | Holds |
+|---|---|---|
+| Person (`sub`) | decides | nothing in the protocol; their signer holds the key |
+| Signer (`iss` of Consent, Mandate, Undo) | signs for the person, only after it has proven the person is present | the user key |
+| Agent / holder | proposes actions; may hold a Mandate | no key that can sign for the person |
+| Executor (`aud`) | builds Previews, verifies, runs, signs Receipts | the executor key |
+| Verifier | anyone checking objects later (the person, an auditor, a dispute team) | public keys only |
+
+A model MUST NOT hold, use, or be able to cause use of the user key. The executor MUST NOT accept a Consent or Mandate
+that the agent could have produced.
+
+## 3. Encoding
+
+### 3.1 JSON
+
+All objects are JSON. Numbers MUST be integers between -(2^53 - 1) and 2^53 - 1: money is in minor units with an ISO
+4217 `currency`; times are unix seconds. Parsers MUST refuse duplicate object keys, fractions, exponents, NaN and
+Infinity (`malformed`).
+
+### 3.2 Canonical form and digests
+
+The canonical form of a value is RFC 8785 (JCS). With integers only, it is: no whitespace; object keys sorted by their
+UTF-16 code units; strings escaped as ECMAScript `JSON.stringify` does; integers in plain decimal. Strings MUST be
+valid Unicode.
+
+A **digest** is `"sha-256:" + base64url(SHA-256(bytes))`, unpadded. `digest(value)` hashes the canonical bytes of a
+value. `token_digest(token)` hashes the ASCII bytes of a compact JWS.
+
+The **action** is `{"tool": <name>, "args": <object>}` and its digest is `digest(action)`.
+
+### 3.3 Signed objects
+
+Consent, Mandate, Receipt and Undo request are JWS compact serializations (RFC 7515):
+
+- the protected header is exactly `{"alg", "kid", "typ"}`, canonical;
+- `alg` is `EdDSA` (Ed25519, RFC 8037) or `ES256` (P-256, signature as raw r||s);
+- `kid` is the RFC 7638 thumbprint of the signing key's public JWK;
+- `typ` is `oac-consent+jws`, `oac-mandate+jws`, `oac-receipt+jws` or `oac-undo+jws`, and a verifier MUST check
+  it, so that no object can pass for another;
+- the payload is the canonical bytes of the object.
+
+A verifier MUST refuse a token whose header or payload is not byte-for-byte the canonical form of what it parses to
+(`not_canonical`). Base64url MUST be unpadded with zero pad bits.
+
+Key sets: a verifier obtains, from a source it trusts, the public keys of the signer it expects (for Consents,
+Mandates and Undo requests) and of the executor (for Receipts), and looks a token's key up by `kid`. OAC 0.1 does not
+define key discovery. An executor MAY publish its keys at the same place as its Web Bot Auth key directory.
+
+### 3.4 Signer kinds
+
+`signer.kind` states how the person's presence was proven:
+
+| kind | Meaning |
+|---|---|
+| `custodial` | a signer service holds the key and signs only after a live, recent sign-in of the person |
+| `device` | the key is on the person's device (e.g. a passkey); the device signs the consent digest |
+
+Verifiers MAY require `device` for some actions (for example any payment).
+
+## 4. Tiers
+
+Every action gets one tier:
+
+| Tier | Meaning | Needs |
+|---|---|---|
+| A | read-only, or no effect outside the person's own data | nothing; a Receipt is optional |
+| B | a write the executor can take back itself (`native` undo) | runs; MUST produce a Receipt with an Undo token |
+| C | sends, pays, deletes shared data, or cannot be undone in one step | a Consent bound to its Preview, or a Mandate that covers it |
+| D | forbidden | MUST be refused, whatever is presented |
+
+The tier is computed, never declared by the caller:
+
+```
+implied(profile) = A if effect is read
+                 = B if effect is write or delete and undo.kind is native
+                 = C otherwise
+tier = max(implied(profile), profile.tier_floor, executor policy floor,
+           C if the run is tainted and effect is not read,
+           any hint)
+```
+
+A run is **tainted** when text from outside the person's own words or data (a web page, an email, a shared document)
+has entered it. A hint (for example from a model) MAY raise the tier; because the result is a maximum, it can never
+lower it.
+
+## 5. Action Profile
+
+Published by a tool's author (in MCP, in the tool's `_meta`; section 10). Schema: `schemas/action-profile.schema.json`.
+
+```json
+{"oac":"0.1","type":"action-profile","tool":"book_table","effect":"write",
+ "undo":{"kind":"compensate","window_s":86400},"tier_floor":"A",
+ "binds":{"payee":"restaurant","when":"time","count":"party","site":"site"}}
+```
+
+- `effect`: `read`, `write`, `send`, `pay` or `delete`.
+- `undo.kind`: `native` (the executor restores the prior state), `compensate` (a new action puts it right but cannot
+  hide that it happened: a cancel, a refund), `none` (cannot be taken back). `none` has `window_s` 0; the others at
+  least 60. A `read` declares `none`.
+- `binds` maps Preview fields to argument names. Preview fields are: `title`, `to` (list of addresses), `when`,
+  `amount_minor`, `currency`, `payee`, `site`, `count`.
+
+Profiles are claims by the tool's author. An executor MUST treat a profile from an unreviewed source as untrusted
+and SHOULD apply a policy floor of C to its writes.
+
+## 6. Preview and Consent
+
+### 6.1 Preview
+
+Schema: `schemas/preview.schema.json`.
+
+```json
+{"oac":"0.1","type":"preview","id":"pv_book_table","executor":"https://shop.example/oac","sub":"person:7f3a",
+ "tool":"book_table","action":"sha-256:...","summary":"Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people.",
+ "fields":{"payee":"Nobu Boston","when":"2026-11-06T19:30-05:00","count":2,"site":"nobu.example"},
+ "undo":{"kind":"compensate","window_s":86400},
+ "cancel_policy":{"text":"Free cancellation until 24 h before.","source":"https://nobu.example/policy"},
+ "iat":1793836770,"exp":1793837370}
+```
+
+Rules:
+
+1. The executor MUST build the Preview from the action it will run. `fields` MUST contain exactly the bound
+   arguments that are present, each equal to its argument; `undo` MUST equal the profile's.
+2. `summary` is free text for humans. It SHOULD be produced by executor code, not a model, and MUST NOT contradict
+   `fields`. Verifiers cannot check it; that is why `fields` exist.
+3. `exp` is after `iat` and at most 900 seconds later.
+4. `evidence` MAY carry digests of a screenshot and of the page DOM the person saw (browser agents).
+5. The client MUST show the person at least `summary`, every field, the undo kind, and `cancel_policy` when present.
+   An undo kind of `none` MUST be shown before the yes, not after.
+
+### 6.2 Consent
+
+Schema: `schemas/consent.schema.json`. Signed by the person's signer, `typ` `oac-consent+jws`.
+
+```json
+{"oac":"0.1","type":"consent","iss":"https://atlas.example/signer","sub":"person:7f3a",
+ "aud":"https://shop.example/oac","jti":"n_consent_0000000001","iat":1793836780,"exp":1793837080,
+ "items":[{"preview":"sha-256:<digest of the preview>","action":"sha-256:<action digest>"}],
+ "signer":{"kind":"custodial"}}
+```
+
+- One item per Preview, 1 to 20 (a batch: "send these 3 replies?").
+- `exp - iat` at most 900.
+- `jti` is single-use, at least 16 characters of base64url alphabet.
+- `payment` is present if and only if one item pays (section 9).
+
+### 6.3 Verifying a Consent
+
+The executor MUST run these checks in this order and report the first failure's code:
+
+1. Envelope (3.3): `malformed`, `not_canonical`, `bad_type`, `bad_alg`, `unknown_key`, `bad_signature`; then the
+   payload's fields (`malformed`).
+2. `aud` is this executor: `wrong_audience`.
+3. Time: `iat` not more than 60 s in the future (`not_yet_valid`); now before `exp` (`expired`); `exp - iat` within
+   900 and positive (`lifetime_too_long`).
+4. As many previews and actions as items: `preview_mismatch`.
+5. For each item, in order:
+   1. the Preview's fields are valid (`malformed`);
+   2. `digest(preview)` equals `item.preview`: `preview_mismatch`;
+   3. `preview.action` and `digest(action)` both equal `item.action`: `action_mismatch`;
+   4. `preview.sub` equals the Consent's `sub`: `subject_mismatch`;
+   5. `preview.executor` is this executor: `executor_mismatch`;
+   6. now before `preview.exp`: `preview_expired`;
+   7. a profile is known for the tool: `unknown_tool`;
+   8. binding (6.1 rule 1): `binding_mismatch`;
+   9. tier is not D: `tier_d`;
+   10. for a `pay` effect: section 9 (`payment_missing`, `payment_mismatch`); a second paying item is `malformed`.
+6. `payment` present but no item pays: `payment_mismatch`.
+7. `jti` not seen before: `replay`. Only now is the `jti` recorded, until `exp`; a refused Consent does not use up
+   its nonce.
+
+A valid Consent authorizes exactly the listed actions, once each, at this executor, before `exp`.
+
+## 7. Mandate
+
+### 7.1 Object
+
+Schema: `schemas/mandate.schema.json`. Signed by the person's signer, `typ` `oac-mandate+jws`.
+
+```json
+{"oac":"0.1","type":"mandate","id":"md_lunch_1","iss":"https://atlas.example/signer","sub":"person:7f3a",
+ "holder":{"type":"agent","id":"lunch-bot"},"goal":"Book and pay for lunch on weekdays, up to $25.",
+ "tools":["book_table","pay_order"],
+ "bounds":{"calls":{"per_day":5},"amount":{"currency":"USD","per_call_minor":2500,"per_day_minor":5000},
+           "payees":["Nobu Boston","Sweetgreen"],"sites":["nobu.example"]},
+ "iat":1793833200,"exp":1794438000,"signer":{"kind":"custodial"}}
+```
+
+`bounds.calls.per_day` is required. `recipients` entries are an exact address or `@domain`.
+
+### 7.2 What a Mandate can and cannot do
+
+A Mandate stands in for a Consent on tier C. It MUST NOT cover tier D. It MUST NOT be used in a tainted run: the
+person is asked instead (`tainted`). A `pay` tool needs `amount.per_call_minor`, `amount.per_day_minor` and `payees`.
+A tool bound to `to` needs `recipients`.
+
+### 7.3 Checking a Mandate for one action
+
+In this order:
+
+1. Envelope and fields, as 6.3 step 1.
+2. `holder` equals the caller the executor has authenticated: `holder_mismatch`.
+3. Time, as 6.3 step 3, with a maximum lifetime of 30 days.
+4. The action's fields are valid (`malformed`); the tool is in `tools` and is the profile's tool: `tool_not_covered`.
+5. Tier is not D: `tier_d`. The run is not tainted: `tainted`.
+6. Every bound argument present has a valid field value: `malformed`.
+7. `pay` without both amount caps and `payees`: `pay_without_caps`.
+8. Each `to` address matches `recipients` (missing list = no match): `recipient_not_allowed`.
+9. `payee` in `payees` when the list exists: `payee_not_allowed`. `site` in `sites` when the list exists:
+   `site_not_allowed`.
+10. If the action carries `amount_minor`: the Mandate has `amount` (`over_amount`), the currency equals
+    (`currency_mismatch`), within `per_call_minor` (`over_amount`), and today's total plus this one within
+    `per_day_minor` (`over_daily_amount`).
+11. Today's calls plus one within `per_day`, and this run's within `per_run`: `over_calls`.
+
+The executor MUST count uses atomically with the action (one transaction, or an equivalent lock), so two parallel
+calls cannot both pass a limit.
+
+### 7.4 Replacing a Mandate
+
+A Mandate is revoked by its signer; revocation is final. A replacement names the old one in `supersedes`. A
+replacement **loosens** when, compared with the old one, it has another holder or subject, a new tool, a later
+expiry, a higher or removed count or amount cap, another currency, an amount where there was none, or a new or
+removed recipient, payee or site list entry. The signer MUST NOT sign a loosening replacement without a fresh proof
+that the person is present (a new sign-in, a device signature). Narrowing needs no fresh proof. The SDKs' `loosens`
+function returns the list of reasons.
+
+## 8. Receipts and Undo
+
+### 8.1 Receipt
+
+Schema: `schemas/receipt.schema.json`. Signed by the executor, `typ` `oac-receipt+jws`. One per executed action
+(including failures), per person, in order:
+
+```json
+{"oac":"0.1","type":"receipt","iss":"https://shop.example/oac","sub":"person:7f3a","seq":2,"prev":"sha-256:...",
+ "iat":1793836801,"tool":"book_table","tier":"C","authority":{"kind":"consent","ref":"n_consent_0000000001"},
+ "action":"sha-256:...","preview":"sha-256:...","outcome":"ok","result":"sha-256:...",
+ "undo":{"kind":"compensate","until":1793923200}}
+```
+
+Rules beyond the schema (`receipt_invalid`):
+
+- tier D never appears;
+- `authority.kind` is `consent` (ref = its `jti`), `mandate` (ref = its `id`), `undo` (ref = the Undo request's
+  `jti`) or `tier` (no ref; tiers A and B only);
+- `undo.kind` `none` carries no `until` or `token`; any other kind on an `ok` outcome carries `until`;
+- tier B with outcome `ok` (other than an undo receipt) carries a `native` undo with a `token`;
+- a receipt with authority `undo` names the receipt it undoes in `undoes` (its `token_digest`).
+
+`result` is the digest of the action's result. Receipts SHOULD NOT carry personal data in clear: they carry digests,
+and a store holds the details.
+
+### 8.2 Chain
+
+`prev` is `token_digest` of the previous receipt for the same person, and `null` for `seq` 1. Verifying an export
+(a contiguous run of receipts, possibly starting after `seq` 1), in order for each receipt: envelope and fields;
+rules of 8.1; `iss` is the expected executor (`chain_issuer`); same `sub` throughout (`subject_mismatch`); the first
+has `prev` null if and only if its `seq` is 1 (`chain_broken`); each later one has `seq` one more than the one before
+(`chain_seq`) and `prev` equal to its `token_digest` (`chain_broken`).
+
+A person's signer MAY countersign the chain head from time to time (a seal) so that an executor cannot silently
+rewrite history; OAC 0.1 does not fix the seal's format.
+
+### 8.3 Undo request
+
+Schema: `schemas/undo.schema.json`. Signed by the person's signer, `typ` `oac-undo+jws`. `receipt` is the
+`token_digest` of the receipt to undo; `mode` is `native` or `compensate`; a `compensate` request names in `consent`
+the `jti` of the Consent for the compensating action (its own Preview: "Cancel the booking; no fee").
+
+The executor checks, in order: envelope and fields; `aud` (`wrong_audience`); time, 900 s maximum lifetime; the named
+receipt is the one given (`receipt_mismatch`); that receipt verifies under the executor's keys, follows 8.1, and is
+this executor's (`receipt_mismatch`); same `sub` (`subject_mismatch`); its outcome is `ok` and its undo kind is not
+`none` (`not_reversible`); `mode` equals the undo kind (`undo_mode_mismatch`); now is not after `undo.until`
+(`undo_window_closed`); `compensate` names a consent (`malformed`); `jti` unused (`replay`).
+
+The executor then undoes, and appends a receipt with authority `undo` and `undoes`. An executor MAY also accept its
+own signed-in session for a tier B native undo; the signed request is what makes an undo verifiable by others.
+
+"Undo this run" is a list of undo requests, newest receipt first. Receipts whose kind is `none` MUST be listed to the
+person as "cannot be undone", never skipped silently.
+
+## 9. Payments
+
+OAC authorizes a payment; it never carries a credential and never moves money.
+
+1. A `pay` action's Preview MUST bind `amount_minor`, `currency` and `payee`.
+2. Its Consent MUST carry `payment`: `rail` (`stripe_link`, `ap2`, `vi`, `other`), `ref` (the rail's own
+   authorization: a spend request id, an AP2 mandate id, a Verifiable Intent reference), and `amount_minor`,
+   `currency`, `payee` equal to the Preview's fields (`payment_missing`, `payment_mismatch`).
+3. The credential (a one-time card, a token) MUST be issued by the rail to the executor, never to the agent or model,
+   and MUST NOT be stored. The agent sees at most a handle and the last four digits.
+4. The executor SHOULD make the rail enforce the same amount and payee (a second lock that does not depend on the
+   executor's own code), and MUST fail closed when they differ.
+5. The Receipt carries `payment.rail`, `payment.ref`, and MAY carry `last4` and the merchant's `order` id.
+6. A payment Consent cannot be replaced by a Mandate unless the Mandate meets 7.2.
+
+## 10. Bindings
+
+The MCP binding is in `mcp-extension.md`. Mappings to AP2, Verifiable Intent, ACP, A2A and others are in
+`mappings.md`. The dispute evidence profile is in `profiles/dispute.md`.
+
+## 11. Relation to other work
+
+OAC adds three things the protocols around it leave out: a Preview bound into a signed yes, a declared undo kind with
+a receipt chain, and one tier vocabulary. It reuses JCS, JWS and JWK thumbprints and does not define identity, rails
+or checkout. Where an existing format already covers a part (payment mandates, receipts in transparency logs), OAC
+points to it or exports to it (`mappings.md`).
+
+## 12. Security considerations
+
+- **Model-proof by construction.** Nothing a model outputs can mint a Consent or Mandate: the user key is out of its
+  reach (section 2), and a model's tier hint can only raise the tier (section 4).
+- **What the person saw.** `fields` are checkable; `summary` is not. Clients MUST render `fields`. With `evidence`, a
+  dispute can compare the screenshot the person saw with the page that was submitted.
+- **Prompt injection.** Text from outside taints the run; tainted runs cannot use Mandates (7.2) and raise writes to
+  tier C (section 4).
+- **Replay.** Every Consent and Undo request is single-use, audience-bound and short-lived; nonces are recorded only
+  after every other check passes, and kept until `exp`.
+- **Time.** Executors need a clock within 60 s of the signer's.
+- **Custodial signers** are only as strong as their sign-in. Prefer `device` for payments and for loosening Mandates.
+- **Privacy.** Previews and Receipts can reveal what a person does. Store them per person, encrypted, with retention
+  limits; share only what a verifier needs (digests prove a match without the content).
+- **Profiles are claims.** A tool can lie in its Action Profile (claim `native` and do something irreversible).
+  Executors review profiles before trusting them and apply a policy floor to unreviewed tools.
+
+## 13. Conformance
+
+An implementation conforms to OAC 0.1 when it passes every case in `vectors/` (format: `conformance/README.md`),
+reporting the same error code as the vector for every refused case.

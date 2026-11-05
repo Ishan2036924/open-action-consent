@@ -1,0 +1,4735 @@
+{
+ "oac": "0.1",
+ "about": "OAC v0.1 conformance vectors: consent. Keys: oac.testing.vector_key labels (test only). Time is unix seconds; NOW = 1793836800.",
+ "cases": [
+  {
+   "name": "valid: one preview, one action",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "valid: one yes for a batch of three emails",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjFBdExzNHJTaTdwaVJTN1Qta0VITVVncXQxQXB2Wk45N1pFaVljMmNyUk0iLCJwcmV2aWV3Ijoic2hhLTI1NjpVTjkwWVUxeW9WZ2UtUVNsTHhsZG9BaVFBS09ObUlORGNtRVpma3dIZW1VIn0seyJhY3Rpb24iOiJzaGEtMjU2OjFYcVlBUERzQWJnX2lUTEJpTTNXeXRFOEtwcnJ1T3RBWGZLd3hiWGhGS1UiLCJwcmV2aWV3Ijoic2hhLTI1Njo2VnF3eE5KMFMza1o4V1loMzhRZ3NaMkVTeEZZQmhUT092ZTYtXzdocW5ZIn0seyJhY3Rpb24iOiJzaGEtMjU2OnFjT1lBUnZyN19PcHE0aDdQd2plcm4zc2x0U3dZeWNRem11NFU5cTNsaGsiLCJwcmV2aWV3Ijoic2hhLTI1NjpvTFZHLTZFbXpNY1FDcEd3REd1NFJYOEVBOWV3NE5qaFpoV3VXdXBiczdRIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMiIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.43rXWI_lCuvZhIg3D124DxpkJEOsTeAuyMxJtCOaZvouZjATLmo8t4WG9PEg_EA81VhLrlSH4xCsvCdU74dhAA",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_mail_0",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "send_email",
+      "action": "sha-256:1AtLs4rSi7piRS7T-kEHMUgqt1ApvZN97ZEiYc2crRM",
+      "summary": "Email sam0@example.com: Re: plan 0",
+      "fields": {
+       "to": [
+        "sam0@example.com"
+       ],
+       "title": "Re: plan 0"
+      },
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     },
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_mail_1",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "send_email",
+      "action": "sha-256:1XqYAPDsAbg_iTLBiM3WytE8KprruOtAXfKwxbXhFKU",
+      "summary": "Email sam1@example.com: Re: plan 1",
+      "fields": {
+       "to": [
+        "sam1@example.com"
+       ],
+       "title": "Re: plan 1"
+      },
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     },
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_mail_2",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "send_email",
+      "action": "sha-256:qcOYARvr7_Opq4h7Pwjern3sltSwYycQzmu4U9q3lhk",
+      "summary": "Email sam2@example.com: Re: plan 2",
+      "fields": {
+       "to": [
+        "sam2@example.com"
+       ],
+       "title": "Re: plan 2"
+      },
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "send_email",
+      "args": {
+       "to": [
+        "sam0@example.com"
+       ],
+       "subject": "Re: plan 0",
+       "body": "Sounds good."
+      }
+     },
+     {
+      "tool": "send_email",
+      "args": {
+       "to": [
+        "sam1@example.com"
+       ],
+       "subject": "Re: plan 1",
+       "body": "Sounds good."
+      }
+     },
+     {
+      "tool": "send_email",
+      "args": {
+       "to": [
+        "sam2@example.com"
+       ],
+       "subject": "Re: plan 2",
+       "body": "Sounds good."
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "valid: payment matches the preview",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjptUFBBX2ZRNWJxNTIwVkpMUmhpNlJoampLNWpRcHN2dXIycmhmalZKbWNJIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMyIsIm9hYyI6IjAuMSIsInBheW1lbnQiOnsiYW1vdW50X21pbm9yIjoxODAwLCJjdXJyZW5jeSI6IlVTRCIsInBheWVlIjoiU3dlZXRncmVlbiIsInJhaWwiOiJzdHJpcGVfbGluayIsInJlZiI6ImxzcnFfdGVzdF8xMjMifSwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0eXBlIjoiY29uc2VudCJ9.IQraJP-I8iAsi3dBrAU5-AiUOXMzptaGPeaYsm12gq_5EYatEpFnIt3hHfuejVyzdhAz5_oqb1Hcj5g2-9dmCg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_pay_order",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "pay_order",
+      "action": "sha-256:2ib1rAlh4mx3VXyCnSUnmQG9Lk6R7MU-8bzpjdBq_eo",
+      "summary": "Pay Sweetgreen $18.00 for 1 bowl. Refund within 7 days.",
+      "fields": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "payee": "Sweetgreen"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "pay_order",
+      "args": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "merchant": "Sweetgreen",
+       "items": [
+        "bowl"
+       ]
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "valid: device key (ES256 passkey-style)",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImpxQmxPUTdRcld6MUFVQldSRG5qOUpsUi1pWmxJWmtPdkV5dlFWb0ZoZWsiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiZGV2aWNlIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.owcToxbNSyt_ecT-flyCMbaKvtg4omNo13vZjiSSGRvtF9bsfBcfphnjxaKP9ogjko8m7Ai0mcsXn9breV_A7Q",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "valid: tainted run still runs with a consent",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800,
+    "tainted": true
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "forged: attacker signs with the person's kid",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.R6Eosesl6WfbwiOB663to9jC96Swnc0AWDBUDp6uITIEPv8BgENeJyDJsejBR_aii9iJhBXdCHbkmUGGnMPmDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "bad_signature"
+   }
+  },
+  {
+   "name": "unknown key",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IjlMdU4zR2liZ1JmX3lRamZoNkVZcmZObl9mSHlGdmJ0bTNMSV9VeWVmaWMiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.nxHQhptw-rlMjI5zNm-6SAfOxhUyGrBnantxzlQky3zyRLV07EJRiTDDEnwQcxRQ2DGsRsAbakwjET1oNHXyCg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "unknown_key"
+   }
+  },
+  {
+   "name": "wrong type: a receipt-typed token",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.vuexaB9rinqb5JxQuen7DxOf2Y9_ocuPIn77WvUejJG0ZZEBYPIP_0mIMVLNHLieMKJCQCHQExEa0Q73siZmAw",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "bad_type"
+   }
+  },
+  {
+   "name": "alg none",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJub25lIiwia2lkIjoiSEhMSmFpMl9DVHJEWHFBb1V3ekxGS0V4N3B2M1BFdE1TQkJIeWlKVUtrWSIsInR5cCI6Im9hYy1jb25zZW50K2p3cyJ9.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "bad_alg"
+   }
+  },
+  {
+   "name": "payload not canonical (signed over spaced JSON)",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.ewogImF1ZCI6ICJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLAogImV4cCI6IDE3OTM4MzcwODAsCiAiaWF0IjogMTc5MzgzNjc4MCwKICJpc3MiOiAiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsCiAiaXRlbXMiOiBbCiAgewogICAiYWN0aW9uIjogInNoYS0yNTY6cE1oUm8wZnd3cHFaS3lTd3k1ZVJvQUpuYnY4c0xwZVJGTW4waDY3cmJIMCIsCiAgICJwcmV2aWV3IjogInNoYS0yNTY6M25PQUo5cnd3MlExWExmdDlTVjJwMmdpZTN3Z1c1Qm9pQVFNSkNLMl9BZyIKICB9CiBdLAogImp0aSI6ICJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsCiAib2FjIjogIjAuMSIsCiAic2lnbmVyIjogewogICJraW5kIjogImN1c3RvZGlhbCIKIH0sCiAic3ViIjogInBlcnNvbjo3ZjNhIiwKICJ0eXBlIjogImNvbnNlbnQiCn0.1ggBGPelx-ORE4iiO2tcnG_Z-D_6lyUy7V24a-yZZ66SClKsSy0IGaAzIkziTNZaqiwqlrjJxSVySdz-RrdqCQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "not_canonical"
+   }
+  },
+  {
+   "name": "tampered after signing",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4Mzc2MDAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "bad_signature"
+   }
+  },
+  {
+   "name": "extra header field",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsieCJdLCJraWQiOiJISExKYWkyX0NUckRYcUFvVXd6TEZLRXg3cHYzUEV0TVNCQkh5aUpVS2tZIiwidHlwIjoib2FjLWNvbnNlbnQrandzIn0.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.hvjUvzEJxf8AnSZz474IBel-78zmeevwKr6MSYqSU4UMIG9U5Kbyc7bMhhUrtCNhSsR1BqByjVL95w8Gxmq7Aw",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "non-integer number in payload",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQiLCJ6IjoxLjV9.BVGi9zCQ2unLAVYLZXrOjv0urDUh_SkEsFllnSqDHmozKleJa-DvCb8c4YJjRtX2gcvfK5-bMpYmr6g08Fm2Aw",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "duplicate key in payload",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQiLCJhdWQiOiJ4In0.zcdYpWAur3uhlJEIpOB1cIGx1kFxan0nIrn2KUZjR1xgu_DpKuL95yOnErFqEH3SictPfvY0a-8zEMMk9BIuBw",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "not three parts",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "wrong audience",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL290aGVyLmV4YW1wbGUvb2FjIiwiZXhwIjoxNzkzODM3MDgwLCJpYXQiOjE3OTM4MzY3ODAsImlzcyI6Imh0dHBzOi8vYXRsYXMuZXhhbXBsZS9zaWduZXIiLCJpdGVtcyI6W3siYWN0aW9uIjoic2hhLTI1NjpwTWhSbzBmd3dwcVpLeVN3eTVlUm9BSm5idjhzTHBlUkZNbjBoNjdyYkgwIiwicHJldmlldyI6InNoYS0yNTY6M25PQUo5cnd3MlExWExmdDlTVjJwMmdpZTN3Z1c1Qm9pQVFNSkNLMl9BZyJ9XSwianRpIjoibl9jb25zZW50XzAwMDAwMDAwMDEiLCJvYWMiOiIwLjEiLCJzaWduZXIiOnsia2luZCI6ImN1c3RvZGlhbCJ9LCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJjb25zZW50In0._afSRrrf2BZMWbtr0OeCEVxEr4trjYmdmHx_TmhSxGV50bPxjfMTfbAN_CokbD-kWeIBz_ofTOGL4kkZ_404Ag",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "wrong_audience"
+   }
+  },
+  {
+   "name": "expired",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793837200
+   },
+   "expect": {
+    "error": "expired"
+   }
+  },
+  {
+   "name": "not yet valid (iat 2 min ahead)",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcyMDAsImlhdCI6MTc5MzgzNjkyMCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.YuGlIKolSrdDCUPRa8W2EaM-AyPx17QnHwabQFhUV5ONgH9iwyCcb24leTO3mHRTwNxA-Rm_EMqqpmUZ6tvwBg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "not_yet_valid"
+   }
+  },
+  {
+   "name": "lives longer than 15 minutes",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4NDAzODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.9q1DGqf-hBn0NbtABUJTKZwp-qOhFoS6F7rZKkQyJqUVJlIBOP4wQ9y7PoknaF-SpFQzZOwdm0HNTizwTePpDg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "lifetime_too_long"
+   }
+  },
+  {
+   "name": "preview differs from the one signed",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, 2 people.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "preview_mismatch"
+   }
+  },
+  {
+   "name": "action changed after the yes",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 20,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "action_mismatch"
+   }
+  },
+  {
+   "name": "preview fields do not match the arguments",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OmlGLWItd3djMF9ydFIwT1RlS2hUUEFlMTJRS05EZVlqb3FzRHBBVUhkRXMiLCJwcmV2aWV3Ijoic2hhLTI1NjpMNjNRSVQtTnNUSjZTOEZFUGRIZXJDZFVxVHU5eWFPYWNDN2ZDWk5HcnpFIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.SZ-GJ1oluKaTyMUU-MCVspohN3l8bLz1H0jD0g7L7HnZylp_icMeXEerWWmaHLg40qc89mvrsSpCCzUtngolBQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:iF-b-wwc0_rtR0OTeKhTPAe12QKNDeYjoqsDpAUHdEs",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 20,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "binding_mismatch"
+   }
+  },
+  {
+   "name": "preview made for another person",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpibW9VOUFqUjZOdkUwTjN5MHEzRk85TjdmTi1xOVF6T2FiZExvWkg4aTZrIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNiIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.PJguT_hXFXgFDfH41NSkevCRQHbLXXu2LlSeIaL-b9iOumMqPaGiLcmdIZ-E4UIWGgDvuwhZCXjlsLxkXIg8Bg",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:other",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "subject_mismatch"
+   }
+  },
+  {
+   "name": "preview made by another executor",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpmVVFjb3ZOa3JWejJBTURmTkJ3MS0xeENEVjUxeURaMzhrMnVFRWRTX0RnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwNyIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.hQHz-A3oZ6N-libx30RyHn4AjUkEALtwT-WlyB6OwFzlno8PRgHVTlS7IZF49ON_RtvJJdEFSE8wEDsmL4lMAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://other.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "executor_mismatch"
+   }
+  },
+  {
+   "name": "preview expired before the call",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpvUVFiS3hOZmg2UWtCUEYzZ2ZCRjBsbHpOZ3loS09mX1ZDdEIzbTBLa1BRIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwOCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.JgjOfvAio2-q1rJYJAO73FqiKL4I6mdT3wH17ih5sZZ1JaDnBS_D5m9DAozj04nij8zjBmPj6iZlUHfCgo3XAA",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836100,
+      "exp": 1793836700
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "preview_expired"
+   }
+  },
+  {
+   "name": "one item but two previews",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     },
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_mail_0",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "send_email",
+      "action": "sha-256:1AtLs4rSi7piRS7T-kEHMUgqt1ApvZN97ZEiYc2crRM",
+      "summary": "Email sam0@example.com: Re: plan 0",
+      "fields": {
+       "to": [
+        "sam0@example.com"
+       ],
+       "title": "Re: plan 0"
+      },
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     },
+     {
+      "tool": "send_email",
+      "args": {
+       "to": [
+        "sam0@example.com"
+       ],
+       "subject": "Re: plan 0",
+       "body": "Sounds good."
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "preview_mismatch"
+   }
+  },
+  {
+   "name": "no profile for the tool",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "unknown_tool"
+   }
+  },
+  {
+   "name": "tier D never runs, even with a yes",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjdkZUQ3aVpLWWV6dU1Obi15SklJOE9KTjNZV29YYlZMa3kzQjYydTc4UmsiLCJwcmV2aWV3Ijoic2hhLTI1NjpZZjhLMkU3aWQ1WWo5MGl4cmY4QndtbnhEU21iSG1zYWlsM2VMajY3QW1VIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwOSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.cyPoj7vmQNpGAUGDcpbRLl0Vo6_ysf2Wm-ltarnfLuhEFS5XaQLO3VuqxzMBys8OSyxgx1kTqmBjRVRZrlSWBQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_solve_captcha",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "solve_captcha",
+      "action": "sha-256:7deD7iZKYezuMNn-yJII8OJN3YWoXbVLky3B62u78Rk",
+      "summary": "Solve the CAPTCHA",
+      "fields": {},
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "solve_captcha",
+      "args": {
+       "page": "https://x.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "tier_d"
+   }
+  },
+  {
+   "name": "pay without a payment reference",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjptUFBBX2ZRNWJxNTIwVkpMUmhpNlJoampLNWpRcHN2dXIycmhmalZKbWNJIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxMCIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.kXo6a45mUwvvs0DG5PklyO5SPqHRooVzn2eJ6Cjl-cLhnR073OSef_Iwa6OW9d70JXmX2ijn-LY7jrs9eu5KCQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_pay_order",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "pay_order",
+      "action": "sha-256:2ib1rAlh4mx3VXyCnSUnmQG9Lk6R7MU-8bzpjdBq_eo",
+      "summary": "Pay Sweetgreen $18.00 for 1 bowl. Refund within 7 days.",
+      "fields": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "payee": "Sweetgreen"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "pay_order",
+      "args": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "merchant": "Sweetgreen",
+       "items": [
+        "bowl"
+       ]
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "payment_missing"
+   }
+  },
+  {
+   "name": "payment amount differs from the preview",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OjJpYjFyQWxoNG14M1ZYeUNuU1VubVFHOUxrNlI3TVUtOGJ6cGpkQnFfZW8iLCJwcmV2aWV3Ijoic2hhLTI1NjptUFBBX2ZRNWJxNTIwVkpMUmhpNlJoampLNWpRcHN2dXIycmhmalZKbWNJIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAxMSIsIm9hYyI6IjAuMSIsInBheW1lbnQiOnsiYW1vdW50X21pbm9yIjoxODAwMCwiY3VycmVuY3kiOiJVU0QiLCJwYXllZSI6IlN3ZWV0Z3JlZW4iLCJyYWlsIjoic3RyaXBlX2xpbmsiLCJyZWYiOiJsc3JxX3Rlc3RfMTIzIn0sInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.JovzMpD0jRRtAVaxmRu-US2snKU6h3TcLU4yW8U1UvbWCVEhTBL08GHlb66qxqTloFsVZp_PgXaFkoJejeivDA",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_pay_order",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "pay_order",
+      "action": "sha-256:2ib1rAlh4mx3VXyCnSUnmQG9Lk6R7MU-8bzpjdBq_eo",
+      "summary": "Pay Sweetgreen $18.00 for 1 bowl. Refund within 7 days.",
+      "fields": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "payee": "Sweetgreen"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "pay_order",
+      "args": {
+       "amount_minor": 1800,
+       "currency": "USD",
+       "merchant": "Sweetgreen",
+       "items": [
+        "bowl"
+       ]
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800
+   },
+   "expect": {
+    "error": "payment_mismatch"
+   }
+  },
+  {
+   "name": "replayed nonce",
+   "op": "verify_consent",
+   "input": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1Njozbk9BSjlyd3cyUTFYTGZ0OVNWMnAyZ2llM3dnVzVCb2lBUU1KQ0syX0FnIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMSIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.mnzUgOe9hqhxFjR87dRZE7nSn7bQmfdJ4UIbeZAsTkaOhgvTZxiVMGgAjJ7lM_86DPRSHH8rcCx4Ob300s7XAQ",
+    "keys": [
+     {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+      "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+     },
+     {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+      "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+      "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+     }
+    ],
+    "executor": "https://shop.example/oac",
+    "previews": [
+     {
+      "oac": "0.1",
+      "type": "preview",
+      "id": "pv_book_table",
+      "executor": "https://shop.example/oac",
+      "sub": "person:7f3a",
+      "tool": "book_table",
+      "action": "sha-256:pMhRo0fwwpqZKySwy5eRoAJnbv8sLpeRFMn0h67rbH0",
+      "summary": "Book Nobu Boston, Fri 6 Nov 7:30 pm, 2 people. Free cancel until 24 h before.",
+      "fields": {
+       "payee": "Nobu Boston",
+       "when": "2026-11-06T19:30-05:00",
+       "count": 2,
+       "site": "nobu.example"
+      },
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "iat": 1793836770,
+      "exp": 1793837370
+     }
+    ],
+    "actions": [
+     {
+      "tool": "book_table",
+      "args": {
+       "restaurant": "Nobu Boston",
+       "time": "2026-11-06T19:30-05:00",
+       "party": 2,
+       "site": "nobu.example"
+      }
+     }
+    ],
+    "profiles": {
+     "book_table": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "book_table",
+      "effect": "write",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 86400
+      },
+      "tier_floor": "A",
+      "binds": {
+       "payee": "restaurant",
+       "when": "time",
+       "count": "party",
+       "site": "site"
+      }
+     },
+     "send_email": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "send_email",
+      "effect": "send",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {
+       "to": "to",
+       "title": "subject"
+      }
+     },
+     "add_task": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "add_task",
+      "effect": "write",
+      "undo": {
+       "kind": "native",
+       "window_s": 600
+      },
+      "tier_floor": "A",
+      "binds": {
+       "title": "title"
+      }
+     },
+     "pay_order": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "pay_order",
+      "effect": "pay",
+      "undo": {
+       "kind": "compensate",
+       "window_s": 604800
+      },
+      "tier_floor": "A",
+      "binds": {
+       "amount_minor": "amount_minor",
+       "currency": "currency",
+       "payee": "merchant"
+      }
+     },
+     "read_calendar": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "read_calendar",
+      "effect": "read",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "A",
+      "binds": {}
+     },
+     "solve_captcha": {
+      "oac": "0.1",
+      "type": "action-profile",
+      "tool": "solve_captcha",
+      "effect": "write",
+      "undo": {
+       "kind": "none",
+       "window_s": 0
+      },
+      "tier_floor": "D",
+      "binds": {}
+     }
+    },
+    "now": 1793836800,
+    "seen_nonces": [
+     "n_consent_0000000001"
+    ]
+   },
+   "expect": {
+    "error": "replay"
+   }
+  }
+ ]
+}

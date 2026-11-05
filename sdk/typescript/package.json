@@ -1,0 +1,13 @@
+{
+  "name": "@oac/sdk",
+  "version": "0.1.0",
+  "description": "Open Action Consent: signed previews, consents, mandates, receipts and undo for agent actions",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "engines": {"node": ">=23.6"},
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "conformance": "node src/conformance.ts ../../vectors"
+  }
+}

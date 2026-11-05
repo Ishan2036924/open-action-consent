@@ -1,0 +1,10 @@
+The OAC specification text (everything under spec/, and the prose in README.md and conformance/README.md) is
+licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+You may share and adapt it for any purpose, including commercially, as long as you give appropriate credit, link to
+the license, and say if you made changes.
+
+Full legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+
+Code, JSON schemas and test vectors (sdk/, schemas/, vectors/, tools/, conformance/ code, examples/) are licensed
+under the Apache License 2.0; see LICENSE.

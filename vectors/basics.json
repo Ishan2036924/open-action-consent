@@ -1,0 +1,617 @@
+{
+ "oac": "0.1",
+ "about": "OAC v0.1 conformance vectors: basics. Keys: oac.testing.vector_key labels (test only). Time is unix seconds; NOW = 1793836800.",
+ "cases": [
+  {
+   "name": "sorts keys",
+   "op": "jcs",
+   "input": {
+    "value": {
+     "b": 1,
+     "a": [
+      3,
+      {
+       "d": null,
+       "c": true
+      }
+     ]
+    }
+   },
+   "expect": {
+    "canonical": "{\"a\":[3,{\"c\":true,\"d\":null}],\"b\":1}"
+   }
+  },
+  {
+   "name": "sorts by UTF-16 code units, not code points",
+   "op": "jcs",
+   "input": {
+    "value": {
+     "דּ": 1,
+     "😀": 2,
+     "€": 3
+    }
+   },
+   "expect": {
+    "canonical": "{\"€\":3,\"😀\":2,\"דּ\":1}"
+   }
+  },
+  {
+   "name": "escapes like JSON.stringify",
+   "op": "jcs",
+   "input": {
+    "value": {
+     "s": "\u0001\n\"\\/é"
+    }
+   },
+   "expect": {
+    "canonical": "{\"s\":\"\\u0001\\n\\\"\\\\/é\"}"
+   }
+  },
+  {
+   "name": "negative and large safe integers",
+   "op": "jcs",
+   "input": {
+    "value": {
+     "n": [
+      -1,
+      0,
+      9007199254740991
+     ]
+    }
+   },
+   "expect": {
+    "canonical": "{\"n\":[-1,0,9007199254740991]}"
+   }
+  },
+  {
+   "name": "empty containers",
+   "op": "jcs",
+   "input": {
+    "value": {
+     "o": {},
+     "a": []
+    }
+   },
+   "expect": {
+    "canonical": "{\"a\":[],\"o\":{}}"
+   }
+  },
+  {
+   "name": "integer beyond 2^53-1 is refused",
+   "op": "jcs",
+   "input": {
+    "value": {
+     "n": 9007199254740992
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "duplicate key is refused",
+   "op": "parse",
+   "input": {
+    "text": "{\"a\":1,\"a\":2}"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "fraction is refused",
+   "op": "parse",
+   "input": {
+    "text": "{\"amount\":1.5}"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "1.0 is refused (no non-integer spelling)",
+   "op": "parse",
+   "input": {
+    "text": "{\"amount\":1.0}"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "exponent is refused",
+   "op": "parse",
+   "input": {
+    "text": "{\"amount\":1e2}"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "NaN is refused",
+   "op": "parse",
+   "input": {
+    "text": "{\"amount\":NaN}"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "trailing garbage is refused",
+   "op": "parse",
+   "input": {
+    "text": "{\"a\":1} x"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "whitespace is fine when parsing",
+   "op": "parse",
+   "input": {
+    "text": "{ \"b\" : 2 , \"a\" : [ 1 ] }"
+   },
+   "expect": {
+    "canonical": "{\"a\":[1],\"b\":2}"
+   }
+  },
+  {
+   "name": "digest is sha-256 over JCS bytes",
+   "op": "digest",
+   "input": {
+    "value": {
+     "tool": "book_table",
+     "args": {
+      "party": 2,
+      "restaurant": "Nobu Boston"
+     }
+    }
+   },
+   "expect": {
+    "digest": "sha-256:PR3IX6HmxbHoLhPiG7WUntrSweiBenrmNcbNjBo7DKQ"
+   }
+  },
+  {
+   "name": "EdDSA signing is deterministic across SDKs",
+   "op": "sign",
+   "input": {
+    "key": "signer",
+    "typ": "oac-consent+jws",
+    "payload": {
+     "oac": "0.1",
+     "type": "consent",
+     "note": "deterministic EdDSA"
+    }
+   },
+   "expect": {
+    "token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJub3RlIjoiZGV0ZXJtaW5pc3RpYyBFZERTQSIsIm9hYyI6IjAuMSIsInR5cGUiOiJjb25zZW50In0.lZi1BDNhsdX1pACvb0t8U0Fq8DHP9kAXFJNfd5kFaxHUXQ-peNmxpmuoHeSry4Zq7Zz_neVEX2Op4Qn091KbBw"
+   }
+  },
+  {
+   "name": "a read is A",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "read_calendar",
+     "effect": "read",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {}
+    }
+   },
+   "expect": {
+    "tier": "A"
+   }
+  },
+  {
+   "name": "a native-undo write is B",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     }
+    }
+   },
+   "expect": {
+    "tier": "B"
+   }
+  },
+  {
+   "name": "a compensate write is C",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    }
+   },
+   "expect": {
+    "tier": "C"
+   }
+  },
+  {
+   "name": "a send is C",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     }
+    }
+   },
+   "expect": {
+    "tier": "C"
+   }
+  },
+  {
+   "name": "a pay is C",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "pay_order",
+     "effect": "pay",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 604800
+     },
+     "tier_floor": "A",
+     "binds": {
+      "amount_minor": "amount_minor",
+      "currency": "currency",
+      "payee": "merchant"
+     }
+    }
+   },
+   "expect": {
+    "tier": "C"
+   }
+  },
+  {
+   "name": "a D floor is D",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "solve_captcha",
+     "effect": "write",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "D",
+     "binds": {}
+    }
+   },
+   "expect": {
+    "tier": "D"
+   }
+  },
+  {
+   "name": "a model hint cannot lower C to A",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    },
+    "hint": "A"
+   },
+   "expect": {
+    "tier": "C"
+   }
+  },
+  {
+   "name": "a hint can raise B to C",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     }
+    },
+    "hint": "C"
+   },
+   "expect": {
+    "tier": "C"
+   }
+  },
+  {
+   "name": "taint raises a write to C",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     }
+    },
+    "tainted": true
+   },
+   "expect": {
+    "tier": "C"
+   }
+  },
+  {
+   "name": "taint leaves a read at A",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "read_calendar",
+     "effect": "read",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {}
+    },
+    "tainted": true
+   },
+   "expect": {
+    "tier": "A"
+   }
+  },
+  {
+   "name": "policy floor raises a read to B",
+   "op": "tier",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "read_calendar",
+     "effect": "read",
+     "undo": {
+      "kind": "none",
+      "window_s": 0
+     },
+     "tier_floor": "A",
+     "binds": {}
+    },
+    "policy_floor": "B"
+   },
+   "expect": {
+    "tier": "B"
+   }
+  },
+  {
+   "name": "a valid profile",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "book_table",
+     "effect": "write",
+     "undo": {
+      "kind": "compensate",
+      "window_s": 86400
+     },
+     "tier_floor": "A",
+     "binds": {
+      "payee": "restaurant",
+      "when": "time",
+      "count": "party",
+      "site": "site"
+     }
+    }
+   },
+   "expect": {
+    "ok": true
+   }
+  },
+  {
+   "name": "a read that claims an undo",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "read_calendar",
+     "effect": "read",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {}
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "undo none with a window",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "send_email",
+     "effect": "send",
+     "undo": {
+      "kind": "none",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "to": "to",
+      "title": "subject"
+     }
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "native undo shorter than a minute",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 30
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     }
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "unknown effect",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "teleport",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     }
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "bind to an unknown preview field",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "colour": "title"
+     }
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "unknown top-level field",
+   "op": "profile",
+   "input": {
+    "profile": {
+     "oac": "0.1",
+     "type": "action-profile",
+     "tool": "add_task",
+     "effect": "write",
+     "undo": {
+      "kind": "native",
+      "window_s": 600
+     },
+     "tier_floor": "A",
+     "binds": {
+      "title": "title"
+     },
+     "trust_me": true
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  }
+ ]
+}
