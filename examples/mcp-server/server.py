@@ -165,7 +165,7 @@ class Server:
                                      actions=[action], profiles=PROFILES, now=now, nonces=self.nonces)
         except OACError as e:
             return self._refused(f"Refused ({e.code}). Nothing was booked.")
-        receipt = self._receipt("book_table", "C", {"kind": "consent", "ref": consent["jti"]}, action,
+        receipt = self._receipt("book_table", "C", {"kind": "consent", "ref": consent["jti"], "digest": token_digest(token)}, action,
                                 {"confirmation": "NB-2231"}, {"kind": "compensate", "until": now + 86400},
                                 preview=st["preview"])
         return self._done("Booked. Confirmation NB-2231.", receipt)
@@ -190,7 +190,7 @@ class Server:
             return self._refused(f"Undo refused ({e.code}).")
         self.undone.add(req["receipt"])
         self.tasks.pop(self.undo_tokens.pop(r["undo"]["token"]), None)
-        receipt = self._receipt(r["tool"], r["tier"], {"kind": "undo", "ref": req["jti"]}, {"tool": "oac_undo", "args": {}},
+        receipt = self._receipt(r["tool"], r["tier"], {"kind": "undo", "ref": req["jti"], "digest": token_digest(args["request"])}, {"tool": "oac_undo", "args": {}},
                                 {"undone": True}, {"kind": "none"}, undoes=req["receipt"])
         return self._done("Undone.", receipt)
 

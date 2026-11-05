@@ -13,6 +13,7 @@ from oac.errors import OACError
 from oac.jws import KeySet, SigningKey, digest, sign, verify
 from oac.preview import action_digest, check_binding
 from oac.tiers import tier_for
+from oac.webauthn import DeviceCheck, verify_device_proof
 
 TYP = "oac-consent+jws"
 MAX_S = 900  # a Consent lives at most 15 minutes
@@ -108,6 +109,7 @@ def verify_consent(
     nonces: NonceStore,
     policy_floor: str = "A",
     tainted: bool = False,
+    device: DeviceCheck | None = None,
 ) -> dict[str, Any]:
     """`sub` is the person this executor is acting for (from its own sign-in), never taken from the token."""
     p = verify(token, keys, TYP)
@@ -146,6 +148,8 @@ def verify_consent(
             _payment(p, preview)
     if pays == 0 and "payment" in p:
         raise OACError("payment_mismatch", "payment given but no item pays")
+    if device is not None:
+        verify_device_proof(token, device)
     if not nonces.use_once(p["jti"], p["exp"]):
         raise OACError("replay")
     return p

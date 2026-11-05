@@ -139,3 +139,29 @@ async def test_client_without_the_extension_gets_32021() -> None:
         with pytest.raises(MCPError) as e:
             await c.call_tool("book_table", {"restaurant": "Nobu", "time": "Fri", "party": 2})
     assert e.value.error.code == -32021 and log == []
+
+
+async def test_a_tool_error_with_an_occurrence_blocks_a_repeat_until_resolved() -> None:
+    key = generate()
+    server, oac, log = build(key)
+    answers = iter(["timeout", "ok", "ok"])
+
+    @server.tool(meta=oac.profile("hold_slot", effect="write", undo="native", window_s=600, other_args=["slot"],
+                                  occurrence="slot"))
+    async def hold_slot(slot: str) -> str:
+        if next(answers) == "timeout":
+            raise RuntimeError("the provider did not answer")
+        log.append(f"held {slot}")
+        return "Held."
+
+    async with Client(server, extensions=[SpeaksOAC()]) as c:
+        first = await c.call_tool("hold_slot", {"slot": "s_1"})
+        blocked = await c.call_tool("hold_slot", {"slot": "s_1"})
+        oac.resolve("hold_slot", "s_1", person=PERSON, outcome="failed")
+        retried = await c.call_tool("hold_slot", {"slot": "s_1"})
+        again = await c.call_tool("hold_slot", {"slot": "s_1"})
+    assert first.is_error and blocked.is_error and "occurrence_unresolved" in blocked.content[0].text
+    assert not retried.is_error and log == ["held s_1"]
+    assert again.is_error and "duplicate_occurrence" in again.content[0].text
+    chain = verify_chain(oac.receipts[PERSON], keys=KeySet({EXECUTOR: [oac.key.jwk]}), executor=EXECUTOR)
+    assert [r["outcome"] for r in chain] == ["unknown", "ok"]

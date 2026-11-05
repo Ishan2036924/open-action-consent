@@ -38,11 +38,13 @@ except ImportError as e:  # the optional dependency is not installed
     raise ImportError('oac.mcp needs the MCP SDK: pip install "open-action-consent[mcp]"') from e
 
 from oac import KeySet, MemoryNonces, OACError, SigningKey, digest, make_receipt, shapes, tier_for, token_digest, verify, verify_consent
+from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, claim, occurrence_key
 from oac.preview import action_digest, build_preview
 
 ID = "com.atlasiw/oac"
 PROFILE_KEY, PREVIEW_KEY, RECEIPT_KEY, CONSENT_KEY, RUN_KEY = (f"{ID}-profile", f"{ID}-preview", f"{ID}-receipt",
                                                               f"{ID}-consent", f"{ID}-run")
+OUTCOME_KEY = f"{ID}-outcome"
 ASK = "oac_consent"
 
 
@@ -66,6 +68,7 @@ class OACExtension(Extension):
         policy_floor: str = "A",
         clock: Callable[[], int] = lambda: int(time.time()),
         inspect: Callable[[Mapping[str, Any], ServerRequestContext[Any, Any]], Any] | None = None,
+        occurrences: OccurrenceStore | None = None,
     ) -> None:
         """`inspect(action, ctx)` (optional, may be async) looks at the world the action will touch, for example a
         browser page. It returns {"evidence": {"screenshot": digest, "dom": digest}} to seal into the Preview, or
@@ -82,6 +85,7 @@ class OACExtension(Extension):
         self.previews: dict[str, dict[str, Any]] = {}  # preview digest -> preview
         self.consents: dict[str, str] = {}  # preview digest -> consent token
         self.nonces = MemoryNonces()
+        self.occurrences = occurrences or MemoryOccurrences()
         self.receipts: dict[str, list[str]] = {}  # person -> chain
 
     # ---- setup
@@ -89,12 +93,15 @@ class OACExtension(Extension):
         return {"version": "0.1", "executor": self.executor}
 
     def profile(self, tool: str, *, effect: str, undo: str = "none", window_s: int = 0, tier_floor: str = "A",
-                binds: Mapping[str, str] | None = None, other_args: list[str] | None = None) -> dict[str, Any]:
+                binds: Mapping[str, str] | None = None, other_args: list[str] | None = None,
+                occurrence: str | None = None) -> dict[str, Any]:
         """Register a tool's Action Profile and return the `_meta` to pass to `@server.tool(meta=...)`."""
         doc: dict[str, Any] = {"oac": "0.1", "type": "action-profile", "tool": tool, "effect": effect,
                                "undo": {"kind": undo, "window_s": window_s}, "tier_floor": tier_floor, "binds": dict(binds or {})}
         if other_args:
             doc["other_args"] = list(other_args)
+        if occurrence:
+            doc["occurrence"] = occurrence
         self.profiles[tool] = shapes.profile(doc)
         return {PROFILE_KEY: doc}
 
@@ -133,7 +140,11 @@ class OACExtension(Extension):
         if tier == "D":
             return _refused("Refused: this action is never allowed (tier D).")
         if tier in ("A", "B"):
-            return self._with_receipt(await call_next(ctx), person, profile, action, tier, {"kind": "tier"}, None)
+            try:
+                claimed = claim(self.occurrences, occurrence_key(person, profile, action["args"]))
+            except OACError as e:
+                return _refused(f"Refused ({e.code}). Nothing ran.")
+            return await self._run(ctx, call_next, person, profile, action, tier, {"kind": "tier"}, None, claimed)
         require_client_extension(ctx, ID)  # -32021 when the client does not speak OAC (spec 6)
         caps = ctx.session.client_capabilities
         if not (caps and caps.elicitation and caps.elicitation.url):
@@ -162,14 +173,48 @@ class OACExtension(Extension):
         # "dom" is the comparable state; a screenshot is a record (pixels can differ between two captures)
         if (seen.get("evidence") or {}).get("dom") != (preview.get("evidence") or {}).get("dom"):
             return _refused("Refused (page_changed): what is there now is not what the person approved. Nothing ran.")
+        claimed = None
         try:
+            claimed = claim(self.occurrences, occurrence_key(person, profile, action["args"]))
             consent = verify_consent(token, keys=self.signers, executor=self.executor, sub=person, previews=[preview],
                                      actions=[action], profiles=self.profiles, now=self._clock(), nonces=self.nonces,
                                      policy_floor=self.policy_floor, tainted=self._tainted(ctx))
         except OACError as e:
+            if claimed:
+                self.occurrences.release(claimed)
             return _refused(f"Refused ({e.code}). Nothing ran.")
-        return self._with_receipt(await call_next(ctx), person, profile, action, "C",
-                                  {"kind": "consent", "ref": consent["jti"]}, digest(preview))
+        authority = {"kind": "consent", "ref": consent["jti"], "digest": token_digest(token)}
+        return await self._run(ctx, call_next, person, profile, action, "C", authority, digest(preview), claimed)
+
+    async def _run(self, ctx: ServerRequestContext[Any, Any], call_next: CallNext, person: str,
+                   profile: Mapping[str, Any], action: Mapping[str, Any], tier: str, authority: dict[str, Any],
+                   preview_digest: str | None, claimed: Key | None) -> HandlerResult:
+        # With an occurrence, an error is an unknown outcome unless the tool says it surely failed
+        # (_meta OUTCOME_KEY = "failed"): a timed-out payment may still have gone through.
+        try:
+            result = await call_next(ctx)
+        except Exception:
+            self._with_receipt(None, person, profile, action, tier, authority, preview_digest,
+                               self._finish(claimed, "unknown" if claimed else "failed"))
+            raise
+        if isinstance(result, CallToolResult) and result.is_error:
+            sure = (result.meta or {}).get(OUTCOME_KEY) == "failed"
+            outcome = self._finish(claimed, "unknown" if claimed and not sure else "failed")
+        else:
+            outcome = self._finish(claimed, "ok")
+        return self._with_receipt(result, person, profile, action, tier, authority, preview_digest, outcome)
+
+    def _finish(self, claimed: Key | None, outcome: str) -> str:
+        if claimed:
+            self.occurrences.finish(claimed, outcome)
+        return outcome
+
+    def resolve(self, tool: str, occurrence: str, *, person: str, outcome: str) -> None:
+        """Record what the provider says happened to an attempt whose outcome was unknown."""
+        key = (person, tool, occurrence)
+        if outcome not in ("ok", "failed") or self.occurrences.state(key) != "unknown":
+            raise ValueError("only an unknown outcome can be resolved, to ok or failed")
+        self.occurrences.finish(key, outcome)
 
     async def _look(self, action: Mapping[str, Any], ctx: ServerRequestContext[Any, Any]) -> dict[str, Any]:
         if self._inspect_fn is None:
@@ -187,24 +232,26 @@ class OACExtension(Extension):
         return InputRequiredResult(input_requests={ASK: ask}, request_state=json.dumps({"preview": d}),
                                    _meta={PREVIEW_KEY: p})
 
-    def _with_receipt(self, result: HandlerResult, person: str, profile: Mapping[str, Any], action: Mapping[str, Any],
-                      tier: str, authority: dict[str, Any], preview_digest: str | None) -> HandlerResult:
-        failed = isinstance(result, CallToolResult) and result.is_error
+    def _with_receipt(self, result: HandlerResult | None, person: str, profile: Mapping[str, Any],
+                      action: Mapping[str, Any], tier: str, authority: dict[str, Any], preview_digest: str | None,
+                      outcome: str) -> HandlerResult | None:
         chain = self.receipts.setdefault(person, [])
         now = self._clock()
         undo: dict[str, Any] = {"kind": profile["undo"]["kind"]}
-        if undo["kind"] != "none" and not failed:
+        if undo["kind"] != "none" and outcome == "ok":
             undo["until"] = now + profile["undo"]["window_s"]
             if undo["kind"] == "native":
                 undo["token"] = "u_" + token_digest(f"{person}.{len(chain)}.{now}")[8:30]
         payload: dict[str, Any] = {
             "iss": self.executor, "sub": person, "seq": len(chain) + 1, "prev": token_digest(chain[-1]) if chain else None,
             "iat": now, "tool": action["tool"], "tier": tier, "authority": authority, "action": action_digest(action),
-            "outcome": "failed" if failed else "ok", "undo": undo,
+            "outcome": outcome, "undo": undo,
             "result": digest(result.model_dump(mode="json", by_alias=True, exclude_none=True) if hasattr(result, "model_dump") else result),
         }
         if preview_digest:
             payload["preview"] = preview_digest
+        if "occurrence" in profile:
+            payload["occurrence"] = action["args"][profile["occurrence"]]
         receipt = make_receipt(key=self.key, payload=payload)
         chain.append(receipt)
         if isinstance(result, CallToolResult):

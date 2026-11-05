@@ -18,6 +18,7 @@ RAILS = ("stripe_link", "ap2", "vi", "other")
 HOLDERS = ("agent", "client", "run")
 SIGNERS = ("custodial", "device")
 AUTHORITIES = ("consent", "mandate", "tier", "undo")
+OUTCOMES = ("ok", "failed", "unknown")
 PREVIEW_MAX_S = 900
 YEAR_S = 366 * 86400
 
@@ -37,6 +38,7 @@ _ADDR = re.compile(rf"^({_LOCAL})?@{_DOMAIN}$")
 # characters that let displayed text lie (controls, bidi overrides, zero-width): refused in what a person reads
 _UNSAFE = re.compile("[\x00-\x1f\x7f-\x9f\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]")
 _LAST4 = re.compile(r"^[0-9]{4}$")
+_OCCURRENCE = re.compile(r"^[A-Za-z0-9_.:-]{1,128}$")
 
 Check = Callable[[Any], bool]
 
@@ -135,6 +137,7 @@ def profile(v: Any) -> dict[str, Any]:
             "tier_floor": (True, _enum(*TIERS)),
             "binds": (False, binds),
             "other_args": (False, others),
+            "occurrence": (False, _re(_ARG)),
         },
         "action profile",
     )
@@ -147,6 +150,10 @@ def profile(v: Any) -> dict[str, Any]:
     missing = [f for f in REQUIRED_BINDS.get(v["effect"], ()) if f not in v.get("binds", {})]
     if missing:
         raise OACError("malformed", f"action profile: a {v['effect']} tool must bind {missing[0]}")
+    if v["effect"] == "pay" and "occurrence" not in v:
+        raise OACError("malformed", "action profile: a pay tool names its occurrence argument")
+    if "occurrence" in v and v["occurrence"] not in set(bound) | set(v.get("other_args", [])):
+        raise OACError("malformed", "action profile: the occurrence argument is not declared")
     return v
 
 
@@ -164,6 +171,8 @@ def check_action(action_doc: Mapping[str, Any], prof: Mapping[str, Any]) -> None
     for field in REQUIRED_BINDS.get(prof["effect"], ()):
         if binds[field] not in args:
             raise OACError("malformed", f"a {prof['effect']} action needs {binds[field]}")
+    if "occurrence" in prof and not _re(_OCCURRENCE)(args.get(prof["occurrence"])):
+        raise OACError("malformed", f"argument {prof['occurrence']} must name the occurrence")
 
 
 def action(v: Any) -> dict[str, Any]:
@@ -323,7 +332,7 @@ def seal(v: Any) -> dict[str, Any]:
 
 
 def receipt(v: Any) -> dict[str, Any]:
-    authority = {"kind": (True, _enum(*AUTHORITIES)), "ref": (False, _str(1, 256))}
+    authority = {"kind": (True, _enum(*AUTHORITIES)), "ref": (False, _str(1, 256)), "digest": (False, DIGEST)}
     undo = {"kind": (True, _enum(*UNDO_KINDS)), "until": (False, TIME), "token": (False, _str(1, 512))}
     payment = {"rail": (True, _enum(*RAILS)), "ref": (True, _str(1, 256)), "last4": (False, _re(_LAST4)), "order": (False, _str(1, 256))}
     check(
@@ -341,11 +350,12 @@ def receipt(v: Any) -> dict[str, Any]:
             "authority": (True, _obj(authority, "authority")),
             "action": (True, DIGEST),
             "preview": (False, DIGEST),
-            "outcome": (True, _enum("ok", "failed")),
+            "outcome": (True, _enum(*OUTCOMES)),
             "result": (True, DIGEST),
             "undo": (True, _obj(undo, "undo")),
             "undoes": (False, DIGEST),
             "payment": (False, _obj(payment, "payment")),
+            "occurrence": (False, _re(_OCCURRENCE)),
         },
         "receipt",
     )
@@ -378,5 +388,23 @@ def undo_request(v: Any) -> dict[str, Any]:
             "consent": (False, NONCE),
         },
         "undo request",
+    )
+    return v
+
+
+def device_proof(v: Any) -> dict[str, Any]:
+    b64 = _re(re.compile(r"^[A-Za-z0-9_-]{1,8192}$"))
+    check(
+        v,
+        {
+            "oac": (True, _const(VERSION)),
+            "type": (True, _const("device-proof")),
+            "consent": (True, DIGEST),
+            "credential": (True, _re(re.compile(r"^[A-Za-z0-9_-]{1,1366}$"))),
+            "authenticator_data": (True, b64),
+            "client_data_json": (True, b64),
+            "signature": (True, b64),
+        },
+        "device proof",
     )
     return v

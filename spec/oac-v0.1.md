@@ -59,8 +59,7 @@ The **action** is `{"tool": <name>, "args": <object>}` and its digest is `digest
 Consent, Mandate, Receipt and Undo request are JWS compact serializations (RFC 7515):
 
 - the token is ASCII; the protected header is exactly `{"alg", "kid", "typ"}`, canonical;
-- `alg` is `EdDSA` (Ed25519, RFC 8037) or `ES256` (P-256, signature as raw r||s with s at most n/2, so that one
-  payload has exactly one valid signature and one `token_digest`);
+- `alg` is `EdDSA` (Ed25519, RFC 8037) or `ES256` (P-256, signature as raw r||s with s at most n/2);
 - `kid` is the RFC 7638 thumbprint of the signing key's public JWK;
 - `typ` is `oac-consent+jws`, `oac-mandate+jws`, `oac-receipt+jws` or `oac-undo+jws`, and a verifier MUST check
   it, so that no object can pass for another;
@@ -68,6 +67,13 @@ Consent, Mandate, Receipt and Undo request are JWS compact serializations (RFC 7
 
 A verifier MUST refuse a token whose header or payload is not byte-for-byte the canonical form of what it parses to
 (`not_canonical`). Base64url MUST be unpadded with zero pad bits.
+
+**Signatures are not unique.** Requiring s at most n/2 ("low-S") stops anyone else from turning a valid ES256 token
+into a second valid token for the same payload. It does not stop the signer: ECDSA signing is randomized, so signing
+the same payload twice gives two valid tokens with different `token_digest`s. Replay protection therefore rests on
+`jti`, never on the signature. Anything that refers to a signed object (a receipt's `authority`, `prev`, `undoes`, a
+seal's `head`, a device proof's `consent`) names the exact token bytes received, by their `token_digest`, and an
+implementation that may need to show that object later MUST keep those bytes, not a re-serialized or re-signed copy.
 
 Envelope checks, in order: three parts, ASCII, base64url (`malformed`); header canonical (`not_canonical`) and
 exactly those members (`malformed`); `typ` (`bad_type`); `alg` (`bad_alg`); `kid` known (`unknown_key`); key type
@@ -80,14 +86,17 @@ second trusted signer can never sign in the first one's name. Section 3.5 says w
 
 ### 3.4 Signer kinds
 
-`signer.kind` states how the person's presence was proven:
+`signer.kind` is the signer's own statement of how it proved the person was present:
 
 | kind | Meaning |
 |---|---|
 | `custodial` | a signer service holds the key and signs only after a live, recent sign-in of the person |
-| `device` | the key is on the person's device (e.g. a passkey); the device signs the consent digest |
+| `device` | the signing key is held on the person's device |
 
-Verifiers MAY require `device` for some actions (for example any payment).
+The statement is covered by the signer's signature, so it cannot be changed in transit, but it is a claim: it is
+worth exactly as much as the verifier's trust in that signer. It is not a WebAuthn assertion, does not show that the
+person unlocked the device, and is not an authorization context of another protocol. A verifier that needs proof it
+can check for itself requires a device proof (3.6).
 
 ### 3.5 Issuer metadata (key discovery)
 
@@ -105,6 +114,39 @@ https://host[:port]/.well-known/oac-issuer[/path]
 by matching the text above, not with a URL parser that might normalize it. A fetcher MUST use HTTPS, MUST NOT
 follow redirects, and SHOULD cap the size (64 KB in the SDKs) and time. A verifier MAY cache the document and MUST
 treat a key that disappears from it as no longer trusted.
+
+### 3.6 Device proofs (WebAuthn)
+
+A **device proof** is a WebAuthn assertion (W3C Web Authentication Level 3) made by the person's passkey over one
+exact Consent token. It travels next to the Consent (in MCP, in `_meta`; see `mcp-extension.md`), keeps the Consent in
+its native OAC form, and maps byte for byte to a WebAuthn ceremony. Schema: `schemas/device-proof.schema.json`.
+
+```json
+{"oac":"0.1","type":"device-proof","consent":"sha-256:<token_digest of the Consent>","credential":"<credential id>",
+ "authenticator_data":"<base64url>","client_data_json":"<base64url>","signature":"<base64url, DER>"}
+```
+
+Signed bytes, exactly as WebAuthn defines them: `authenticator_data || SHA-256(client_data_json)`, signed with the
+credential's private key. The client data's `challenge` is `base64url(SHA-256(consent token ASCII bytes))`, unpadded:
+the same hash as the Consent's `token_digest`, without the `sha-256:` prefix. OAC 0.1 accepts ES256 credentials
+(COSE algorithm -7, P-256); the executor stores each registered credential's public key as a JWK with its owner.
+
+An executor that requires a device proof for a Consent (by policy, for example for any payment) knows the person's
+registered credentials, its relying party id and the origins its approval page is served from. It checks, in order:
+
+1. a proof is present (`device_proof_missing`); its fields (`malformed`);
+2. `consent` equals `token_digest` of the Consent being verified (`device_proof_mismatch`);
+3. the credential is one of this person's (`unknown_credential`);
+4. the signature over the signed bytes, with that credential's key (`bad_signature`); authenticator data shorter than
+   37 bytes is `malformed`;
+5. the client data parses as a JSON object whose `type` is `webauthn.get` (`malformed`);
+6. `challenge` is the Consent's challenge (`challenge_mismatch`);
+7. `origin` is one of the executor's origins and `crossOrigin` is not `true` (`wrong_origin`);
+8. the first 32 bytes of the authenticator data equal SHA-256 of the relying party id (`rp_mismatch`);
+9. the UP flag (bit 0) is set (`user_not_present`); the UV flag (bit 2) is set (`user_not_verified`).
+
+These checks are step 7 of 6.3, so a refused proof does not use up the Consent's `jti`. The signature counter is not
+checked in 0.1; an executor MAY check it as WebAuthn describes.
 
 ## 4. Tiers
 
@@ -154,6 +196,9 @@ Published by a tool's author (in MCP, in the tool's `_meta`; section 10). Schema
 - `binds` maps Preview fields to argument names. Preview fields are: `title`, `when`, `payee` (display text),
   `to` (a list of single bare addresses), `amount_minor`, `currency`, `site`, `count`.
 - `other_args` lists every other argument the tool takes. The Preview shows them unchanged in `details`.
+- `occurrence` names the argument that identifies the business occurrence: the order, payment or booking the action
+  is about (5.1). Required for `pay`; it MUST be a declared argument, and its value in every action MUST match
+  `[A-Za-z0-9_.:-]{1,128}` (`malformed`).
 
 Rules:
 
@@ -165,6 +210,27 @@ Rules:
 4. Bound argument values MUST be valid field values (`malformed`): `to` entries are one ASCII `local@domain` each
    (no display names, no lists, no line breaks); display text has no control, bidi-override or zero-width
    characters.
+
+### 5.1 Business occurrences
+
+A Consent is single-use, but a person can approve the same thing twice: a payment times out, the agent asks again, the
+person says yes again. The second Consent has a new `jti`, so the nonce check does not stop it, and the first attempt
+may have gone through. The occurrence id closes this gap. For a tool whose profile names an `occurrence`, the executor
+keeps one record per person, tool and occurrence value, with the state of its latest attempt: `running`, `ok`,
+`failed` or `unknown`.
+
+1. Before it runs the action (for tier C, before it verifies the Consent, so a refusal does not use up the `jti`), the
+   executor claims the record atomically: new or `failed` becomes `running`; `ok` is refused
+   (`duplicate_occurrence`); `running` or `unknown` is refused (`occurrence_unresolved`). If the Consent is then
+   refused, the claim is dropped.
+2. The executor passes the occurrence value to the provider as its idempotency key (Stripe's `Idempotency-Key`, an
+   order reference), so the provider can also refuse a second attempt.
+3. When the action ends: success records `ok`; a failure the tool is sure of records `failed`; anything else (a
+   timeout, a crash, an unclear error) records `unknown`. The receipt carries the same outcome.
+4. An `unknown` attempt is resolved only by asking the provider, by the same occurrence value, what happened. The
+   executor then records `ok` or `failed`. Only after `failed` may a fresh Consent run the occurrence again.
+
+A compensation (a refund, a cancel) is a separate action with its own Preview and Consent (8.3), never a retry.
 
 Profiles are claims by the tool's author. An executor MUST treat a profile from an unreviewed source as untrusted
 and SHOULD apply a policy floor of C to its writes.
@@ -235,7 +301,8 @@ this order and report the first failure's code:
    10. tier is not D: `tier_d`;
    11. for a `pay` effect: section 9 (`payment_missing`, `payment_mismatch`); a second paying item is `malformed`.
 6. `payment` present but no item pays: `payment_mismatch`.
-7. `jti` not seen before: `replay`. Recording the `jti` (until `exp`) and checking it MUST be one atomic step
+7. If the executor requires a device proof: section 3.6.
+8. `jti` not seen before: `replay`. Recording the `jti` (until `exp`) and checking it MUST be one atomic step
    (insert-if-absent), so that parallel retries of one Consent run at most once. It happens last, so a refused
    Consent does not use up its nonce.
 
@@ -342,10 +409,16 @@ Rules beyond the schema (`receipt_invalid`):
 
 - tier D never appears;
 - `authority.kind` is `consent` (ref = its `jti`), `mandate` (ref = its `id`), `undo` (ref = the Undo request's
-  `jti`) or `tier` (MUST NOT carry a ref; tiers A and B only);
+  `jti`) or `tier` (MUST NOT carry a ref or a digest; tiers A and B only);
+- `consent`, `mandate` and `undo` authorities carry `digest`, the `token_digest` of the exact token the executor
+  verified. The executor MUST keep that token with the receipt, so a verifier can later check that it signed what
+  the receipt says;
 - `undo.kind` `none` carries no `until` or `token`; any other kind on an `ok` outcome carries `until`;
 - tier B with outcome `ok` (other than an undo receipt) carries a `native` undo with a `token`;
 - a receipt with authority `undo` names the receipt it undoes in `undoes` (its `token_digest`).
+
+`outcome` is `ok`, `failed` or `unknown` (the executor cannot tell whether the action happened; 5.1). When the
+tool's profile names an `occurrence`, the receipt carries its value in `occurrence`.
 
 `result` is the digest of the action's result. Receipts SHOULD NOT carry personal data in clear: they carry digests,
 and a store holds the details.
@@ -356,7 +429,8 @@ and a store holds the details.
 (a contiguous run of receipts, possibly starting after `seq` 1), in order for each receipt: envelope and fields;
 rules of 8.1; `iss` is the expected executor (`chain_issuer`); same `sub` throughout (`subject_mismatch`); the first
 has `prev` null if and only if its `seq` is 1 (`chain_broken`); each later one has `seq` one more than the one before
-(`chain_seq`) and `prev` equal to its `token_digest` (`chain_broken`).
+(`chain_seq`) and `prev` equal to its `token_digest` (`chain_broken`); no two receipts with outcome `ok` share a tool
+and an `occurrence` (`duplicate_occurrence`).
 
 **Seals.** A person's signer MAY countersign the chain from time to time with a **seal**
 (`schemas/seal.schema.json`, `typ` `oac-seal+jws`): `{iss, sub, executor, seq, head, iat}`, where `head` is the
@@ -405,6 +479,8 @@ OAC authorizes a payment; it never carries a credential and never moves money.
    executor's own code), and MUST fail closed when they differ.
 5. The Receipt carries `payment.rail`, `payment.ref`, and MAY carry `last4` and the merchant's `order` id.
 6. A payment Consent cannot be replaced by a Mandate unless the Mandate meets 7.2.
+7. A `pay` tool names an `occurrence`, and the executor follows 5.1: a payment whose outcome is unknown is resolved
+   with the rail before anyone can pay the same occurrence again.
 
 ## 10. Bindings
 
@@ -438,7 +514,12 @@ points to it or exports to it (`mappings.md`).
 - **Revocation.** Executors refuse revoked and superseded Mandates and read signed status lists (7.5); a missing or
   stale list refuses rather than allows. Status lists are short-lived so a revocation takes effect within hours.
 - **Time.** Executors need a clock within 60 s of the signer's.
-- **Custodial signers** are only as strong as their sign-in. Prefer `device` for payments and for loosening Mandates.
+- **Custodial signers** are only as strong as their sign-in, and `signer.kind` is only the signer's word (3.4).
+  Require a device proof (3.6) where an independent check matters, for example payments and loosening Mandates.
+- **Signatures are not unique.** One payload can have many valid ES256 tokens (3.3). Single use comes from `jti`;
+  references name exact token bytes, and those bytes are kept.
+- **Retries.** A fresh Consent cannot pay the same order twice: the occurrence record refuses it until the first
+  attempt's outcome is known (5.1).
 - **Privacy.** Previews and Receipts can reveal what a person does. Store them per person, encrypted, with retention
   limits; share only what a verifier needs (digests prove a match without the content).
 - **Profiles are claims.** A tool can lie in its Action Profile (claim `native` and do something irreversible).

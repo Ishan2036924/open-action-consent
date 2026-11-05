@@ -96,6 +96,10 @@ A client that is itself the person's signer (for example a wallet app holding a 
 MAY attach the token directly: `_meta["com.atlasiw/oac-consent"]: "<compact JWS>"`. The server verifies it the same
 way; which signers it trusts is its own policy (spec 3.3).
 
+When the server requires a passkey (spec 3.6), the device proof travels with the Consent: the signer page posts it
+together with the token, or the client attaches `_meta["com.atlasiw/oac-device-proof"]: {...}`. Without a valid proof
+the server refuses with the code from spec 3.6 and runs nothing.
+
 ### 3.3 The result carries the receipt
 
 ```json
@@ -106,6 +110,14 @@ way; which signers it trusts is its own policy (spec 3.3).
 ```
 
 Tier B results carry a receipt too, with the native undo token. Tier A results MAY.
+
+### 3.4 Occurrences and unclear outcomes
+
+For a tool whose profile names an `occurrence` (spec 5.1), the server claims the occurrence before it verifies the
+Consent, and refuses with `occurrence_unresolved` or `duplicate_occurrence` without using up the Consent. A tool error
+is recorded as outcome `unknown`, because a timed-out payment may still have gone through, unless the tool marks
+its result `_meta["com.atlasiw/oac-outcome"]: "failed"` to say it surely did not happen. The receipt carries the
+outcome. An `unknown` occurrence runs again only after the server has asked the provider and recorded `failed`.
 
 ## 4. Mandates and taint
 
@@ -145,7 +157,9 @@ still keeps its receipt and undo for the person, even if the client never sees t
 
 `oac.mcp` in the Python package (official Python SDK, which has an extension interceptor and seals `requestState`) and
 `open-action-consent/mcp` in the npm package (official TypeScript SDK v2, which has neither, so the plug-in wraps each tool and signs
-its own state) implement this binding and are tested end to end through each SDK's in-memory client.
+its own state) implement this binding and are tested end to end through each SDK's in-memory client. Both handle occurrences (3.4);
+neither asks for device proofs yet. An executor that needs them calls `verify_consent` / `verifyConsent` with a
+device check itself.
 
 ## 8. Relation to SEP-2848
 

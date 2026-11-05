@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.0 (unreleased)
+
+Changes from an outside review. Breaking for receipts and for `pay` tool profiles.
+
+- Wording: low-S ES256 does not make a signature unique. The signer can make several valid tokens for one payload, so
+  replay protection rests on `jti`, and every reference names the exact token bytes it saw (spec 3.3).
+- Receipts: `authority.digest` is now required for consent, mandate and undo authorities. It is the `token_digest`
+  of the exact token the executor verified, and the executor keeps that token.
+- Device proofs (spec 3.6, new): `signer.kind` is described as the signer's claim. A WebAuthn passkey assertion over
+  the exact Consent token can now be required, with explicit checks for challenge, origin, relying party, user
+  presence and user verification. `verify_consent(..., device=DeviceCheck(...))` in Python, `device` in TypeScript.
+  The MCP plug-ins do not ask for device proofs yet.
+- Business occurrences (spec 5.1, new): a `pay` profile names its `occurrence` argument (an order id). The executor
+  runs one occurrence at most once, refuses a fresh Consent while an earlier attempt's outcome is `unknown`
+  (`occurrence_unresolved`) or after it succeeded (`duplicate_occurrence`), and `Gate.resolve` records what the
+  provider says. Receipts gain outcome `unknown` and an `occurrence` field; chain verification refuses two
+  successful receipts for one occurrence.
+- 10 new error codes, 24 new shared test vectors (229 in total).
+- Fix: `spec/mappings.md` pointed at the wrong section of the MCP binding for SEP-2848.
+
 ## 0.2.1 (2026-11-05)
 
 No code or protocol changes.

@@ -7,6 +7,7 @@ import { OACError } from "./errors.ts";
 import { digest, KeySet, sign, verify, type SigningKey } from "./jws.ts";
 import { actionDigest, checkBinding } from "./preview.ts";
 import { tierFor } from "./tiers.ts";
+import { verifyDeviceProof, type DeviceCheck } from "./webauthn.ts";
 
 export const TYP = "oac-consent+jws";
 export const MAX_S = 900;
@@ -57,6 +58,7 @@ function payment(p: Record<string, any>, preview: Record<string, any>): void {
 export function verifyConsent(token: string, o: {
   keys: KeySet; executor: string; sub: string; previews: Record<string, any>[]; actions: Record<string, any>[];
   profiles: Record<string, Record<string, any>>; now: number; nonces: NonceStore; policyFloor?: string; tainted?: boolean;
+  device?: DeviceCheck;
 }): Record<string, any> {
   const p = verify(token, o.keys, TYP);
   shapes.consent(p);
@@ -87,6 +89,7 @@ export function verifyConsent(token: string, o: {
     }
   });
   if (pays === 0 && Object.hasOwn(p, "payment")) throw new OACError("payment_mismatch", "payment given but no item pays");
+  if (o.device) verifyDeviceProof(token, o.device);
   if (!o.nonces.useOnce(p.jti, p.exp)) throw new OACError("replay");
   return p;
 }

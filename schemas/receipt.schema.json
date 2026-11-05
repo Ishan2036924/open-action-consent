@@ -77,6 +77,10 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256
+        },
+        "digest": {
+          "description": "token_digest of the exact Consent, Mandate or Undo token the executor verified. The executor keeps that token.",
+          "$ref": "urn:oac:0.1:common#/$defs/digest"
         }
       },
       "allOf": [
@@ -90,14 +94,24 @@
           },
           "then": {
             "not": {
-              "required": [
-                "ref"
+              "anyOf": [
+                {
+                  "required": [
+                    "ref"
+                  ]
+                },
+                {
+                  "required": [
+                    "digest"
+                  ]
+                }
               ]
             }
           },
           "else": {
             "required": [
-              "ref"
+              "ref",
+              "digest"
             ]
           }
         }
@@ -110,9 +124,11 @@
       "$ref": "urn:oac:0.1:common#/$defs/digest"
     },
     "outcome": {
+      "description": "unknown: the executor cannot tell whether the action happened (for example, the provider timed out).",
       "enum": [
         "ok",
-        "failed"
+        "failed",
+        "unknown"
       ]
     },
     "result": {
@@ -176,6 +192,10 @@
           "maxLength": 256
         }
       }
+    },
+    "occurrence": {
+      "description": "The occurrence id from the action's arguments, when the tool's profile names one.",
+      "$ref": "urn:oac:0.1:common#/$defs/occurrence"
     }
   }
 }

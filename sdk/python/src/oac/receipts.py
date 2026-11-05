@@ -26,8 +26,9 @@ def check_semantics(r: Mapping[str, Any]) -> None:
     tier, kind, undo = r["tier"], r["authority"]["kind"], r["undo"]
     if tier == "D":
         raise OACError("receipt_invalid", "a tier D action never runs")
-    if (kind != "tier") != ("ref" in r["authority"]):
-        raise OACError("receipt_invalid", "consent, mandate and undo authority carry a ref; tier carries none")
+    for name in ("ref", "digest"):
+        if (kind != "tier") != (name in r["authority"]):
+            raise OACError("receipt_invalid", f"consent, mandate and undo authority carry a {name}; tier carries none")
     if kind == "tier" and tier not in ("A", "B"):
         raise OACError("receipt_invalid", "tier C needs a consent, mandate or undo authority")
     if undo["kind"] == "none" and ("until" in undo or "token" in undo):
@@ -60,6 +61,7 @@ def verify_chain(
     an export from a known point; seq 1 has prev null. Each seal (signed by the person's signer) must name a receipt
     in this export by its seq and token digest: a rewritten or forked history then fails (seal_mismatch)."""
     out: list[dict[str, Any]] = []
+    done: set[tuple[str, str]] = set()
     for i, token in enumerate(tokens):
         r = verify(token, keys, TYP)
         shapes.receipt(r)
@@ -76,6 +78,10 @@ def verify_chain(
                 raise OACError("chain_seq")
             if r["prev"] != token_digest(tokens[i - 1]):
                 raise OACError("chain_broken")
+        if "occurrence" in r and r["outcome"] == "ok":
+            if (r["tool"], r["occurrence"]) in done:
+                raise OACError("duplicate_occurrence", "the same occurrence ran twice")
+            done.add((r["tool"], r["occurrence"]))
         out.append(r)
     if seals:
         check_seals(out, tokens, seals=seals, seal_keys=seal_keys, executor=executor)

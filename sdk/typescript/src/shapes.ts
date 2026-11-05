@@ -12,6 +12,7 @@ const RAILS = ["stripe_link", "ap2", "vi", "other"];
 const HOLDERS = ["agent", "client", "run"];
 const SIGNERS = ["custodial", "device"];
 const AUTHORITIES = ["consent", "mandate", "tier", "undo"];
+const OUTCOMES = ["ok", "failed", "unknown"];
 export const PREVIEW_MAX_S = 900;
 const YEAR_S = 366 * 86400;
 
@@ -61,6 +62,7 @@ const ADDR = re(new RegExp(`^(${LOCAL})?@${DOMAIN}$`));
 const UNSAFE = /[\x00-\x1f\x7f-\x9f\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/;
 const text = (lo: number, hi: number): Check => (v) => strCp(lo, hi)(v) && !UNSAFE.test(v);
 const LAST4 = re(/^[0-9]{4}$/);
+const OCCURRENCE = re(/^[A-Za-z0-9_.:-]{1,128}$/);
 const TIME = int(0);
 const UNDO: Fields = { kind: [true, oneOf(...UNDO_KINDS)], window_s: [true, int(0, YEAR_S)], note: [false, strCp(1, 200)] };
 
@@ -90,7 +92,7 @@ export function profile(v: any): Record<string, any> {
   check(v, {
     oac: [true, constant(VERSION)], type: [true, constant("action-profile")], tool: [true, TOOL],
     effect: [true, oneOf(...EFFECTS)], undo: [true, obj(UNDO, "undo")], tier_floor: [true, oneOf(...TIERS)],
-    binds: [false, binds], other_args: [false, others],
+    binds: [false, binds], other_args: [false, others], occurrence: [false, ARG],
   }, "action profile");
   undoRule(v.undo, "action profile");
   if (v.effect === "read" && v.undo.kind !== "none") throw new OACError("malformed", "action profile: a read declares undo none");
@@ -101,6 +103,10 @@ export function profile(v: any): Record<string, any> {
   }
   const missing = (REQUIRED_BINDS[v.effect] ?? []).filter((f) => !has(v.binds ?? {}, f));
   if (missing.length) throw new OACError("malformed", `action profile: a ${v.effect} tool must bind ${missing[0]}`);
+  if (v.effect === "pay" && !has(v, "occurrence")) throw new OACError("malformed", "action profile: a pay tool names its occurrence argument");
+  if (has(v, "occurrence") && !bound.includes(v.occurrence) && !other.includes(v.occurrence)) {
+    throw new OACError("malformed", "action profile: the occurrence argument is not declared");
+  }
   return v;
 }
 
@@ -115,6 +121,9 @@ export function checkAction(actionDoc: Record<string, any>, prof: Record<string,
   }
   for (const field of REQUIRED_BINDS[prof.effect] ?? []) {
     if (!has(args, binds[field])) throw new OACError("malformed", `a ${prof.effect} action needs ${binds[field]}`);
+  }
+  if (has(prof, "occurrence") && !OCCURRENCE(args[prof.occurrence])) {
+    throw new OACError("malformed", `argument ${prof.occurrence} must name the occurrence`);
   }
 }
 
@@ -202,15 +211,15 @@ export function seal(v: any): Record<string, any> {
 }
 
 export function receipt(v: any): Record<string, any> {
-  const authority: Fields = { kind: [true, oneOf(...AUTHORITIES)], ref: [false, strCp(1, 256)] };
+  const authority: Fields = { kind: [true, oneOf(...AUTHORITIES)], ref: [false, strCp(1, 256)], digest: [false, DIGEST] };
   const undo: Fields = { kind: [true, oneOf(...UNDO_KINDS)], until: [false, TIME], token: [false, strCp(1, 512)] };
   const payment: Fields = { rail: [true, oneOf(...RAILS)], ref: [true, strCp(1, 256)], last4: [false, LAST4], order: [false, strCp(1, 256)] };
   check(v, {
     oac: [true, constant(VERSION)], type: [true, constant("receipt")], iss: [true, ID], sub: [true, ID], seq: [true, int(1)],
     prev: [true, (p) => p === null || DIGEST(p)], iat: [true, TIME], tool: [true, TOOL], tier: [true, oneOf(...TIERS)],
     authority: [true, obj(authority, "authority")], action: [true, DIGEST], preview: [false, DIGEST],
-    outcome: [true, oneOf("ok", "failed")], result: [true, DIGEST], undo: [true, obj(undo, "undo")],
-    undoes: [false, DIGEST], payment: [false, obj(payment, "payment")],
+    outcome: [true, oneOf(...OUTCOMES)], result: [true, DIGEST], undo: [true, obj(undo, "undo")],
+    undoes: [false, DIGEST], payment: [false, obj(payment, "payment")], occurrence: [false, OCCURRENCE],
   }, "receipt");
   return v;
 }
@@ -228,5 +237,15 @@ export function undoRequest(v: any): Record<string, any> {
     jti: [true, NONCE], iat: [true, TIME], exp: [true, TIME], receipt: [true, DIGEST],
     mode: [true, oneOf("native", "compensate")], consent: [false, NONCE],
   }, "undo request");
+  return v;
+}
+
+export function deviceProof(v: any): Record<string, any> {
+  const b64 = re(/^[A-Za-z0-9_-]{1,8192}$/);
+  check(v, {
+    oac: [true, constant(VERSION)], type: [true, constant("device-proof")], consent: [true, DIGEST],
+    credential: [true, re(/^[A-Za-z0-9_-]{1,1366}$/)], authenticator_data: [true, b64], client_data_json: [true, b64],
+    signature: [true, b64],
+  }, "device proof");
   return v;
 }

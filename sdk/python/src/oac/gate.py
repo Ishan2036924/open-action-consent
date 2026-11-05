@@ -24,6 +24,7 @@ from oac import shapes
 from oac.consent import MemoryNonces, NonceStore, verify_consent
 from oac.errors import OACError
 from oac.jws import KeySet, SigningKey, digest, token_digest, verify
+from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, claim, occurrence_key
 from oac.preview import action_digest, build_preview
 from oac.receipts import make_receipt
 from oac.tiers import tier_for
@@ -37,6 +38,11 @@ class NeedsConsent(Exception):
         self.preview = preview
 
 
+class ActionFailed(Exception):
+    """Raise from a tool to say the action surely did not happen. For a tool with an occurrence, any other
+    exception records the outcome as unknown, so the occurrence cannot run again until it is resolved."""
+
+
 class Gate:
     def __init__(
         self,
@@ -45,12 +51,14 @@ class Gate:
         key: SigningKey,
         signers: KeySet,
         nonces: NonceStore | None = None,
+        occurrences: OccurrenceStore | None = None,
         policy_floor: str = "A",
         summarize: Callable[[Mapping[str, Any]], str] | None = None,
         clock: Callable[[], int] = lambda: int(time.time()),
     ) -> None:
         self.executor, self.key, self.signers = executor, key, signers
         self.nonces = nonces or MemoryNonces()
+        self.occurrences = occurrences or MemoryOccurrences()
         self.policy_floor, self._clock = policy_floor, clock
         self._summarize = summarize or (lambda a: f"{a['tool']}: " + ", ".join(f"{k}={a['args'][k]}" for k in sorted(a["args"]))[:480])
         self.profiles: dict[str, dict[str, Any]] = {}
@@ -59,11 +67,14 @@ class Gate:
         self.receipts: dict[str, list[str]] = {}  # person -> chain
 
     def profile(self, tool: str, *, effect: str, undo: str = "none", window_s: int = 0, tier_floor: str = "A",
-                binds: Mapping[str, str] | None = None, other_args: list[str] | None = None) -> dict[str, Any]:
+                binds: Mapping[str, str] | None = None, other_args: list[str] | None = None,
+                occurrence: str | None = None) -> dict[str, Any]:
         doc: dict[str, Any] = {"oac": "0.1", "type": "action-profile", "tool": tool, "effect": effect,
                                "undo": {"kind": undo, "window_s": window_s}, "tier_floor": tier_floor, "binds": dict(binds or {})}
         if other_args:
             doc["other_args"] = list(other_args)
+        if occurrence:
+            doc["occurrence"] = occurrence
         self.profiles[tool] = shapes.profile(doc)
         return doc
 
@@ -109,52 +120,77 @@ class Gate:
                 kept = True
         return kept
 
-    def _authorize(self, tool: str, args: Mapping[str, Any], person: str, tainted: bool) -> tuple[str, dict[str, Any], str | None]:
+    def _authorize(self, tool: str, args: Mapping[str, Any], person: str,
+                   tainted: bool) -> tuple[str, dict[str, Any], str | None, Key | None]:
         tier = self.tier(tool, args, tainted=tainted)
         if tier == "D":
             raise OACError("tier_d", "this action never runs")
+        occurrence = occurrence_key(person, self.profiles[tool], args)
         if tier in ("A", "B"):
-            return tier, {"kind": "tier"}, None
+            return tier, {"kind": "tier"}, None, claim(self.occurrences, occurrence)
         action = {"tool": tool, "args": dict(args)}
         preview = self.preview(tool, args, person=person)
         pd = digest(preview)
         token = self.consents.get(pd)
         if token is None:
             raise NeedsConsent(preview)
-        c = verify_consent(token, keys=self.signers, executor=self.executor, sub=person, previews=[preview], actions=[action],
-                           profiles=self.profiles, now=self._clock(), nonces=self.nonces, policy_floor=self.policy_floor,
-                           tainted=tainted)
+        claimed = claim(self.occurrences, occurrence)
+        try:
+            c = verify_consent(token, keys=self.signers, executor=self.executor, sub=person, previews=[preview],
+                               actions=[action], profiles=self.profiles, now=self._clock(), nonces=self.nonces,
+                               policy_floor=self.policy_floor, tainted=tainted)
+        except BaseException:
+            if claimed:
+                self.occurrences.release(claimed)
+            raise
         self.pending.pop((person, action_digest(action)), None)
-        return "C", {"kind": "consent", "ref": c["jti"]}, pd
+        return "C", {"kind": "consent", "ref": c["jti"], "digest": token_digest(token)}, pd, claimed
+
+    def _outcome(self, claimed: Key | None, error: Exception | None) -> str:
+        if error is None:
+            outcome = "ok"
+        else:
+            outcome = "failed" if claimed is None or isinstance(error, ActionFailed) else "unknown"
+        if claimed:
+            self.occurrences.finish(claimed, outcome)
+        return outcome
 
     def run(self, tool: str, args: Mapping[str, Any], fn: Callable[..., Any], *, person: str,
             tainted: bool = True) -> tuple[Any, str]:
-        tier, authority, pd = self._authorize(tool, args, person, tainted)
+        tier, authority, pd, claimed = self._authorize(tool, args, person, tainted)
         try:
-            result, failed = fn(**dict(args)), False
-        except Exception:
-            self._receipt(person, tool, args, tier, authority, pd, None, failed=True)
+            result = fn(**dict(args))
+        except Exception as e:
+            self._receipt(person, tool, args, tier, authority, pd, None, self._outcome(claimed, e))
             raise
-        return result, self._receipt(person, tool, args, tier, authority, pd, result, failed=failed)
+        return result, self._receipt(person, tool, args, tier, authority, pd, result, self._outcome(claimed, None))
 
     async def arun(self, tool: str, args: Mapping[str, Any], fn: Callable[..., Awaitable[Any] | Any], *, person: str,
                    tainted: bool = True) -> tuple[Any, str]:
-        tier, authority, pd = self._authorize(tool, args, person, tainted)
+        tier, authority, pd, claimed = self._authorize(tool, args, person, tainted)
         try:
             out = fn(**dict(args))
             result = await out if inspect.isawaitable(out) else out
-        except Exception:
-            self._receipt(person, tool, args, tier, authority, pd, None, failed=True)
+        except Exception as e:
+            self._receipt(person, tool, args, tier, authority, pd, None, self._outcome(claimed, e))
             raise
-        return result, self._receipt(person, tool, args, tier, authority, pd, result, failed=False)
+        return result, self._receipt(person, tool, args, tier, authority, pd, result, self._outcome(claimed, None))
+
+    def resolve(self, tool: str, occurrence: str, *, person: str, outcome: str) -> None:
+        """Record what the provider says happened to an attempt whose outcome was unknown (ask it with the same
+        occurrence id). After "ok" the occurrence never runs again; after "failed" a fresh Consent may retry it."""
+        key = (person, tool, occurrence)
+        if outcome not in ("ok", "failed") or self.occurrences.state(key) != "unknown":
+            raise ValueError("only an unknown outcome can be resolved, to ok or failed")
+        self.occurrences.finish(key, outcome)
 
     def _receipt(self, person: str, tool: str, args: Mapping[str, Any], tier: str, authority: dict[str, Any],
-                 preview_digest: str | None, result: Any, *, failed: bool) -> str:
+                 preview_digest: str | None, result: Any, outcome: str) -> str:
         profile = self.profiles[tool]
         chain = self.receipts.setdefault(person, [])
         now = self._clock()
         undo: dict[str, Any] = {"kind": profile["undo"]["kind"]}
-        if undo["kind"] != "none" and not failed:
+        if undo["kind"] != "none" and outcome == "ok":
             undo["until"] = now + profile["undo"]["window_s"]
             if undo["kind"] == "native":
                 undo["token"] = "u_" + secrets.token_urlsafe(12)
@@ -165,8 +201,10 @@ class Gate:
         payload: dict[str, Any] = {
             "iss": self.executor, "sub": person, "seq": len(chain) + 1, "prev": token_digest(chain[-1]) if chain else None,
             "iat": now, "tool": tool, "tier": tier, "authority": authority, "action": action_digest({"tool": tool, "args": dict(args)}),
-            "outcome": "failed" if failed else "ok", "result": result_digest, "undo": undo,
+            "outcome": outcome, "result": result_digest, "undo": undo,
         }
+        if "occurrence" in profile:
+            payload["occurrence"] = args[profile["occurrence"]]
         if preview_digest:
             payload["preview"] = preview_digest
         receipt = make_receipt(key=self.key, payload=payload)

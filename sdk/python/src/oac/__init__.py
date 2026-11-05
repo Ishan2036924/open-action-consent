@@ -10,10 +10,12 @@ from oac.preview import action_digest, build_preview, check_binding
 from oac.receipts import make_receipt, verify_chain
 from oac.tiers import tier_for
 from oac.undo import check_undo, make_undo
+from oac.webauthn import DeviceCheck, verify_device_proof
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 __all__ = [
     "CODES",
+    "DeviceCheck",
     "KeySet",
     "MemoryNonces",
     "OACError",
@@ -38,4 +40,5 @@ __all__ = [
     "verify",
     "verify_chain",
     "verify_consent",
+    "verify_device_proof",
 ]

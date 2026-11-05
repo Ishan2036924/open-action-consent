@@ -7,9 +7,11 @@
 import * as crypto from "node:crypto";
 import { inputRequired, inputResponse, type McpServer } from "@modelcontextprotocol/server";
 import { actionDigest, buildPreview, digest, KeySet, makeReceipt, MemoryNonces, OACError, shapes, tierFor, tokenDigest, verify, verifyConsent, type SigningKey } from "../index.ts";
+import { claim, MemoryOccurrences, occurrenceKey, type OccurrenceKey, type OccurrenceStore } from "../occurrence.ts";
 
 export const ID = "com.atlasiw/oac";
 export const PROFILE_KEY = `${ID}-profile`, PREVIEW_KEY = `${ID}-preview`, RECEIPT_KEY = `${ID}-receipt`, CONSENT_KEY = `${ID}-consent`;
+export const OUTCOME_KEY = `${ID}-outcome`;
 const ASK = "oac_consent";
 const STATE_TTL_S = 900;
 
@@ -26,6 +28,7 @@ export interface OACOptions {
   summarize?: (action: Record<string, any>) => string;
   policyFloor?: string;
   clock?: () => number;
+  occurrences?: OccurrenceStore;
 }
 
 export class OAC {
@@ -34,19 +37,24 @@ export class OAC {
   readonly consents = new Map<string, string>();
   readonly nonces = new MemoryNonces();
   readonly receipts = new Map<string, string[]>();
+  readonly occurrences: OccurrenceStore;
   private readonly stateKey = crypto.randomBytes(32);
   readonly o: OACOptions;
-  constructor(o: OACOptions) { this.o = o; }
+  constructor(o: OACOptions) { this.o = o; this.occurrences = o.occurrences ?? new MemoryOccurrences(); }
 
   private now(): number { return (this.o.clock ?? (() => Math.floor(Date.now() / 1000)))(); }
 
   /** Capability settings to put under `capabilities.extensions[ID]`. */
   settings(): Record<string, unknown> { return { version: "0.1", executor: this.o.executor }; }
 
-  profile(tool: string, p: { effect: string; undo?: string; windowS?: number; tierFloor?: string; binds?: Record<string, string>; otherArgs?: string[] }): Record<string, unknown> {
+  profile(tool: string, p: {
+    effect: string; undo?: string; windowS?: number; tierFloor?: string; binds?: Record<string, string>; otherArgs?: string[];
+    occurrence?: string;
+  }): Record<string, unknown> {
     const doc: Record<string, any> = { oac: "0.1", type: "action-profile", tool, effect: p.effect, undo: { kind: p.undo ?? "none", window_s: p.windowS ?? 0 },
       tier_floor: p.tierFloor ?? "A", binds: { ...(p.binds ?? {}) } };
     if (p.otherArgs?.length) doc.other_args = [...p.otherArgs];
+    if (p.occurrence) doc.occurrence = p.occurrence;
     this.profiles[tool] = shapes.profile(doc);
     return { [PROFILE_KEY]: doc };
   }
@@ -99,7 +107,13 @@ export class OAC {
       return refused(`Refused (${e instanceof OACError ? e.code : "error"}).`);
     }
     if (tier === "D") return refused("Refused: this action is never allowed (tier D).");
-    if (tier === "A" || tier === "B") return this.withReceipt(await handler(args, ctx), person, profile, action, tier, { kind: "tier" }, null);
+    if (tier === "A" || tier === "B") {
+      let claimed: OccurrenceKey | null;
+      try { claimed = claim(this.occurrences, occurrenceKey(person, profile, args)); } catch (e) {
+        return refused(`Refused (${e instanceof OACError ? e.code : "error"}). Nothing ran.`);
+      }
+      return this.run(handler, args, ctx, person, profile, action, tier, { kind: "tier" }, null, claimed);
+    }
     const missing: Record<string, any> = {};
     if (!clientCaps?.extensions?.[ID]) missing.extensions = { [ID]: {} };
     if (!clientCaps?.elicitation?.url) missing.elicitation = { url: {} };
@@ -118,13 +132,48 @@ export class OAC {
     const token = this.consents.get(state.preview) ?? ctx.mcpReq?._meta?.[CONSENT_KEY];
     if (!preview || !token) return this.ask(action, profile, person);
     let consent: Record<string, any>;
+    let claimed: OccurrenceKey | null = null;
     try {
+      claimed = claim(this.occurrences, occurrenceKey(person, profile, args));
       consent = verifyConsent(token, { keys: this.o.signers, executor: this.o.executor, sub: person, previews: [preview], actions: [action],
         profiles: this.profiles, now: this.now(), nonces: this.nonces, policyFloor: this.o.policyFloor, tainted });
     } catch (e) {
+      if (claimed) this.occurrences.release(claimed);
       return refused(`Refused (${e instanceof OACError ? e.code : "error"}). Nothing ran.`);
     }
-    return this.withReceipt(await handler(args, ctx), person, profile, action, "C", { kind: "consent", ref: consent.jti }, digest(preview));
+    const authority = { kind: "consent", ref: consent.jti, digest: tokenDigest(token) };
+    return this.run(handler, args, ctx, person, profile, action, "C", authority, digest(preview), claimed);
+  }
+
+  // With an occurrence, an error is an unknown outcome unless the tool says it surely failed
+  // (_meta[OUTCOME_KEY] = "failed"): a timed-out payment may still have gone through.
+  private async run(handler: (args: any, ctx: Ctx) => Promise<Result>, args: Record<string, unknown>, ctx: Ctx, person: string,
+    profile: Record<string, any>, action: Record<string, any>, tier: string, authority: Record<string, unknown>,
+    previewDigest: string | null, claimed: OccurrenceKey | null): Promise<Result> {
+    let result: Result;
+    try {
+      result = await handler(args, ctx);
+    } catch (e) {
+      this.withReceipt(null, person, profile, action, tier, authority, previewDigest, this.finish(claimed, claimed ? "unknown" : "failed"));
+      throw e;
+    }
+    let outcome = "ok";
+    if (result?.isError === true) outcome = claimed && result._meta?.[OUTCOME_KEY] !== "failed" ? "unknown" : "failed";
+    return this.withReceipt(result, person, profile, action, tier, authority, previewDigest, this.finish(claimed, outcome))!;
+  }
+
+  private finish(claimed: OccurrenceKey | null, outcome: string): string {
+    if (claimed) this.occurrences.finish(claimed, outcome);
+    return outcome;
+  }
+
+  /** Record what the provider says happened to an attempt whose outcome was unknown. */
+  resolve(tool: string, occurrence: string, o: { person: string; outcome: "ok" | "failed" }): void {
+    const key: OccurrenceKey = [o.person, tool, occurrence];
+    if ((o.outcome !== "ok" && o.outcome !== "failed") || this.occurrences.state(key) !== "unknown") {
+      throw new Error("only an unknown outcome can be resolved, to ok or failed");
+    }
+    this.occurrences.finish(key, o.outcome);
   }
 
   private ask(action: Record<string, any>, profile: Record<string, any>, person: string): any {
@@ -139,23 +188,24 @@ export class OAC {
     return { ...result, _meta: { ...(result._meta ?? {}), [PREVIEW_KEY]: p } };
   }
 
-  private withReceipt(result: Result, person: string, profile: Record<string, any>, action: Record<string, any>, tier: string,
-    authority: Record<string, unknown>, previewDigest: string | null): Result {
-    const failed = result?.isError === true;
+  private withReceipt(result: Result | null, person: string, profile: Record<string, any>, action: Record<string, any>, tier: string,
+    authority: Record<string, unknown>, previewDigest: string | null, outcome: string): Result | null {
     const chain = this.receipts.get(person) ?? [];
     this.receipts.set(person, chain);
     const now = this.now();
     const undo: Record<string, unknown> = { kind: profile.undo.kind };
-    if (undo.kind !== "none" && !failed) {
+    if (undo.kind !== "none" && outcome === "ok") {
       undo.until = now + profile.undo.window_s;
       if (undo.kind === "native") undo.token = "u_" + crypto.randomBytes(12).toString("base64url");
     }
     const payload: Record<string, unknown> = { iss: this.o.executor, sub: person, seq: chain.length + 1, prev: chain.length ? tokenDigest(chain[chain.length - 1]) : null,
-      iat: now, tool: action.tool, tier, authority, action: actionDigest(action), outcome: failed ? "failed" : "ok", undo,
-      result: digest(JSON.parse(JSON.stringify(result.content ?? []))) };
+      iat: now, tool: action.tool, tier, authority, action: actionDigest(action), outcome, undo,
+      result: digest(JSON.parse(JSON.stringify(result?.content ?? []))) };
     if (previewDigest) payload.preview = previewDigest;
+    if (Object.hasOwn(profile, "occurrence")) payload.occurrence = action.args[profile.occurrence];
     const receipt = makeReceipt(this.o.key, payload);
     chain.push(receipt);
+    if (result === null) return null;
     return { ...result, _meta: { ...(result._meta ?? {}), [RECEIPT_KEY]: receipt } };
   }
 }

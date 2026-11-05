@@ -16,6 +16,7 @@ import { checkUndo } from "./undo.ts";
 import { vectorKey } from "./testing.ts";
 import { bit, decode } from "./status.ts";
 import { keysetFrom, metadataUrl } from "./discovery.ts";
+import { claim, MemoryOccurrences, type OccurrenceKey } from "./occurrence.ts";
 
 const OK = { ok: true };
 const OPS: Record<string, (i: any) => unknown> = {
@@ -29,6 +30,7 @@ const OPS: Record<string, (i: any) => unknown> = {
   verify_consent: (i) => (verifyConsent(i.token, {
     keys: new KeySet(i.keys), executor: i.executor, sub: i.sub, previews: i.previews, actions: i.actions, profiles: i.profiles,
     now: i.now, nonces: new MemoryNonces(i.seen_nonces ?? []), policyFloor: i.policy_floor, tainted: i.tainted ?? false,
+    device: i.device,
   }), OK),
   check_mandate: (i) => (checkMandate(i.token, {
     keys: new KeySet(i.keys), action: i.action, profile: i.profile, holder: i.holder, sub: i.sub, now: i.now,
@@ -41,6 +43,11 @@ const OPS: Record<string, (i: any) => unknown> = {
     keys: new KeySet(i.keys), executor: i.executor, receiptToken: i.receipt_token, receiptKeys: new KeySet(i.receipt_keys),
     now: i.now, nonces: new MemoryNonces(i.seen_nonces ?? []), undone: i.undone ?? [], compensation: i.compensation,
   }), OK),
+  claim_occurrence: (i) => {
+    const key: OccurrenceKey = ["person", "tool", "occurrence"];
+    claim(new MemoryOccurrences(i.state ? [[key, i.state]] : []), key);
+    return OK;
+  },
   status_bit: (i) => ({ revoked: bit(decode(i.encoded_list), i.index) }),
   metadata_url: (i) => ({ url: metadataUrl(i.iss) }),
   keyset_from: (i) => ({ issuer: keysetFrom(i.docs.map((d: any) => [d[0], d[1]])).issuer(i.kid) }),

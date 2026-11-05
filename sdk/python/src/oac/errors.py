@@ -59,6 +59,18 @@ CODES = frozenset(
         # 0.1 gap closers: status lists and seals
         "status_unknown",
         "seal_mismatch",
+        # device proofs (WebAuthn)
+        "device_proof_missing",
+        "device_proof_mismatch",
+        "unknown_credential",
+        "challenge_mismatch",
+        "wrong_origin",
+        "rp_mismatch",
+        "user_not_present",
+        "user_not_verified",
+        # business occurrences
+        "occurrence_unresolved",
+        "duplicate_occurrence",
     }
 )
 

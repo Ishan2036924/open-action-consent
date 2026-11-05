@@ -17,7 +17,9 @@ registry = Registry().with_resources((s["$id"], Resource.from_contents(s)) for s
 for s in schemas.values():
     Draft202012Validator.check_schema(s)
 V = {name: Draft202012Validator(s, registry=registry) for name, s in schemas.items()}
-BEYOND_SCHEMA = {"a read that claims an undo", "an argument both bound and listed as other"}  # rules the schema text says it cannot express
+# rules the schema text says it cannot express
+BEYOND_SCHEMA = {"a read that claims an undo", "an argument both bound and listed as other",
+                 "an occurrence argument the tool does not declare"}
 TYP = {"oac-consent+jws": "consent", "oac-mandate+jws": "mandate", "oac-receipt+jws": "receipt", "oac-undo+jws": "undo",
        "oac-status+jws": "status-list", "oac-seal+jws": "seal"}
 
@@ -44,6 +46,8 @@ for path in sorted((ROOT / "vectors").glob("*.json")):
             if "profile" in inp:
                 objs.append(("action-profile", inp["profile"]))
             objs += [("issuer-metadata", d[1]) for d in inp.get("docs", [])]
+            if (inp.get("device") or {}).get("proof"):
+                objs.append(("device-proof", inp["device"]["proof"]))
             for t in tokens(inp):
                 objs.append((TYP[part(t, 0)["typ"]], part(t, 1)))
         for name, obj in objs:

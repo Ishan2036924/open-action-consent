@@ -15,6 +15,9 @@ The hard part of adding consent to an agent is the approval screen and the signe
 | Decline | nothing is signed; the executor runs nothing |
 | Discover | `/.well-known/oac-issuer[/path]` publishes the person's public keys (spec 3.5) |
 
+The browser key is a device key, not a passkey. `signer.kind: "device"` is the Approver's own statement (spec 3.4).
+When an executor needs proof it can check for itself, it also asks for a passkey assertion over the Consent (spec 3.6).
+
 ```python
 from oac.approver import Approver
 

@@ -14,6 +14,11 @@ export const CODES = new Set([
   "wrong_issuer", "undeclared_argument", "revoked", "already_undone", "compensation_mismatch",
   // 0.1 gap closers: status lists and seals
   "status_unknown", "seal_mismatch",
+  // device proofs (WebAuthn)
+  "device_proof_missing", "device_proof_mismatch", "unknown_credential", "challenge_mismatch", "wrong_origin",
+  "rp_mismatch", "user_not_present", "user_not_verified",
+  // business occurrences
+  "occurrence_unresolved", "duplicate_occurrence",
 ]);
 
 /** A refusal. `code` is one of CODES; `detail` is for logs, never for deciding anything. */
