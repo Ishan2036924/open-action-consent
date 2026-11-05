@@ -1,11 +1,10 @@
 {
-  "name": "@oac/mcp",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@open-action-consent/mcp",
+  "version": "0.2.0",
   "type": "module",
   "license": "Apache-2.0",
   "dependencies": {
-    "@modelcontextprotocol/client": "2.4.0",
+    "@open-action-consent/sdk": "0.2.0",
     "@modelcontextprotocol/server": "2.4.0"
   },
   "description": "Open Action Consent for the official MCP TypeScript SDK v2",
@@ -13,6 +12,32 @@
     "node": ">=23.6"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "test": "node --test test/*.test.ts"
-  }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ishan2036924/open-action-consent.git",
+    "directory": "integrations/mcp-typescript"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0"
+  },
+  "homepage": "https://github.com/Ishan2036924/open-action-consent"
 }

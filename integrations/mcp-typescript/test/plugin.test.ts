@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import * as z from "zod";
 import { McpServer, InMemoryTransport } from "@modelcontextprotocol/server";
 import { Client } from "@modelcontextprotocol/client";
-import { generate, KeySet, makeConsent, verify, verifyChain } from "../../../sdk/typescript/src/index.ts";
+import { generate, KeySet, makeConsent, verify, verifyChain } from "@open-action-consent/sdk";
 import { ID, OAC, PREVIEW_KEY, RECEIPT_KEY } from "../src/index.ts";
 
 const EXECUTOR = "https://tables.example/oac", SIGNER = "https://signer.example", PERSON = "person:1";

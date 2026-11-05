@@ -1,16 +1,44 @@
 {
-  "name": "@oac/vercel-ai",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@open-action-consent/vercel-ai",
+  "version": "0.2.0",
   "type": "module",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=23.6"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "test": "node --test test/*.test.ts"
   },
   "dependencies": {
+    "@open-action-consent/sdk": "0.2.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ishan2036924/open-action-consent.git",
+    "directory": "integrations/vercel-ai"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "peerDependencies": {
+    "ai": "^7.0.0"
+  },
+  "devDependencies": {
     "ai": "7.0.148"
-  }
+  },
+  "homepage": "https://github.com/Ishan2036924/open-action-consent"
 }

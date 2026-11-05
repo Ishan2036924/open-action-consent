@@ -4,7 +4,7 @@
 // model's say) asks for approval with the Preview's summary as the reason, and the tool's execute runs only if the
 // person's signed Consent verifies for exactly this call; an approval without it runs nothing.
 
-import { Gate, NeedsConsent, OACError, type ProfileSpec } from "../../../sdk/typescript/src/index.ts";
+import { Gate, NeedsConsent, OACError, type ProfileSpec } from "@open-action-consent/sdk";
 
 export const NOT_APPROVED = "Not approved: the person has not signed a consent for exactly this action. Nothing ran.";
 

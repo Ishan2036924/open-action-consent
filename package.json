@@ -1,0 +1,14 @@
+{
+  "name": "open-action-consent-workspace",
+  "private": true,
+  "license": "Apache-2.0",
+  "workspaces": [
+    "sdk/typescript",
+    "integrations/mcp-typescript",
+    "integrations/vercel-ai"
+  ],
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2"
+  }
+}

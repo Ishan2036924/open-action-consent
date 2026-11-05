@@ -31,6 +31,14 @@ jobs:
         run: cd integrations/mcp-python && python -m pytest -q -p anyio
       - name: vector generator agrees with the SDK
         run: python tools/make_vectors.py
+      - name: the six Python packages build
+        if: matrix.python == '3.13'
+        run: |
+          python -m pip install "build>=1.2"
+          for d in sdk/python integrations/mcp-python integrations/gated-browser integrations/approver integrations/openai-agents integrations/langgraph; do
+            python -m build --outdir dist-py "$d"
+          done
+          ls dist-py
 
   browser-tools:
     # Playwright 1.58 does not support Chromium on ubuntu-latest (26.04) yet
@@ -76,9 +84,11 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: type-check and build (TypeScript 7)
+        run: npm run build --workspaces
       - run: node sdk/typescript/src/conformance.ts vectors
-      - run: cd sdk/typescript && node --test test/*.test.ts
-      - name: MCP TypeScript plug-in (end to end through the official SDK v2)
-        run: cd integrations/mcp-typescript && npm ci --ignore-scripts --no-audit --no-fund && npm test
-      - name: Vercel AI SDK adapter (real generateText, mock model)
-        run: cd integrations/vercel-ai && npm ci --ignore-scripts --no-audit --no-fund && npm test
+      - run: node sdk/typescript/dist/conformance.js vectors
+      - name: tests (SDK, MCP SDK v2 plug-in, Vercel AI SDK adapter) against the built packages
+        run: npm test --workspaces
+      - run: npm pack --dry-run --workspaces

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { generateText, tool, jsonSchema } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
-import { Gate, generate, KeySet, makeConsent } from "../../../sdk/typescript/src/index.ts";
+import { Gate, generate, KeySet, makeConsent } from "@open-action-consent/sdk";
 import { approvalMessage, NOT_APPROVED, previewFor, withOAC } from "../src/index.ts";
 
 const EX = "https://app.example/oac", SIGNER = "https://signer.example", PERSON = "person:1";

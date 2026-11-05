@@ -1,13 +1,37 @@
 {
-  "name": "@oac/sdk",
-  "version": "0.1.0",
+  "name": "@open-action-consent/sdk",
+  "version": "0.2.0",
   "description": "Open Action Consent: signed previews, consents, mandates, receipts and undo for agent actions",
   "license": "Apache-2.0",
   "type": "module",
-  "exports": "./src/index.ts",
-  "engines": {"node": ">=23.6"},
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=23.6"
+  },
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "test": "node --test test/*.test.ts",
     "conformance": "node src/conformance.ts ../../vectors"
-  }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ishan2036924/open-action-consent.git",
+    "directory": "sdk/typescript"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "homepage": "https://github.com/Ishan2036924/open-action-consent"
 }

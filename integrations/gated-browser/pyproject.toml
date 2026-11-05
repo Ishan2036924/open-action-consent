@@ -1,14 +1,26 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "oac-gated-browser"
-version = "0.1.0"
+version = "0.2.0"
 description = "An MCP browser for agents that stops before every final click (Open Action Consent)"
+readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["mcp>=2.3,<3", "playwright>=1.50", "cryptography>=42"]
+dependencies = ["open-action-consent>=0.2,<0.3", "oac-mcp>=0.2,<0.3", "mcp>=2.3,<3", "playwright>=1.50"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security :: Cryptography",
+  "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://github.com/Ishan2036924/open-action-consent"
+Specification = "https://github.com/Ishan2036924/open-action-consent/blob/main/spec/oac-v0.1.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

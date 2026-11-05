@@ -6,9 +6,7 @@
 
 import * as crypto from "node:crypto";
 import { inputRequired, inputResponse, type McpServer } from "@modelcontextprotocol/server";
-import { digest, KeySet, makeReceipt, MemoryNonces, OACError, tierFor, tokenDigest, verify, verifyConsent, type SigningKey } from "../../../sdk/typescript/src/index.ts";
-import * as shapes from "../../../sdk/typescript/src/shapes.ts";
-import { actionDigest, buildPreview } from "../../../sdk/typescript/src/preview.ts";
+import { actionDigest, buildPreview, digest, KeySet, makeReceipt, MemoryNonces, OACError, shapes, tierFor, tokenDigest, verify, verifyConsent, type SigningKey } from "@open-action-consent/sdk";
 
 export const ID = "com.atlasiw/oac";
 export const PROFILE_KEY = `${ID}-profile`, PREVIEW_KEY = `${ID}-preview`, RECEIPT_KEY = `${ID}-receipt`, CONSENT_KEY = `${ID}-consent`;

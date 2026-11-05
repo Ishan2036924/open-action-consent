@@ -1,14 +1,26 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "oac-approver"
-version = "0.1.0"
-description = "A self-hostable approval page for Open Action Consent: the person's key stays in their browser"
+version = "0.2.0"
+description = "A self-hostable approval page for Open Action Consent; the person's key stays in their browser"
+readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["starlette>=0.40", "uvicorn>=0.30", "cryptography>=42"]
+dependencies = ["open-action-consent>=0.2,<0.3", "starlette>=0.40", "uvicorn>=0.30"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security :: Cryptography",
+  "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://github.com/Ishan2036924/open-action-consent"
+Specification = "https://github.com/Ishan2036924/open-action-consent/blob/main/spec/oac-v0.1.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

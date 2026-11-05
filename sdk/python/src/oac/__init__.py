@@ -11,7 +11,7 @@ from oac.receipts import make_receipt, verify_chain
 from oac.tiers import tier_for
 from oac.undo import check_undo, make_undo
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
     "CODES",
     "KeySet",

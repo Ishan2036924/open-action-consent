@@ -1,14 +1,26 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "oac-langgraph"
-version = "0.1.0"
+version = "0.2.0"
 description = "Open Action Consent for LangGraph"
+readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["langgraph>=1.2,<2", "cryptography>=42"]
+dependencies = ["open-action-consent>=0.2,<0.3", "langgraph>=1.2,<2"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security :: Cryptography",
+  "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://github.com/Ishan2036924/open-action-consent"
+Specification = "https://github.com/Ishan2036924/open-action-consent/blob/main/spec/oac-v0.1.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
