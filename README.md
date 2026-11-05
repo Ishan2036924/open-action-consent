@@ -62,7 +62,9 @@ verify_consent(consent, keys=KeySet({"signer.example": [user_key.jwk]}), executo
 | [sdk/python/](sdk/python/) | reference SDK (needs `cryptography`) |
 | [sdk/typescript/](sdk/typescript/) | reference SDK (no dependencies, Node 23.6+) |
 | [conformance/](conformance/) | vector format and how to run it |
-| [examples/mcp-server/](examples/mcp-server/) | a small MCP server using the extension, and a demo with two attacks that fail |
+| [integrations/mcp-python/](integrations/mcp-python/) | **plug-in for the official MCP Python SDK**: `MCPServer(extensions=[OACExtension(...)])` |
+| [integrations/mcp-typescript/](integrations/mcp-typescript/) | **plug-in for the official MCP TypeScript SDK v2**: `oac.registerTool(server, ...)` |
+| [examples/mcp-server/](examples/mcp-server/) | a small dependency-free MCP server using the extension, and a demo with attacks that fail |
 
 ## Check everything
 

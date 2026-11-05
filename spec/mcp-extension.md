@@ -141,7 +141,13 @@ tier C or D tool. It MUST either return `MissingRequiredClientCapability` (-3202
 obtain consent through a channel of its own (its own app) and only then run. Tier A and B tools work unchanged; tier B
 still keeps its receipt and undo for the person, even if the client never sees them.
 
-## 7. Relation to SEP-2848
+## 7. Reference plug-ins
+
+`integrations/mcp-python` (official Python SDK, which has an extension interceptor and seals `requestState`) and
+`integrations/mcp-typescript` (official TypeScript SDK v2, which has neither, so the plug-in wraps each tool and signs
+its own state) implement this binding and are tested end to end through each SDK's in-memory client.
+
+## 8. Relation to SEP-2848
 
 SEP-2848 turns a denied call into a Task that resolves when someone approves out of band, and binds the approval to a
 canonical digest of the arguments. OAC supplies what it leaves open: the approval as a signed, portable object bound

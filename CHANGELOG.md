@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- `integrations/mcp-python`: OAC as an extension for the official MCP Python SDK (`mcp` 2.3, protocol 2026-07-28).
+- `integrations/mcp-typescript`: OAC tool wrapper for the official MCP TypeScript SDK v2 (2.4).
+
 ## 0.1.0 (2026-11-04)
 
 First public draft.
