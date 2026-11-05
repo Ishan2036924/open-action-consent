@@ -9,4 +9,5 @@ export { makeConsent, MemoryNonces, verifyConsent, type NonceStore } from "./con
 export { checkMandate, loosens, makeMandate } from "./mandate.ts";
 export { makeReceipt, verifyChain } from "./receipts.ts";
 export { checkUndo, makeUndo } from "./undo.ts";
+export { Gate, NeedsConsent, type ProfileSpec } from "./gate.ts";
 export const VERSION = "0.1.0";

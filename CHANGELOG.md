@@ -8,6 +8,9 @@
   hand-off, no secrets typed, private-address guard on every request.
 - `integrations/approver`: a self-hostable approval page; non-extractable WebCrypto key in the browser signs the
   Consent (device signer); enrolment by one-time code; issuer metadata for key discovery.
+- `oac.gate` / `Gate` (Python and TypeScript): framework-neutral executor gate shared by the adapters.
+- Adapters: OpenAI Agents SDK (`oac_tool`), LangGraph (`gated` with `interrupt`), Vercel AI SDK (`withOAC`); in
+  each, the framework's own approval alone runs nothing without the person's signed Consent.
 - `oac-mcp`: optional `inspect` hook seals evidence (page digests) into the Preview and refuses if it changed.
 
 ## 0.1.0 (2026-11-04)

@@ -50,6 +50,22 @@ jobs:
       - name: Approver (enrol, approve, decline in headless Chromium; browser-signed consent verified by the SDK)
         run: cd integrations/approver && python -m pytest -q
 
+  agent-frameworks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - run: python -m pip install "cryptography>=42" "pytest>=8" "anyio>=4" "openai-agents==0.24.0" "langgraph==1.2.16"
+      - name: OpenAI Agents SDK adapter (real Runner, scripted model)
+        run: cd integrations/openai-agents && python -m pytest -q -p anyio
+      - name: LangGraph adapter (real StateGraph, interrupt and resume)
+        run: cd integrations/langgraph && python -m pytest -q
+
   typescript:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -64,3 +80,5 @@ jobs:
       - run: cd sdk/typescript && node --test test/*.test.ts
       - name: MCP TypeScript plug-in (end to end through the official SDK v2)
         run: cd integrations/mcp-typescript && npm ci --ignore-scripts --no-audit --no-fund && npm test
+      - name: Vercel AI SDK adapter (real generateText, mock model)
+        run: cd integrations/vercel-ai && npm ci --ignore-scripts --no-audit --no-fund && npm test

@@ -64,6 +64,7 @@ verify_consent(consent, keys=KeySet({"signer.example": [user_key.jwk]}), executo
 | [conformance/](conformance/) | vector format and how to run it |
 | [integrations/mcp-python/](integrations/mcp-python/) | **plug-in for the official MCP Python SDK**: `MCPServer(extensions=[OACExtension(...)])` |
 | [integrations/mcp-typescript/](integrations/mcp-typescript/) | **plug-in for the official MCP TypeScript SDK v2**: `oac.registerTool(server, ...)` |
+| [integrations/openai-agents/](integrations/openai-agents/), [langgraph/](integrations/langgraph/), [vercel-ai/](integrations/vercel-ai/) | **adapters** for the OpenAI Agents SDK, LangGraph and the Vercel AI SDK: their approval pauses, made signed |
 | [integrations/gated-browser/](integrations/gated-browser/) | **Gated Browser**: an MCP browser that stops before every final click (Playwright) |
 | [integrations/approver/](integrations/approver/) | **Approver**: a self-hostable approval page; the person's key stays in their browser |
 | [examples/mcp-server/](examples/mcp-server/) | a small dependency-free MCP server using the extension, and a demo with attacks that fail |
