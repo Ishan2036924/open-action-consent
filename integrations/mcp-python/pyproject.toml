@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oac-mcp"
+version = "0.1.0"
+description = "Open Action Consent for the official MCP Python SDK"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = ["mcp>=2.3,<3", "cryptography>=42"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "../../sdk/python/src"]
+testpaths = ["tests"]
