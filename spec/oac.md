@@ -546,8 +546,41 @@ points to it or exports to it (`mappings.md`).
   limits; share only what a verifier needs (digests prove a match without the content).
 - **Profiles are claims.** A tool can lie in its Action Profile (claim `native` and do something irreversible).
   Executors review profiles before trusting them and apply a policy floor to unreviewed tools.
+- **One way in.** The checks protect an effect only if nothing reaches that effect without them. A second tool server
+  with write access to the same database, a script with the same API key, or an admin console can send the mail or
+  move the money with no Preview and no Consent, while every Receipt stays consistent. The defence is to guard the
+  keys, not to list the roads: whatever performs an effect needs a credential, and only the executor holds it (13.2).
 
 ## 13. Conformance
 
+### 13.1 Implementations
+
 An implementation conforms to OAC 0.2 when it passes every case in `vectors/` (format: `conformance/README.md`),
-reporting the same error code as the vector for every refused case.
+reporting the same error code as the vector for every refused case. This shows the checks hold when they are used.
+It does not show that a deployment uses them on every route to an effect.
+
+### 13.2 Deployments
+
+A deployment that claims OAC protects an effect (an action of tier C) MUST meet three rules:
+
+1. **Name the key.** For each such effect, name the credential that performs it: an OAuth grant and its scope, an API
+   key, a database role with write access, a signing key, a payment rail's credential.
+2. **Only the executor holds it.** No agent, model, other tool server, script or shared process can use that key.
+   Anything else that can reach the effect without it (another database role, an admin account) is a key too: it
+   either moves behind the executor, or is listed as a route that only people use, out of any agent's reach.
+3. **Pass the bypass check.** Build and verify a Consent for the action, do not present it, then try the effect
+   from wherever an agent or tool server runs: through every tool it can call, and directly against the service with
+   every credential found there. The effect MUST NOT happen. The check runs again whenever a key, tool server or
+   route is added.
+
+The deployment SHOULD publish a coverage statement, one row per effect, for example:
+
+| Effect | Key | Held by | Other routes | Bypass check |
+|---|---|---|---|---|
+| `send_email` | mail OAuth grant, send scope | executor only | none | refused, 2026-11-06 |
+| `pay_order` | rail credential (9.3) | executor only, never stored | provider dashboard (people only) | refused, 2026-11-06 |
+
+A coverage result is one of four, reported as such and never merged into one score: `covered` (complete statement,
+check refused every route), `bypass` (an effect happened without the executor), `incomplete` (a key or route is
+missing from the statement, or the check skipped one), `not_checked`. Only `covered` supports a claim that OAC
+protects the effect. A bypass is a deployment failure, not a failure of the vectors.

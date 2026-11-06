@@ -1,6 +1,7 @@
 # Conformance
 
-`vectors/*.json` are the test cases every OAC 0.2 implementation must pass. Each file is:
+`vectors/*.json` are the test cases every OAC 0.2 implementation must pass. They test the library, not a deployment:
+whether anything can reach an effect without the executor is the bypass check in spec 13.2. Each file is:
 
 ```json
 {"oac": "0.2", "about": "...", "cases": [{"name": "...", "op": "verify_consent", "input": {...}, "expect": {"ok": true}}]}
