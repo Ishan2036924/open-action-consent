@@ -115,6 +115,8 @@ Closed in 0.4.0: device proofs in the gates and MCP plug-ins, the wire version l
 WebAuthn backup flags, and Python/TypeScript export parity.
 
 **OAC-conformant:** an implementation that passes every case in `vectors/` may say so and link to this repository.
+A deployment that says OAC protects an action also keeps that action's credential behind the executor alone and
+passes the bypass check (spec 13.2): passing the vectors shows the checks work, not that nothing goes around them.
 
 ## License
 

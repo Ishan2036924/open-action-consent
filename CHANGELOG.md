@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased (spec text only)
+
+- Deployment coverage (spec 13.2, new): passing the vectors shows the checks hold when they are used, not that every
+  route to an effect uses them. A deployment that claims OAC protects an effect names the credential that performs
+  it, keeps that credential behind the executor alone, and passes a bypass check (a verified but unused Consent, then
+  the effect tried by every other route). Results are `covered`, `bypass`, `incomplete` or `not_checked`. New
+  security bullet "One way in" (12). Raised by ceyptoslim on MCP SEP-2848.
+
 ## 0.4.0 (2026-11-05)
 
 Closes five of the six known gaps listed in 0.3.0. Breaking: objects now say `"oac":"0.2"`.
