@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (spec text only)
+
+- Deployment coverage (13.2): each bypass attempt records the route, whether a decision exists for that exact action,
+  and whether the effect occurred as separate fields; the coverage statement lists every other route to an effect
+  with the credential it holds and the control it passes through; an effect on an unlisted route breaks the whole claim; and
+  `covered` means coverage of the listed routes, not of the whole system. From ceyptoslim's write-up on MCP SEP-2848.
+
 ## 0.4.1 (2026-11-09)
 
 - Occurrence scope changes: registering a tool again with a different `occurrence_scope` (adding, changing or
