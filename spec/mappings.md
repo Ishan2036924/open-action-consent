@@ -44,7 +44,7 @@ relying on a row.
 
 One WebAuthn assertion signs one challenge, so an OAC device proof (challenge: the hash of the exact Consent token)
 and an EP Class A signoff (challenge: the hash of the complete JCS Authorization Context) are two assertions. Neither
-stands in for the other. A pinned native-binding profile, worked out with the EP draft's author:
+stands in for the other. A pinned native-binding profile, proposed by the EP draft's author:
 
 1. Verify the OAC objects natively (Consent, Preview binding, device proof per 3.6) and keep their exact token bytes.
 2. Build the EP Authorization Context so that it carries the OAC Consent's `token_digest`, binding the two.

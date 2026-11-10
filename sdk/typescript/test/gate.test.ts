@@ -117,8 +117,8 @@ test("gate: a tool cannot move to another order scope while it has orders", asyn
   assert.ok(gate.acceptConsent(makeConsent({ key, iss: SIGNER, sub: PERSON, aud: EX, previews: [p], now: p.iat + 1, payment })));
   await gate.run("pay_order", args, () => "paid", { person: PERSON });
   pay("stripe:acct_1"); // the same scope again: allowed
-  assert.throws(() => pay("stripe:acct_2"), /move them before changing its scope/);
-  assert.throws(() => pay(), /move them before changing its scope/);
+  assert.throws(() => pay("stripe:acct_2"), /move them before changing/);
+  assert.throws(() => pay(), /move them before changing/);
   // the refused change left the profile as it was, so the paid order still cannot run again
   await assert.rejects(gate.run("pay_order", args, () => "paid", { person: PERSON }), (e: any) => e.code === "duplicate_occurrence");
   // a store that cannot list a scope refuses every scope change

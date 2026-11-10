@@ -11,7 +11,7 @@ export interface OccurrenceStore {
   /** Drop a claim whose action never started. */
   release(key: OccurrenceKey): void;
   state(key: OccurrenceKey): string | null;
-  /** Optional: whether any record uses this scope. Without it, every change to a tool's occurrence scope is refused. */
+  /** Optional: whether any record uses this scope. Without it, a gate refuses every change to a tool's occurrence or scope. */
   hasScope?(scope: string): boolean;
 }
 
@@ -40,12 +40,14 @@ export function occurrenceKey(person: string, profile: Record<string, any>, args
   return Object.hasOwn(profile, "occurrence") ? [person, scope(profile), args[profile.occurrence] as string] : null;
 }
 
-/** Spec 5.1: a tool's occurrence scope cannot change while records exist in the old one, or an order that already
- * ran could run again under the new scope. Moving records is the store owner's job. */
+/** Spec 5.1: while records exist in a tool's scope, the tool cannot move to another scope or drop its occurrence,
+ * or an order that already ran could run again. Moving records is the store owner's job. This compares with the
+ * profile registered earlier in this process; a durable store must also remember each tool's scope across restarts. */
 export function checkScopeChange(store: OccurrenceStore, old: Record<string, any> | null, next: Record<string, any>): void {
-  if (old === null || !Object.hasOwn(old, "occurrence") || scope(old) === scope(next)) return;
+  if (old === null || !Object.hasOwn(old, "occurrence")) return;
+  if (scope(old) === scope(next) && Object.hasOwn(next, "occurrence")) return;
   if (store.hasScope === undefined || store.hasScope(scope(old))) {
-    throw new Error(`${old.tool} has occurrence records in ${scope(old)}; move them before changing its scope`);
+    throw new Error(`${old.tool} has occurrence records in ${scope(old)}; move them before changing its occurrence or scope`);
   }
 }
 

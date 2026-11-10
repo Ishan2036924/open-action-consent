@@ -6,7 +6,7 @@ import asyncio
 
 import pytest
 
-from oac import DeviceCheck, KeySet, MemoryOccurrences, OACError, generate, make_consent, token_digest, verify_chain
+from oac import DeviceCheck, KeySet, OACError, generate, make_consent, token_digest, verify_chain
 from oac.gate import ActionFailed, Gate, NeedsConsent
 from oac.jcs import parse
 from oac.jws import b64url_decode
@@ -243,15 +243,12 @@ def test_a_tool_cannot_move_to_another_order_scope_while_it_has_orders() -> None
     assert code_of(lambda: gate.run("pay_order", PAY, lambda **a: "paid", person=PERSON)) == "duplicate_occurrence"
 
 
-def test_a_store_that_cannot_list_a_scope_refuses_every_scope_change() -> None:
+def test_with_a_store_that_cannot_list_scopes_every_scope_change_is_refused() -> None:
     class Opaque:  # an occurrence store without has_scope
-        def __init__(self):
-            self._inner = MemoryOccurrences()
-
-        def __getattr__(self, name):
-            if name == "has_scope":
-                raise AttributeError(name)
-            return getattr(self._inner, name)
+        def claim(self, key): return None
+        def finish(self, key, outcome): pass
+        def release(self, key): pass
+        def state(self, key): return None
 
     gate = Gate(executor=EX, key=generate(), signers=KeySet({}), occurrences=Opaque())
     gate.profile("pay_order", effect="pay", undo="compensate", window_s=86400, other_args=["order"], occurrence="order",

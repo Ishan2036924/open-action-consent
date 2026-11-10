@@ -43,7 +43,8 @@ valid proof nothing runs (spec 3.6). `oac.device_proofs` keeps each proof by the
 
 **Orders across tools.** Two pay tools that use one provider account pass the same `occurrence_scope` to
 `oac.profile(...)`, so an order paid through one cannot be paid again through the other (spec 5.1). Once a tool has
-orders, registering it again with another scope raises `ValueError`; move the records in your store first.
+orders, registering it again with another scope, or without its occurrence, raises `ValueError`; move the
+records in your store first.
 
 Tests: `sdk/python/tests/integrations/mcp` (end to end through the SDK's in-memory client). Stores are in memory for now;
 production servers keep previews, consents, nonces (atomic) and receipts in their own database.

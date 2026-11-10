@@ -228,10 +228,9 @@ may have gone through. The occurrence id closes this gap. For a tool whose profi
 keeps one record per person, occurrence scope and occurrence value, with the state of its latest attempt: `running`,
 `ok`, `failed` or `unknown`. Tools whose profiles name the same `occurrence_scope` share these records, so an order
 paid through one tool cannot be paid again through another; a tool without a scope has records of its own. An
-executor MUST NOT add or change a tool's `occurrence_scope` while that tool has records, unless it moves them to the
-new scope; otherwise an order already paid, or still `unknown`, would look new. The reference gates and MCP
-plug-ins refuse such a change while the store holds records in the old scope, and refuse every scope change when
-the store cannot tell.
+executor MUST NOT add or change a tool's `occurrence_scope`, or drop its `occurrence`, while that tool has records,
+unless it moves them to the new scope; otherwise an order already paid, or still `unknown`, would look new. An
+executor that cannot tell whether such records exist MUST refuse the change, and the rule holds across restarts.
 
 1. Before it runs the action (for tier C, before it verifies the Consent, so a refusal does not use up the `jti`), the
    executor claims the record atomically: new or `failed` becomes `running`; `ok` is refused
