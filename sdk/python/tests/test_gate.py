@@ -6,7 +6,7 @@ import asyncio
 
 import pytest
 
-from oac import DeviceCheck, KeySet, OACError, generate, make_consent, token_digest, verify_chain
+from oac import DeviceCheck, KeySet, MemoryOccurrences, OACError, generate, make_consent, token_digest, verify_chain
 from oac.gate import ActionFailed, Gate, NeedsConsent
 from oac.jcs import parse
 from oac.jws import b64url_decode
@@ -257,3 +257,17 @@ def test_with_a_store_that_cannot_list_scopes_every_scope_change_is_refused() ->
         gate.profile("pay_order", effect="pay", undo="compensate", window_s=86400, other_args=["order"],
                      occurrence="order", occurrence_scope="stripe:acct_1",
                      binds={"amount_minor": "amount", "currency": "currency", "payee": "shop"})
+
+
+def test_after_a_restart_a_tool_with_its_own_records_cannot_take_a_scope() -> None:
+    # what a durable store kept from the last run: an order paid while pay_order had no scope
+    store = MemoryOccurrences({(PERSON, "tool:pay_order", "ord_1"): "ok"})
+    gate = Gate(executor=EX, key=generate(), signers=KeySet({}), occurrences=store)
+    pay_profile = dict(effect="pay", undo="compensate", window_s=86400, other_args=["order"], occurrence="order",
+                       binds={"amount_minor": "amount", "currency": "currency", "payee": "shop"})
+    with pytest.raises(ValueError):
+        gate.profile("pay_order", **pay_profile, occurrence_scope="stripe:acct_1")
+    gate.profile("pay_order", **pay_profile)  # as before the restart: allowed, and the order still cannot run twice
+    assert code_of(lambda: gate.run("pay_order", PAY, lambda **a: "paid", person=PERSON)) == "duplicate_occurrence"
+    # a fresh store (nothing kept) never blocks a first registration with a scope
+    Gate(executor=EX, key=generate(), signers=KeySet({})).profile("pay_order", **pay_profile, occurrence_scope="stripe:acct_1")

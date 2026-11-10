@@ -108,7 +108,7 @@ change lands (spec, vectors, both SDKs).
 |---|---|---|
 | Mapping to EP authorization receipts | a two-assertion bridge profile is drafted with the EP author; not implemented or tested yet | `spec/mappings.md` |
 | Mandates in the gates and MCP plug-ins | `check_mandate` / `checkMandate` work, but the reference gates and plug-ins only accept a Consent per action | spec 7.3 |
-| Durable stores | the reference nonce, occurrence and receipt stores live in memory; a production executor needs database-backed ones with the same atomic rules, and its occurrence store must remember each tool's scope so a scope change is refused across restarts too | spec 5.1, 6.3 |
+| Durable stores | the reference nonce, occurrence and receipt stores live in memory; a production executor needs database-backed ones with the same atomic rules, and its occurrence store must remember each tool's scope so a move between named scopes is refused across restarts too | spec 5.1, 6.3 |
 | More passkey types | device proofs accept ES256 credentials only, and the signature counter is not checked | spec 3.6 |
 
 Closed in 0.4.0: device proofs in the gates and MCP plug-ins, the wire version label, occurrence scope across tools,

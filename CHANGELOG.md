@@ -6,9 +6,10 @@
   removing one), or without its `occurrence`, while the store holds records in its old scope now fails
   (`ValueError` in Python, `Error` in TypeScript), in the gates and both MCP plug-ins, and leaves the old profile in
   place. Before, a paid or unresolved order could run again, which spec 5.1 already forbade. Occurrence stores gain
-  an optional `has_scope` / `hasScope`; with a store that lacks it, the gates refuse every such change. The check
-  compares with the profile registered earlier in the same process: a durable store must also remember each tool's
-  scope so the rule holds across restarts (README, known gaps). Reported with a reproducer by the EP draft's author.
+  an optional `has_scope` / `hasScope`; with a store that lacks it, the gates refuse every such change. After a
+  restart, records kept under a tool's own name still block giving it a scope. A move between named scopes across
+  a restart needs a durable store that remembers each tool's scope (README, known gaps). Reported with a reproducer
+  by the EP draft's author.
 - EP bridge (spec/mappings.md): an OAC device proof and an EP Class A signoff are two assertions over two different
   challenges; a pinned profile binds the OAC token digest into the EP context. Draft only, not implemented.
 - Deployment coverage (spec 13.2, new): passing the vectors shows the checks hold when they are used, not that every

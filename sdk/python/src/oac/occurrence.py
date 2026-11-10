@@ -71,18 +71,28 @@ def occurrence_key(person: str, profile: Mapping[str, Any], args: Mapping[str, A
     return None if name is None else (person, scope(profile), args[name])
 
 
+def _records_in(tool: str, where: str) -> ValueError:
+    return ValueError(f"{tool} has occurrence records in {where}; move them before changing its occurrence or scope")
+
+
 def check_scope_change(store: OccurrenceStore, old: Mapping[str, Any] | None, new: Mapping[str, Any]) -> None:
     """Spec 5.1: while records exist in a tool's scope, the tool cannot move to another scope or drop its
     occurrence, or an order that already ran could run again. Moving records is the store owner's job.
-    This compares with the profile registered earlier in this process; a durable store must also remember
-    each tool's scope for the rule to hold across restarts."""
-    if old is None or old.get("occurrence") is None:
+    `old` is the profile registered earlier in this process. On a first registration, records under the
+    tool's own name (it ran without a scope before a restart) still block a named scope. A move between
+    named scopes across a restart needs a durable store that remembers each tool's scope."""
+    has_scope = getattr(store, "has_scope", None)
+    if old is None:
+        own = scope({"tool": new["tool"]})
+        if new.get("occurrence_scope") is not None and has_scope is not None and has_scope(own):
+            raise _records_in(new["tool"], own)
+        return
+    if old.get("occurrence") is None:
         return
     if scope(old) == scope(new) and new.get("occurrence") is not None:
         return
-    has_scope = getattr(store, "has_scope", None)
     if has_scope is None or has_scope(scope(old)):
-        raise ValueError(f"{old['tool']} has occurrence records in {scope(old)}; move them before changing its occurrence or scope")
+        raise _records_in(old["tool"], scope(old))
 
 
 def _refuse(state: str | None) -> None:

@@ -41,14 +41,20 @@ export function occurrenceKey(person: string, profile: Record<string, any>, args
 }
 
 /** Spec 5.1: while records exist in a tool's scope, the tool cannot move to another scope or drop its occurrence,
- * or an order that already ran could run again. Moving records is the store owner's job. This compares with the
- * profile registered earlier in this process; a durable store must also remember each tool's scope across restarts. */
+ * or an order that already ran could run again. Moving records is the store owner's job. `old` is the profile
+ * registered earlier in this process. On a first registration, records under the tool's own name (it ran without a
+ * scope before a restart) still block a named scope. A move between named scopes across a restart needs a durable
+ * store that remembers each tool's scope. */
 export function checkScopeChange(store: OccurrenceStore, old: Record<string, any> | null, next: Record<string, any>): void {
-  if (old === null || !Object.hasOwn(old, "occurrence")) return;
-  if (scope(old) === scope(next) && Object.hasOwn(next, "occurrence")) return;
-  if (store.hasScope === undefined || store.hasScope(scope(old))) {
-    throw new Error(`${old.tool} has occurrence records in ${scope(old)}; move them before changing its occurrence or scope`);
+  const refuse = (tool: string, s: string) => { throw new Error(`${tool} has occurrence records in ${s}; move them before changing its occurrence or scope`); };
+  if (old === null) {
+    const own = scope({ tool: next.tool });
+    if (Object.hasOwn(next, "occurrence_scope") && store.hasScope !== undefined && store.hasScope(own)) refuse(next.tool, own);
+    return;
   }
+  if (!Object.hasOwn(old, "occurrence")) return;
+  if (scope(old) === scope(next) && Object.hasOwn(next, "occurrence")) return;
+  if (store.hasScope === undefined || store.hasScope(scope(old))) refuse(old.tool, scope(old));
 }
 
 function refuse(state: string | null): void {
