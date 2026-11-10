@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Gate, generate, KeySet, makeConsent, NeedsConsent, OACError, tokenDigest, verifyChain, type DeviceCheck } from "../src/index.ts";
+import { Gate, generate, KeySet, makeConsent, MemoryOccurrences, NeedsConsent, OACError, tokenDigest, verifyChain, type DeviceCheck } from "../src/index.ts";
 import { passkeyProof } from "../src/testing.ts";
 
 const EX = "https://app.example/oac", SIGNER = "https://signer.example", PERSON = "person:1";
@@ -101,4 +101,45 @@ test("gate: two pay tools with one provider scope share an order", async () => {
   await assert.rejects(gate.run("pay_express", args, () => "paid", { person: PERSON }), (e: any) => e.code === "duplicate_occurrence");
   gate.profile("stripe:acct_1", { effect: "write", undo: "native", windowS: 600, otherArgs: ["order"], occurrence: "order" });
   await gate.run("stripe:acct_1", { order: "ord_1" }, () => "held", { person: PERSON, tainted: false });
+});
+
+test("gate: a tool cannot move to another order scope while it has orders", async () => {
+  const key = generate();
+  const gate = new Gate({ executor: EX, key: generate(), signers: new KeySet({ [SIGNER]: [key.jwk] }) });
+  const pay = (occurrenceScope?: string) => gate.profile("pay_order", { effect: "pay", undo: "compensate", windowS: 86400,
+    otherArgs: ["order"], occurrence: "order", occurrenceScope, binds: { amount_minor: "amount", currency: "currency", payee: "shop" } });
+  pay();
+  pay("stripe:acct_1"); // no orders yet: allowed
+  const args = { amount: 1800, currency: "USD", shop: "Sweetgreen", order: "ord_1" };
+  let p: any;
+  await assert.rejects(gate.run("pay_order", args, () => "paid", { person: PERSON }), (e: any) => { p = e.preview; return e instanceof NeedsConsent; });
+  const payment = { rail: "stripe_link", ref: "lsrq_test_1", amount_minor: 1800, currency: "USD", payee: "Sweetgreen" };
+  assert.ok(gate.acceptConsent(makeConsent({ key, iss: SIGNER, sub: PERSON, aud: EX, previews: [p], now: p.iat + 1, payment })));
+  await gate.run("pay_order", args, () => "paid", { person: PERSON });
+  pay("stripe:acct_1"); // the same scope again: allowed
+  assert.throws(() => pay("stripe:acct_2"), /move them before changing/);
+  assert.throws(() => pay(), /move them before changing/);
+  // the refused change left the profile as it was, so the paid order still cannot run again
+  await assert.rejects(gate.run("pay_order", args, () => "paid", { person: PERSON }), (e: any) => e.code === "duplicate_occurrence");
+  // a store that cannot list a scope refuses every scope change
+  const opaque = new Gate({ executor: EX, key: generate(), signers: new KeySet({}),
+    occurrences: { claim: () => null, finish: () => {}, release: () => {}, state: () => null } });
+  opaque.profile("pay_order", { effect: "pay", undo: "compensate", windowS: 86400, otherArgs: ["order"], occurrence: "order",
+    binds: { amount_minor: "amount", currency: "currency", payee: "shop" } });
+  assert.throws(() => opaque.profile("pay_order", { effect: "pay", undo: "compensate", windowS: 86400, otherArgs: ["order"],
+    occurrence: "order", occurrenceScope: "stripe:acct_1", binds: { amount_minor: "amount", currency: "currency", payee: "shop" } }));
+});
+
+test("gate: after a restart, a tool with its own records cannot take a scope", async () => {
+  // what a durable store kept from the last run: an order paid while pay_order had no scope
+  const store = new MemoryOccurrences([[[PERSON, "tool:pay_order", "ord_1"], "ok"]]);
+  const gate = new Gate({ executor: EX, key: generate(), signers: new KeySet({}), occurrences: store });
+  const pay = (occurrenceScope?: string) => ({ effect: "pay", undo: "compensate", windowS: 86400, otherArgs: ["order"], occurrence: "order",
+    occurrenceScope, binds: { amount_minor: "amount", currency: "currency", payee: "shop" } });
+  assert.throws(() => gate.profile("pay_order", pay("stripe:acct_1")), /move them before changing/);
+  gate.profile("pay_order", pay()); // as before the restart: allowed, and the order still cannot run twice
+  const args = { amount: 1800, currency: "USD", shop: "Sweetgreen", order: "ord_1" };
+  await assert.rejects(gate.run("pay_order", args, () => "paid", { person: PERSON }), (e: any) => e.code === "duplicate_occurrence");
+  // a fresh store (nothing kept) never blocks a first registration with a scope
+  new Gate({ executor: EX, key: generate(), signers: new KeySet({}) }).profile("pay_order", pay("stripe:acct_1"));
 });

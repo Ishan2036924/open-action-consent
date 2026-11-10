@@ -168,6 +168,10 @@ async def test_a_tool_error_with_an_occurrence_blocks_a_repeat_until_resolved() 
     assert again.is_error and "duplicate_occurrence" in again.content[0].text
     chain = verify_chain(oac.receipts[PERSON], keys=KeySet({EXECUTOR: [oac.key.jwk]}), executor=EXECUTOR)
     assert [r["outcome"] for r in chain] == ["unknown", "ok"]
+    # the slot ran, so the tool can neither move to another scope nor drop its occurrence, where it could run again
+    for change in ({"occurrence": "slot", "occurrence_scope": "provider:2"}, {}):
+        with pytest.raises(ValueError):
+            oac.profile("hold_slot", effect="write", undo="native", window_s=600, other_args=["slot"], **change)
 
 
 async def test_a_server_that_needs_a_passkey_runs_only_with_a_proof() -> None:

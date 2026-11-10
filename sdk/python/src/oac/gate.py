@@ -21,7 +21,8 @@ from oac import shapes
 from oac.consent import MemoryNonces, NonceStore, verify_consent
 from oac.errors import OACError
 from oac.jws import KeySet, SigningKey, digest, token_digest, verify
-from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, check_open, claim, occurrence_key, resolve, scope
+from oac.occurrence import (Key, MemoryOccurrences, OccurrenceStore, check_open, check_scope_change, claim, occurrence_key,
+                            resolve, scope)
 from oac.preview import action_digest, build_preview
 from oac.receipts import make_receipt
 from oac.tiers import tier_for
@@ -88,7 +89,9 @@ class Gate:
             doc["occurrence"] = occurrence
         if occurrence_scope:
             doc["occurrence_scope"] = occurrence_scope
-        self.profiles[tool] = shapes.profile(doc)
+        checked = shapes.profile(doc)
+        check_scope_change(self.occurrences, self.profiles.get(tool), checked)
+        self.profiles[tool] = checked
         return doc
 
     def _profile(self, tool: str) -> dict[str, Any]:

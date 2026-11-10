@@ -24,6 +24,9 @@ class OccurrenceStore(Protocol):
 
     def state(self, key: Key) -> str | None: ...
 
+    # Optional: has_scope(scope) -> bool, whether any record uses that scope. With a store that lacks it,
+    # a gate refuses every change to a tool's occurrence or scope (see check_scope_change).
+
 
 class MemoryOccurrences:
     """For tests and examples. A production store keeps the same states in a table with a unique key."""
@@ -51,6 +54,10 @@ class MemoryOccurrences:
     def state(self, key: Key) -> str | None:
         return self._states.get(key)
 
+    def has_scope(self, scope: str) -> bool:
+        with self._lock:
+            return any(k[1] == scope for k in self._states)
+
 
 def scope(profile: Mapping[str, Any]) -> str:
     """Where the profile's occurrence ids are unique: its occurrence_scope, else the tool itself.
@@ -62,6 +69,30 @@ def scope(profile: Mapping[str, Any]) -> str:
 def occurrence_key(person: str, profile: Mapping[str, Any], args: Mapping[str, Any]) -> Key | None:
     name = profile.get("occurrence")
     return None if name is None else (person, scope(profile), args[name])
+
+
+def _records_in(tool: str, where: str) -> ValueError:
+    return ValueError(f"{tool} has occurrence records in {where}; move them before changing its occurrence or scope")
+
+
+def check_scope_change(store: OccurrenceStore, old: Mapping[str, Any] | None, new: Mapping[str, Any]) -> None:
+    """Spec 5.1: while records exist in a tool's scope, the tool cannot move to another scope or drop its
+    occurrence, or an order that already ran could run again. Moving records is the store owner's job.
+    `old` is the profile registered earlier in this process. On a first registration, records under the
+    tool's own name (it ran without a scope before a restart) still block a named scope. A move between
+    named scopes across a restart needs a durable store that remembers each tool's scope."""
+    has_scope = getattr(store, "has_scope", None)
+    if old is None:
+        own = scope({"tool": new["tool"]})
+        if new.get("occurrence_scope") is not None and has_scope is not None and has_scope(own):
+            raise _records_in(new["tool"], own)
+        return
+    if old.get("occurrence") is None:
+        return
+    if scope(old) == scope(new) and new.get("occurrence") is not None:
+        return
+    if has_scope is None or has_scope(scope(old)):
+        raise _records_in(old["tool"], scope(old))
 
 
 def _refuse(state: str | None) -> None:

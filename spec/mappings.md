@@ -30,7 +30,7 @@ relying on a row.
 
 | Other | Its object | OAC counterpart | How they meet |
 |---|---|---|---|
-| IETF draft-schrock-ep-authorization-receipts-13 ([datatracker](https://datatracker.ietf.org/doc/draft-schrock-ep-authorization-receipts/)) | authorization context over a JCS action; WebAuthn challenge = context hash | Consent plus a device proof (spec 3.6) | the proof is a plain WebAuthn assertion whose challenge is SHA-256 of the exact Consent token; `signer.kind = "device"` alone is only the signer's claim. The signed-byte mapping between an OAC device proof and an EP authorization context is still open; shared test vectors are proposed |
+| IETF draft-schrock-ep-authorization-receipts-13 ([datatracker](https://datatracker.ietf.org/doc/draft-schrock-ep-authorization-receipts/)) | authorization context over a JCS action; WebAuthn challenge = context hash | Consent plus a device proof (spec 3.6) | the proof is a plain WebAuthn assertion whose challenge is SHA-256 of the exact Consent token; `signer.kind = "device"` alone is only the signer's claim. An OAC assertion cannot double as an EP one; the bridge is the pinned profile below |
 | IETF agent audit-trail and SCITT agent drafts | hash-chained logs, COSE records | Receipt chain | export receipts into those logs; OAC does not need its own log format |
 | Acta, delegation and counter-sign receipt drafts | signed receipts | Receipt | export target |
 | ISO/IEC TS 27560 | consent record for personal-data processing | Consent / Mandate | a Mandate can be summarized as a 27560 record for privacy records |
@@ -39,3 +39,16 @@ relying on a row.
 | IETF SCITT | transparency log of signed statements | seal + receipt | register seals as signed statements for third-party proof of time |
 | Web Bot Auth (IETF WG) | the agent's HTTP message signatures to websites | executor key | the executor may publish one key directory for both |
 | RFC 9396 RAR, OpenID CIBA | typed authorization details; out-of-band approval with a short binding message | Preview fields; URL-mode consent | an authorization server can render a Preview and return a Consent instead of only a token |
+
+### EP Class A bridge (draft, not implemented or tested)
+
+One WebAuthn assertion signs one challenge, so an OAC device proof (challenge: the hash of the exact Consent token)
+and an EP Class A signoff (challenge: the hash of the complete JCS Authorization Context) are two assertions. Neither
+stands in for the other. A pinned native-binding profile, proposed by the EP draft's author:
+
+1. Verify the OAC objects natively (Consent, Preview binding, device proof per 3.6) and keep their exact token bytes.
+2. Build the EP Authorization Context so that it carries the OAC Consent's `token_digest`, binding the two.
+3. Obtain the EP assertion over the hash of that complete JCS context, with EP's own checks.
+
+Which EP field carries the digest, and which inputs each side must trust, follow the EP draft and are still being
+settled with its author. Shared vectors for the bridge come with the first implementation.

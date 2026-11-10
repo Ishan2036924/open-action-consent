@@ -5,7 +5,7 @@ import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";
 import { digest, KeySet, tokenDigest, verify, type SigningKey } from "./jws.ts";
 import { MemoryNonces, verifyConsent, type NonceStore } from "./consent.ts";
-import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, scope, type OccurrenceKey, type OccurrenceStore } from "./occurrence.ts";
+import { checkOpen, checkScopeChange, claim, MemoryOccurrences, occurrenceKey, resolve, scope, type OccurrenceKey, type OccurrenceStore } from "./occurrence.ts";
 import { actionDigest, buildPreview } from "./preview.ts";
 import { makeReceipt } from "./receipts.ts";
 import { tierFor } from "./tiers.ts";
@@ -62,7 +62,9 @@ export class Gate {
     if (p.otherArgs?.length) doc.other_args = [...p.otherArgs];
     if (p.occurrence) doc.occurrence = p.occurrence;
     if (p.occurrenceScope) doc.occurrence_scope = p.occurrenceScope;
-    this.profiles[tool] = shapes.profile(doc);
+    const checked = shapes.profile(doc);
+    checkScopeChange(this.occurrences, Object.hasOwn(this.profiles, tool) ? this.profiles[tool] : null, checked);
+    this.profiles[tool] = checked;
     return doc;
   }
 
