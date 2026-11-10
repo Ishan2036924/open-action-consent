@@ -22,7 +22,8 @@ except ImportError as e:  # the optional dependency is not installed
     raise ImportError('oac.mcp needs the MCP SDK: pip install "open-action-consent[mcp]"') from e
 
 from oac import KeySet, MemoryNonces, OACError, SigningKey, digest, make_receipt, shapes, tier_for, token_digest, verify, verify_consent
-from oac.occurrence import Key, MemoryOccurrences, OccurrenceStore, check_open, claim, occurrence_key, resolve, scope
+from oac.occurrence import (Key, MemoryOccurrences, OccurrenceStore, check_open, check_scope_change, claim, occurrence_key,
+                            resolve, scope)
 from oac.preview import action_digest, build_preview
 from oac.webauthn import DeviceCheck
 
@@ -101,7 +102,9 @@ class OACExtension(Extension):
             doc["occurrence"] = occurrence
         if occurrence_scope:
             doc["occurrence_scope"] = occurrence_scope
-        self.profiles[tool] = shapes.profile(doc)
+        checked = shapes.profile(doc)
+        check_scope_change(self.occurrences, self.profiles.get(tool), checked)
+        self.profiles[tool] = checked
         return {PROFILE_KEY: doc}
 
     # the consent page / signer side calls these

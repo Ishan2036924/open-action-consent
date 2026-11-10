@@ -24,6 +24,9 @@ class OccurrenceStore(Protocol):
 
     def state(self, key: Key) -> str | None: ...
 
+    # Optional: has_scope(scope) -> bool, whether any record uses that scope. A gate whose store lacks it
+    # refuses every change to a tool's occurrence scope (see check_scope_change).
+
 
 class MemoryOccurrences:
     """For tests and examples. A production store keeps the same states in a table with a unique key."""
@@ -51,6 +54,10 @@ class MemoryOccurrences:
     def state(self, key: Key) -> str | None:
         return self._states.get(key)
 
+    def has_scope(self, scope: str) -> bool:
+        with self._lock:
+            return any(k[1] == scope for k in self._states)
+
 
 def scope(profile: Mapping[str, Any]) -> str:
     """Where the profile's occurrence ids are unique: its occurrence_scope, else the tool itself.
@@ -62,6 +69,16 @@ def scope(profile: Mapping[str, Any]) -> str:
 def occurrence_key(person: str, profile: Mapping[str, Any], args: Mapping[str, Any]) -> Key | None:
     name = profile.get("occurrence")
     return None if name is None else (person, scope(profile), args[name])
+
+
+def check_scope_change(store: OccurrenceStore, old: Mapping[str, Any] | None, new: Mapping[str, Any]) -> None:
+    """Spec 5.1: a tool's occurrence scope cannot change while records exist in the old one, or an order
+    that already ran could run again under the new scope. Moving records is the store owner's job."""
+    if old is None or old.get("occurrence") is None or scope(old) == scope(new):
+        return
+    has_scope = getattr(store, "has_scope", None)
+    if has_scope is None or has_scope(scope(old)):
+        raise ValueError(f"{old['tool']} has occurrence records in {scope(old)}; move them before changing its scope")
 
 
 def _refuse(state: str | None) -> None:

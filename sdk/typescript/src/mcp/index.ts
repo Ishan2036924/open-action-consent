@@ -4,7 +4,7 @@ import * as crypto from "node:crypto";
 import { inputRequired, inputResponse, type McpServer } from "@modelcontextprotocol/server";
 import { actionDigest, buildPreview, digest, KeySet, makeReceipt, MemoryNonces, OACError, shapes, tierFor, tokenDigest, verify, verifyConsent, type SigningKey } from "../index.ts";
 import { fits, type DevicePolicy } from "../gate.ts";
-import { checkOpen, claim, MemoryOccurrences, occurrenceKey, resolve, scope, type OccurrenceKey, type OccurrenceStore } from "../occurrence.ts";
+import { checkOpen, checkScopeChange, claim, MemoryOccurrences, occurrenceKey, resolve, scope, type OccurrenceKey, type OccurrenceStore } from "../occurrence.ts";
 
 export const ID = "com.atlasiw/oac";
 export const PROFILE_KEY = `${ID}-profile`, PREVIEW_KEY = `${ID}-preview`, RECEIPT_KEY = `${ID}-receipt`, CONSENT_KEY = `${ID}-consent`;
@@ -58,7 +58,9 @@ export class OAC {
     if (p.otherArgs?.length) doc.other_args = [...p.otherArgs];
     if (p.occurrence) doc.occurrence = p.occurrence;
     if (p.occurrenceScope) doc.occurrence_scope = p.occurrenceScope;
-    this.profiles[tool] = shapes.profile(doc);
+    const checked = shapes.profile(doc);
+    checkScopeChange(this.occurrences, Object.hasOwn(this.profiles, tool) ? this.profiles[tool] : null, checked);
+    this.profiles[tool] = checked;
     return { [PROFILE_KEY]: doc };
   }
 

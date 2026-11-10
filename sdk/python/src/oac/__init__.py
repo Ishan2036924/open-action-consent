@@ -13,7 +13,7 @@ from oac.tiers import tier_for
 from oac.undo import check_undo, make_undo
 from oac.webauthn import DeviceCheck, verify_device_proof
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __all__ = [
     "CODES",
     "ActionFailed",

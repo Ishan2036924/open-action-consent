@@ -11,6 +11,8 @@ export interface OccurrenceStore {
   /** Drop a claim whose action never started. */
   release(key: OccurrenceKey): void;
   state(key: OccurrenceKey): string | null;
+  /** Optional: whether any record uses this scope. Without it, every change to a tool's occurrence scope is refused. */
+  hasScope?(scope: string): boolean;
 }
 
 /** For tests and examples. A real store keeps these states in a table with a unique key. */
@@ -26,6 +28,7 @@ export class MemoryOccurrences implements OccurrenceStore {
   finish(key: OccurrenceKey, outcome: string): void { this.s.set(JSON.stringify(key), outcome); }
   release(key: OccurrenceKey): void { this.s.delete(JSON.stringify(key)); }
   state(key: OccurrenceKey): string | null { return this.s.get(JSON.stringify(key)) ?? null; }
+  hasScope(scope: string): boolean { return [...this.s.keys()].some((k) => JSON.parse(k)[1] === scope); }
 }
 
 /** Where the profile's occurrence ids are unique: its occurrence_scope, else the tool itself.
@@ -35,6 +38,15 @@ export const scope = (profile: Record<string, any>): string =>
 
 export function occurrenceKey(person: string, profile: Record<string, any>, args: Record<string, unknown>): OccurrenceKey | null {
   return Object.hasOwn(profile, "occurrence") ? [person, scope(profile), args[profile.occurrence] as string] : null;
+}
+
+/** Spec 5.1: a tool's occurrence scope cannot change while records exist in the old one, or an order that already
+ * ran could run again under the new scope. Moving records is the store owner's job. */
+export function checkScopeChange(store: OccurrenceStore, old: Record<string, any> | null, next: Record<string, any>): void {
+  if (old === null || !Object.hasOwn(old, "occurrence") || scope(old) === scope(next)) return;
+  if (store.hasScope === undefined || store.hasScope(scope(old))) {
+    throw new Error(`${old.tool} has occurrence records in ${scope(old)}; move them before changing its scope`);
+  }
 }
 
 function refuse(state: string | null): void {

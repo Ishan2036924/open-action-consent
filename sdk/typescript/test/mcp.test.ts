@@ -130,6 +130,9 @@ test("a tool error with an occurrence blocks a repeat until it is resolved", asy
   assert.deepEqual(log, ["held s_1"]);
   const chain = verifyChain(oac.receipts.get(PERSON)!, { keys: new KeySet({ [EXECUTOR]: [oac.o.key.jwk] }), executor: EXECUTOR });
   assert.deepEqual(chain.map((r) => r.outcome), ["unknown", "ok"]);
+  // the slot ran, so the tool cannot move to another occurrence scope where it could run again
+  assert.throws(() => oac.profile("hold_slot", { effect: "write", undo: "native", windowS: 600, otherArgs: ["slot"], occurrence: "slot",
+    occurrenceScope: "provider:2" }), /move them before changing its scope/);
 });
 
 test("a server that needs a passkey runs only with a proof", async () => {

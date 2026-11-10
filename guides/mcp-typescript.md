@@ -25,7 +25,8 @@ Behaviour matches the [Python plug-in](mcp-python.md): tier A/B run (B with a re
 `_meta["com.atlasiw/oac-receipt"]`); tier C answers `input_required` with a URL-mode elicitation and runs only with
 a valid signed Consent; tier D, unprofiled tools and undeclared arguments never run. Passkeys work the same way:
 `device: (person, action) => check | null` in the options, `oac.acceptConsent(token, proof)` from the signer page,
-and `oac.deviceProofs` keeps them. A profile's `occurrenceScope` shares order ids across tools.
+and `oac.deviceProofs` keeps them. A profile's `occurrenceScope` shares order ids across tools;
+once a tool has orders, registering it again with another scope throws (move the records in your store first).
 
 Differences from the Python SDK, handled here:
 
