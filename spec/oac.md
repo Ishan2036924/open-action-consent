@@ -572,16 +572,22 @@ A deployment that claims OAC protects an effect (an action of tier C) MUST meet 
 3. **Pass the bypass check.** Build and verify a Consent for the action, do not present it, then try the effect
    from wherever an agent or tool server runs: through every tool it can call, and directly against the service with
    every credential found there. The effect MUST NOT happen. The check runs again whenever a key, tool server or
-   route is added.
+   route is added. Each attempt is recorded in three separate fields: the route, whether a decision exists for that
+   exact action, and whether the effect occurred. One combined field can report a pass for an action that ran twice,
+   once with a decision and once without.
 
-The deployment SHOULD publish a coverage statement, one row per effect, for example:
+The deployment SHOULD publish a coverage statement, one row per effect: the key and who holds it; every other route
+that can reach the effect (other interfaces, batch and repair jobs, internal callers), with the credential it holds and
+the control it passes through, or that it passes through none; and the bypass check result. For example:
 
-| Effect | Key | Held by | Other routes | Bypass check |
+| Effect | Key | Held by | Other routes (credential, control) | Bypass check |
 |---|---|---|---|---|
 | `send_email` | mail OAuth grant, send scope | executor only | none | refused, 2026-11-06 |
-| `pay_order` | rail credential (9.3) | executor only, never stored | provider dashboard (people only) | refused, 2026-11-06 |
+| `pay_order` | rail credential (9.3) | executor only, never stored | provider dashboard (staff login, people only) | refused, 2026-11-06 |
 
 A coverage result is one of four, reported as such and never merged into one score: `covered` (complete statement,
 check refused every route), `bypass` (an effect happened without the executor), `incomplete` (a key or route is
 missing from the statement, or the check skipped one), `not_checked`. Only `covered` supports a claim that OAC
-protects the effect. A bypass is a deployment failure, not a failure of the vectors.
+protects the effect. A bypass is a deployment failure, not a failure of the vectors. An effect seen on a route the
+statement does not list is a `bypass` and also shows the statement is wrong, so the whole claim falls, not only that
+run. `covered` speaks for the listed routes: it is coverage of the inventory, not proof about the whole system.
