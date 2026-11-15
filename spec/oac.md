@@ -562,7 +562,7 @@ It does not show that a deployment uses them on every route to an effect.
 
 ### 13.2 Deployments
 
-A deployment that claims OAC protects an effect (an action of tier C) MUST meet three rules:
+A deployment that claims OAC protects an effect (an action of tier C) MUST meet four rules:
 
 1. **Name the key.** For each such effect, name the credential that performs it: an OAuth grant and its scope, an API
    key, a database role with write access, a signing key, a payment rail's credential.
@@ -575,19 +575,26 @@ A deployment that claims OAC protects an effect (an action of tier C) MUST meet 
    route is added. Each attempt is recorded in three separate fields: the route, whether a decision exists for that
    exact action, and whether the effect occurred. One combined field can report a pass for an action that ran twice,
    once with a decision and once without.
+4. **Keep the records.** The records the checks rely on MUST survive restarts and redeploys, under the same atomic
+   rules: used `jti`s until they expire (6.3), Mandate usage counts (7.3), occurrence records and the
+   `occurrence_scope` each tool had (5.1), and Receipts with the token bytes they name (3.3, 8). Otherwise a restart
+   lets a used Consent run again, resets a Mandate's limits, or makes a paid order look new. The reference SDKs'
+   stores live in memory; passing the vectors does not show that a deployment keeps its records.
 
 The deployment SHOULD publish a coverage statement, one row per effect: the key and who holds it; every other route
 that can reach the effect (other interfaces, batch and repair jobs, internal callers), with the credential it holds and
-the control it passes through, or that it passes through none; and the bypass check result. For example:
+the control it passes through, or that it passes through none; where its records are kept (rule 4); and the bypass
+check result. For example:
 
-| Effect | Key | Held by | Other routes (credential, control) | Bypass check |
-|---|---|---|---|---|
-| `send_email` | mail OAuth grant, send scope | executor only | none | refused, 2026-11-06 |
-| `pay_order` | rail credential (9.3) | executor only, never stored | provider dashboard (staff login, people only) | refused, 2026-11-06 |
+| Effect | Key | Held by | Other routes (credential, control) | Records | Bypass check |
+|---|---|---|---|---|---|
+| `send_email` | mail OAuth grant, send scope | executor only | none | database | refused, 2026-11-06 |
+| `pay_order` | rail credential (9.3) | executor only, never stored | provider dashboard (staff login, people only) | database, with each tool's scope | refused, 2026-11-06 |
 
 A coverage result is one of four, reported as such and never merged into one score: `covered` (complete statement,
-check refused every route), `bypass` (an effect happened without the executor), `incomplete` (a key or route is
-missing from the statement, or the check skipped one), `not_checked`. Only `covered` supports a claim that OAC
-protects the effect. A bypass is a deployment failure, not a failure of the vectors. An effect seen on a route the
-statement does not list is a `bypass` and also shows the statement is wrong, so the whole claim falls, not only that
-run. `covered` speaks for the listed routes: it is coverage of the inventory, not proof about the whole system.
+records that survive a restart, check refused every route), `bypass` (an effect happened without the executor),
+`incomplete` (a key or route is missing from the statement, the records do not survive a restart, or the check
+skipped one), `not_checked`. Only `covered` supports a claim that OAC protects the effect. A bypass is a deployment
+failure, not a failure of the vectors. An effect seen on a route the statement does not list is a `bypass` and also
+shows the statement is wrong, so the whole claim falls, not only that run. `covered` speaks for the listed routes: it
+is coverage of the inventory, not proof about the whole system.

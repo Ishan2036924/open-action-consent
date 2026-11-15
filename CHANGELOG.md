@@ -9,6 +9,10 @@
 - Release pages: each version tag now also gets its GitHub release page, made from its section in this file
   (`tools/release_notes.py`), and CI fails while the SDK version has no dated section here. The missing pages for
   0.2.1 to 0.4.1 were added on 2026-11-15 with the same tool.
+- Deployment coverage (13.2), a fourth rule: keep the records. Used `jti`s, Mandate usage counts, occurrence records
+  with the scope each tool had, and Receipts must survive restarts under the same atomic rules, so a paid order never
+  looks new after a restart; passing the vectors does not show this. The coverage statement says where the records
+  are kept, and `covered` needs records that survive a restart. Raised by the EP draft's author.
 
 ## 0.4.1 (2026-11-09)
 
