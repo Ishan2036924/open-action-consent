@@ -1,11 +1,14 @@
 # Changelog
 
-## Unreleased (spec text only)
+## Unreleased (no package changes)
 
 - Deployment coverage (13.2): each bypass attempt records the route, whether a decision exists for that exact action,
   and whether the effect occurred as separate fields; the coverage statement lists every other route to an effect
   with the credential it holds and the control it passes through; an effect on an unlisted route breaks the whole claim; and
   `covered` means coverage of the listed routes, not of the whole system. From ceyptoslim's write-up on MCP SEP-2848.
+- Release pages: each version tag now also gets its GitHub release page, made from its section in this file
+  (`tools/release_notes.py`), and CI fails while the SDK version has no dated section here. The missing pages for
+  0.2.1 to 0.4.1 were added on 2026-11-15 with the same tool.
 
 ## 0.4.1 (2026-11-09)
 

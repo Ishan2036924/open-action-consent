@@ -27,6 +27,8 @@ jobs:
       - name: core + MCP tests (other integrations skip without their extras)
         run: cd sdk/python && python -m pytest -q -rs
       - run: python tools/check_schemas.py
+      - name: release notes come from the changelog, and the SDK version has a dated section
+        run: python tools/test_release_notes.py
       - run: python examples/mcp-server/demo.py
       - name: vector generator agrees with the SDK
         run: python tools/make_vectors.py

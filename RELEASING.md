@@ -50,3 +50,6 @@ for an explicit approval click.
 3. `git tag vX.Y.Z && git push origin vX.Y.Z`
 4. PyPI publishes by itself. For npm, open <https://www.npmjs.com/package/open-action-consent> → **Staged Packages**,
    check the version and files, and click **Approve** (two-factor login). Until then the version is not installable.
+5. The workflow then makes the GitHub release page from the version's changelog section (`tools/release_notes.py`).
+   CI fails while `sdk/python/pyproject.toml` names a version that has no dated section, so a missing one shows up
+   before you tag. If the page step still fails, run its two commands from `release.yml` by hand.

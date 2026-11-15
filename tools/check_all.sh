@@ -8,4 +8,5 @@ PYTHONPATH=sdk/python/src "$PY" -m oac.conformance vectors
 node sdk/typescript/src/conformance.ts vectors
 if [ -d sdk/typescript/node_modules/typescript ]; then (cd sdk/typescript && npm run build --silent && node dist/conformance.js ../../vectors && npm test --silent); else echo "skip: TypeScript build and integration tests (npm ci in sdk/typescript)"; fi
 if "$PY" -c "import jsonschema" 2>/dev/null; then "$PY" tools/check_schemas.py; else echo "skip: schemas (pip install jsonschema)"; fi
+"$PY" tools/test_release_notes.py  # release pages come from the changelog; the SDK version needs a dated section
 "$PY" examples/mcp-server/demo.py > /dev/null && echo "demo: ok"
