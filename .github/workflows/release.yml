@@ -1,6 +1,7 @@
 name: release
 
-# On a version tag: publish to PyPI, stage on npm for approval. Trusted publishing, no stored tokens. See RELEASING.md.
+# On a version tag: publish to PyPI, stage on npm for approval, then make the GitHub release page from CHANGELOG.md.
+# Trusted publishing, no stored tokens. See RELEASING.md.
 on:
   push:
     tags: ["v*"]
@@ -56,3 +57,23 @@ jobs:
           version=$(node -p "require('./package.json').version")
           if npm view "open-action-consent@$version" version >/dev/null 2>&1; then echo "skip: already published"; exit 0; fi
           npm stage publish --access public --provenance
+
+  github-release:
+    needs: [pypi, npm]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: release page from this version's changelog section (skipped if the page exists)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "skip: page exists"; exit 0; fi
+          python3 tools/release_notes.py "${TAG#v}" > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "OAC ${TAG#v}" \
+            --notes-file "$RUNNER_TEMP/notes.md"
