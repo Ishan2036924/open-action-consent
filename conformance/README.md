@@ -54,3 +54,5 @@ node sdk/typescript/src/conformance.ts vectors                     # TypeScript 
 
 Regenerate after a spec change with `python tools/make_vectors.py`. Its expected results are written by hand from
 the spec; the script stops if the Python SDK disagrees.
+
+Outside test sets: `external/probityai.md` records a run of the probityai agent-evidence-vectors corpora (receipt chain end and anchored chain) against the Python SDK, with the adapter in `external/probityai_adapter.py`.
