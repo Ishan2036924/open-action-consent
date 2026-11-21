@@ -60,7 +60,8 @@ except PackageNotFoundError:  # a source checkout of LiteLLM: nothing to compare
 
 CALL, LIST = "call_mcp_tool", "list_mcp_tools"
 CONSENT_HEADER = "x-oac-consent"
-PERSON_FIELDS = {"user_id": "user_api_key_user_id", "team_id": "user_api_key_team_id"}
+# Whose action it is: a field of the key LiteLLM authenticated (its UserAPIKeyAuth), never of the request
+PERSON_FIELDS = ("user_id", "team_id")
 
 
 def _refuse(status: int, kind: str, message: str, **extra: Any) -> HTTPException:
@@ -129,7 +130,7 @@ class OACGuardrail(CustomGuardrail):
         if not gate.profiles:
             raise ValueError("OACGuardrail needs profiles or profiles_file: without them every tool call is refused")
         self.tainted = bool(tainted)
-        self.person_field = PERSON_FIELDS[person_from]
+        self.person_from = person_from
         self.consent_url = consent_url
         self.receipts_dir = Path(receipts_dir).expanduser() if receipts_dir else None
         self.ticket_timeout_s = ticket_timeout_s
@@ -194,11 +195,12 @@ class OACGuardrail(CustomGuardrail):
             raise _refuse(403, "oac_refused", "arguments are not an object", code="malformed")
         args = json.loads(json.dumps(args))  # a private copy: what is approved is what is pinned below
         metadata = data.get("metadata") if isinstance(data.get("metadata"), Mapping) else {}
-        person = data.get(self.person_field) or metadata.get(self.person_field)
+        # the person is whoever LiteLLM authenticated for this call; `data` and its metadata are request material that
+        # a caller or an earlier guardrail can fill with any name, so they are never read for this
+        person = getattr(user_api_key_dict, self.person_from, None)
         if not isinstance(person, str) or not person:
-            raise _refuse(403, "oac_refused", "no person: the calling key has no " + self.person_field.split("_key_")[1],
-                          code="malformed")
-        person = f"{self.person_field.split('_key_')[1]}:{person}"
+            raise _refuse(403, "oac_refused", f"no person: the calling key has no {self.person_from}", code="malformed")
+        person = f"{self.person_from}:{person}"
         self._load_chain(person)
         headers = metadata.get("headers") if isinstance(metadata.get("headers"), Mapping) else {}
         token = next((v for k, v in headers.items() if str(k).lower() == CONSENT_HEADER), None)

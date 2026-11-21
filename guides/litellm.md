@@ -60,9 +60,10 @@ The arguments checked are the ones that will run: if an earlier guardrail rewrot
 approved, and OAC pins them so nothing after it can change them. OAC refuses every call while another `pre_mcp_call`
 guardrail is registered after it, so list it last.
 
-The person comes from LiteLLM's own key check (`user_id` by default), never from anything the caller writes in a
-request. Arguments never carry authority: a model that writes "approved" into them, or pastes a real Consent into a
-text field, gets a refusal or a new Preview.
+The person comes from the key LiteLLM authenticated for the call (the `user_api_key_dict` it hands the hook: its
+`user_id` by default, or `team_id`), never from the request: a person named in the request body or its metadata is
+ignored, and a key without one is refused. Arguments never carry authority: a model that writes "approved" into
+them, or pastes a real Consent into a text field, gets a refusal or a new Preview.
 
 ## Getting the Consent to the gateway
 
