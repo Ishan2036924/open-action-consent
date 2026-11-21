@@ -98,3 +98,57 @@ def check_seals(chain: Sequence[Mapping[str, Any]], tokens: Sequence[str], *, se
             raise OACError("subject_mismatch")
         if s["executor"] != executor or s["seq"] not in by_seq or s["head"] != token_digest(by_seq[s["seq"]]):
             raise OACError("seal_mismatch", "the seal does not match this chain")
+
+
+def independent(iss: str, executor: str, code: str) -> None:
+    """A witness of the executor must not be the executor (spec 8.4, 8.5)."""
+    if iss == executor:
+        raise OACError(code, "the executor cannot vouch for itself")
+
+
+def _place(chain: Sequence[Mapping[str, Any]], tokens: Sequence[str], seq: int, head: str | None) -> bool:
+    """Check a head claimed at `seq` against the export. True when the export reaches back to it."""
+    if not chain or seq > chain[-1]["seq"]:
+        raise OACError("chain_truncated", f"the export ends before seq {seq}")
+    first = chain[0]["seq"]
+    if seq < first - 1:
+        return False
+    want = chain[0]["prev"] if seq == first - 1 else token_digest(tokens[seq - first])
+    if head is not None and head != want:
+        raise OACError("seal_mismatch", f"the head at seq {seq} is not the one claimed")
+    return True
+
+
+def verify_export(
+    tokens: Sequence[str],
+    *,
+    keys: KeySet,
+    executor: str,
+    sub: str | None = None,
+    anchors: Sequence[str] = (),
+    anchor_keys: KeySet | None = None,
+    expect: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """verify_chain, then say how much of the export is proven complete by anchors the executor does not hold (spec 8.4)."""
+    chain = verify_chain(tokens, keys=keys, executor=executor, sub=sub)
+    first, last = (chain[0]["seq"], chain[-1]["seq"]) if chain else (None, None)
+    if anchors and anchor_keys is None:
+        raise OACError("malformed", "anchors need the signer's keys")
+    proven, start = None, first == 1
+    for token in anchors:
+        a = verify(token, anchor_keys, SEAL_TYP)
+        shapes.seal(a)
+        independent(a["iss"], executor, "anchor_not_independent")
+        if (sub or (chain[0]["sub"] if chain else a["sub"])) != a["sub"]:
+            raise OACError("subject_mismatch")
+        if a["executor"] != executor:
+            raise OACError("seal_mismatch", "the anchor is for another executor")
+        if _place(chain, tokens, a["seq"], a["head"]):
+            start = start or a["seq"] == first - 1
+            proven = max(proven or 0, a["seq"])
+    if expect is not None:
+        shapes.expectation(expect)
+        _place(chain, tokens, expect["seq"], expect.get("head"))
+    complete = proven is not None and proven == last and start
+    reason = None if complete else "no_anchor" if proven is None else "unanchored_tail" if proven < last else "unanchored_start"
+    return {"first": first, "last": last, "proven_to": proven, "status": "complete" if complete else "prefix", "reason": reason}

@@ -58,6 +58,11 @@ CODES = frozenset(
         # status lists and seals
         "status_unknown",
         "seal_mismatch",
+        # completeness anchors and observations
+        "chain_truncated",
+        "anchor_not_independent",
+        "authority_mismatch",
+        "observer_not_independent",
         # device proofs (WebAuthn)
         "device_proof_missing",
         "device_proof_mismatch",
