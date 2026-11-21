@@ -30,8 +30,8 @@ def part(token: str, i: int) -> dict:
 
 def tokens(inp: dict) -> list[str]:
     out = [inp[k] for k in ("token", "receipt_token", "authority_token") if isinstance(inp.get(k), str)]
-    out += list(inp.get("tokens", [])) + list(inp.get("seals", [])) + list(inp.get("status_lists", {}).values())
-    return out + list(inp.get("anchors", [])) + list(inp.get("observations", []))
+    out += list(inp.get("tokens") or []) + list(inp.get("seals", [])) + list(inp.get("status_lists", {}).values())
+    return out + list(inp.get("anchors") or []) + list(inp.get("observations") or [])
 
 
 checked, errors = 0, []
@@ -48,7 +48,7 @@ for path in sorted((ROOT / "vectors").glob("*.json")):
             objs += [("issuer-metadata", d[1]) for d in inp.get("docs", [])]
             if (inp.get("device") or {}).get("proof"):
                 objs.append(("device-proof", inp["device"]["proof"]))
-            if case["op"] == "coverage":
+            if case["op"] == "coverage" and isinstance(inp.get("statement"), list) and isinstance(inp.get("attempts"), list):
                 objs.append(("coverage", inp))
             for t in tokens(inp):
                 objs.append((TYP[part(t, 0)["typ"]], part(t, 1)))

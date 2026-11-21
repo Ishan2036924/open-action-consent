@@ -531,6 +531,277 @@
    }
   },
   {
+   "name": "export: an anchor under another name but signed with the executor's key",
+   "op": "verify_export",
+   "input": {
+    "tokens": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAxLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwb2xpY3kiOiJzaGEtMjU2OlJTMHZXNDd0bl9BdjlmOWN2eHptbG9OUGpLYVFGNVpSSW1kM29fanNQR1kiLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJyb3V0ZSI6InRhc2stYXBpIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJBIiwidG9vbCI6ImFkZF90YXNrIiwidHlwZSI6InJlY2VpcHQiLCJ1bmRvIjp7ImtpbmQiOiJub25lIn19.P7TeZj9tMUwXGnGxeF2h03HaTojLJvmaxDlolZ3ES_OFBpAiTeABScLJrRE7JvvPtMNP8t0mHZpn22NxKaDpCg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAyLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpWN3Z6R2ZLNUszWXNCWDdtaEFsVFgzRjhzeEN4ZjYyb1N2TXlMYmZVZGVFIiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6Miwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.JdP9xTfcYhvs5Naw3k-NmG2p8dVA7haf7_j8LSHQDWcXhKYh26phZ2iOj1rkija68qYYxY-gZUQlNlSaP3j5Dg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAzLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwb2xpY3kiOiJzaGEtMjU2OlJTMHZXNDd0bl9BdjlmOWN2eHptbG9OUGpLYVFGNVpSSW1kM29fanNQR1kiLCJwcmV2Ijoic2hhLTI1NjpQRmFNUE1FUGVhZ2k3OEhnZWtlX2RGQ3JGYUdEUHRWeDA1UzBxU0dhT0g4IiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6Mywic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.U-6lZqgYIpy7N8kbz2tb_hpMkqVefCGd4RYzu3day1fCk5NokALskfbfWSArkKI4KF3VyoYSZFju9-Yn6PzzBA",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODA0LCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpvTi1lR1RwMkJsRlExcmdtSXdXZWtmYmJheXVETXNmaU9zbGJtUHpGTlNjIiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6NCwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.5OxRU07wgO2p2oE-fOd24v9TpYZGJci35_4KdXyXdg7O9fGcYg-y-oDNcZR7BJR7HfcHUFoAwYzTQIgfQ40pAg"
+    ],
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "anchors": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtc2VhbCtqd3MifQ.eyJleGVjdXRvciI6Imh0dHBzOi8vc2hvcC5leGFtcGxlL29hYyIsImhlYWQiOiJzaGEtMjU2OmxJVUlSSVZsUHdFZVpYX1JZRHdqS1FjTnpSdXp6MWhoY29UamxpOE5sODAiLCJpYXQiOjE3OTM4MzY4MjAsImlzcyI6Imh0dHBzOi8vbm90YXJ5LmV4YW1wbGUiLCJvYWMiOiIwLjIiLCJzZXEiOjQsInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6InNlYWwifQ.jKPVVfiRZMH_F8RpMOaDcxjksJrR8JRmVRPfFmygFs4R1Xq1Yuu6LKdPTRQy4WbtpppGdGEM9MTpm-JB8amUBg"
+    ],
+    "anchor_keys": {
+     "https://notary.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "anchor_not_independent"
+   }
+  },
+  {
+   "name": "export: no anchors given (null)",
+   "op": "verify_export",
+   "input": {
+    "tokens": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAxLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwb2xpY3kiOiJzaGEtMjU2OlJTMHZXNDd0bl9BdjlmOWN2eHptbG9OUGpLYVFGNVpSSW1kM29fanNQR1kiLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJyb3V0ZSI6InRhc2stYXBpIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJBIiwidG9vbCI6ImFkZF90YXNrIiwidHlwZSI6InJlY2VpcHQiLCJ1bmRvIjp7ImtpbmQiOiJub25lIn19.P7TeZj9tMUwXGnGxeF2h03HaTojLJvmaxDlolZ3ES_OFBpAiTeABScLJrRE7JvvPtMNP8t0mHZpn22NxKaDpCg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAyLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpWN3Z6R2ZLNUszWXNCWDdtaEFsVFgzRjhzeEN4ZjYyb1N2TXlMYmZVZGVFIiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6Miwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.JdP9xTfcYhvs5Naw3k-NmG2p8dVA7haf7_j8LSHQDWcXhKYh26phZ2iOj1rkija68qYYxY-gZUQlNlSaP3j5Dg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAzLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwb2xpY3kiOiJzaGEtMjU2OlJTMHZXNDd0bl9BdjlmOWN2eHptbG9OUGpLYVFGNVpSSW1kM29fanNQR1kiLCJwcmV2Ijoic2hhLTI1NjpQRmFNUE1FUGVhZ2k3OEhnZWtlX2RGQ3JGYUdEUHRWeDA1UzBxU0dhT0g4IiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6Mywic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.U-6lZqgYIpy7N8kbz2tb_hpMkqVefCGd4RYzu3day1fCk5NokALskfbfWSArkKI4KF3VyoYSZFju9-Yn6PzzBA",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODA0LCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpvTi1lR1RwMkJsRlExcmdtSXdXZWtmYmJheXVETXNmaU9zbGJtUHpGTlNjIiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6NCwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.5OxRU07wgO2p2oE-fOd24v9TpYZGJci35_4KdXyXdg7O9fGcYg-y-oDNcZR7BJR7HfcHUFoAwYzTQIgfQ40pAg"
+    ],
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "anchors": null,
+    "anchor_keys": null
+   },
+   "expect": {
+    "first": 1,
+    "last": 4,
+    "proven_to": null,
+    "status": "prefix",
+    "reason": "no_anchor"
+   }
+  },
+  {
+   "name": "export: anchors must be a list",
+   "op": "verify_export",
+   "input": {
+    "tokens": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAxLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwb2xpY3kiOiJzaGEtMjU2OlJTMHZXNDd0bl9BdjlmOWN2eHptbG9OUGpLYVFGNVpSSW1kM29fanNQR1kiLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJyb3V0ZSI6InRhc2stYXBpIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJBIiwidG9vbCI6ImFkZF90YXNrIiwidHlwZSI6InJlY2VpcHQiLCJ1bmRvIjp7ImtpbmQiOiJub25lIn19.P7TeZj9tMUwXGnGxeF2h03HaTojLJvmaxDlolZ3ES_OFBpAiTeABScLJrRE7JvvPtMNP8t0mHZpn22NxKaDpCg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAyLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpWN3Z6R2ZLNUszWXNCWDdtaEFsVFgzRjhzeEN4ZjYyb1N2TXlMYmZVZGVFIiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6Miwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.JdP9xTfcYhvs5Naw3k-NmG2p8dVA7haf7_j8LSHQDWcXhKYh26phZ2iOj1rkija68qYYxY-gZUQlNlSaP3j5Dg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAzLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwb2xpY3kiOiJzaGEtMjU2OlJTMHZXNDd0bl9BdjlmOWN2eHptbG9OUGpLYVFGNVpSSW1kM29fanNQR1kiLCJwcmV2Ijoic2hhLTI1NjpQRmFNUE1FUGVhZ2k3OEhnZWtlX2RGQ3JGYUdEUHRWeDA1UzBxU0dhT0g4IiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6Mywic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.U-6lZqgYIpy7N8kbz2tb_hpMkqVefCGd4RYzu3day1fCk5NokALskfbfWSArkKI4KF3VyoYSZFju9-Yn6PzzBA",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODA0LCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpvTi1lR1RwMkJsRlExcmdtSXdXZWtmYmJheXVETXNmaU9zbGJtUHpGTlNjIiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6NCwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.5OxRU07wgO2p2oE-fOd24v9TpYZGJci35_4KdXyXdg7O9fGcYg-y-oDNcZR7BJR7HfcHUFoAwYzTQIgfQ40pAg"
+    ],
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "anchors": "x",
+    "anchor_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "export: anchors must be a list of tokens",
+   "op": "verify_export",
+   "input": {
+    "tokens": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAxLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwb2xpY3kiOiJzaGEtMjU2OlJTMHZXNDd0bl9BdjlmOWN2eHptbG9OUGpLYVFGNVpSSW1kM29fanNQR1kiLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJyb3V0ZSI6InRhc2stYXBpIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJBIiwidG9vbCI6ImFkZF90YXNrIiwidHlwZSI6InJlY2VpcHQiLCJ1bmRvIjp7ImtpbmQiOiJub25lIn19.P7TeZj9tMUwXGnGxeF2h03HaTojLJvmaxDlolZ3ES_OFBpAiTeABScLJrRE7JvvPtMNP8t0mHZpn22NxKaDpCg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAyLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpWN3Z6R2ZLNUszWXNCWDdtaEFsVFgzRjhzeEN4ZjYyb1N2TXlMYmZVZGVFIiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6Miwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.JdP9xTfcYhvs5Naw3k-NmG2p8dVA7haf7_j8LSHQDWcXhKYh26phZ2iOj1rkija68qYYxY-gZUQlNlSaP3j5Dg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAzLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwb2xpY3kiOiJzaGEtMjU2OlJTMHZXNDd0bl9BdjlmOWN2eHptbG9OUGpLYVFGNVpSSW1kM29fanNQR1kiLCJwcmV2Ijoic2hhLTI1NjpQRmFNUE1FUGVhZ2k3OEhnZWtlX2RGQ3JGYUdEUHRWeDA1UzBxU0dhT0g4IiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6Mywic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.U-6lZqgYIpy7N8kbz2tb_hpMkqVefCGd4RYzu3day1fCk5NokALskfbfWSArkKI4KF3VyoYSZFju9-Yn6PzzBA",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODA0LCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2Ijoic2hhLTI1NjpvTi1lR1RwMkJsRlExcmdtSXdXZWtmYmJheXVETXNmaU9zbGJtUHpGTlNjIiwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwicm91dGUiOiJ0YXNrLWFwaSIsInNlcSI6NCwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.5OxRU07wgO2p2oE-fOd24v9TpYZGJci35_4KdXyXdg7O9fGcYg-y-oDNcZR7BJR7HfcHUFoAwYzTQIgfQ40pAg"
+    ],
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "anchors": [
+     5
+    ],
+    "anchor_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "export: no tokens given (null)",
+   "op": "verify_export",
+   "input": {
+    "tokens": null,
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac"
+   },
+   "expect": {
+    "first": null,
+    "last": null,
+    "proven_to": null,
+    "status": "prefix",
+    "reason": "no_anchor"
+   }
+  },
+  {
+   "name": "export: tokens must be a list",
+   "op": "verify_export",
+   "input": {
+    "tokens": "x",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac"
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
    "name": "export: an anchor whose head is another receipt's",
    "op": "verify_export",
    "input": {
@@ -1716,7 +1987,7 @@
    }
   },
   {
-   "name": "assess: one reader saw it, another did not: seen wins",
+   "name": "assess: one reader saw it, another did not: they conflict",
    "op": "assess",
    "input": {
     "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
@@ -1765,8 +2036,354 @@
    "expect": {
     "route": null,
     "decision": "tier",
+    "effect": "contradicted",
+    "verdict": "fail"
+   }
+  },
+  {
+   "name": "assess: a conflict on an unknown outcome",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoidW5rbm93biIsInByZXYiOm51bGwsInJlc3VsdCI6InNoYS0yNTY6UUdMdHIzVVB1QWRPZm9QZ3lRS01sT01rYUtpMjhXRkhkREtPOEVVVkQ1TSIsInNlcSI6MSwic3ViIjoicGVyc29uOjdmM2EiLCJ0aWVyIjoiQSIsInRvb2wiOiJhZGRfdGFzayIsInR5cGUiOiJyZWNlaXB0IiwidW5kbyI6eyJraW5kIjoibm9uZSJ9fQ.CoGchw4dXljUftS3ixhLVy9aystRqFqrtpKoMRApUXUHIbwxcyG2snwdjmB6qOjdLJonxBYes43M5oYgsk21BQ",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6IlhiZHcxR0JhOTRzdkZCYWp0WEluRnU1aTB2Y3NzOHNPTk54Z2dTN0YyclEiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJub3Rfc2VlbiIsImV4ZWN1dG9yIjoiaHR0cHM6Ly9zaG9wLmV4YW1wbGUvb2FjIiwiaWF0IjoxNzkzODM2ODMwLCJpc3MiOiJodHRwczovL3Byb3ZpZGVyLmV4YW1wbGUiLCJvYWMiOiIwLjIiLCJyZWNlaXB0Ijoic2hhLTI1NjpXNlladnczVlQ4WVJwWXVpNXloZkMxdzctWXFLX1ZqWUpwbnpqa0pBTFhnIiwic3ViIjoicGVyc29uOjdmM2EiLCJ0eXBlIjoib2JzZXJ2YXRpb24ifQ.-CpBSFYTJoUyapw6_thE2WDdTEQmpqL6nTZbRRseui0xCl5vX9oHtU6ModJZs0cekCKwdKm5-5WYAIjJ-4pvCg",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6IlhiZHcxR0JhOTRzdkZCYWp0WEluRnU1aTB2Y3NzOHNPTk54Z2dTN0YyclEiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJzZWVuIiwiZXhlY3V0b3IiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJpYXQiOjE3OTM4MzY4MzAsImlzcyI6Imh0dHBzOi8vcHJvdmlkZXIuZXhhbXBsZSIsIm9hYyI6IjAuMiIsInJlY2VpcHQiOiJzaGEtMjU2Olc2WVp2dzNWVDhZUnBZdWk1eWhmQzF3Ny1ZcUtfVmpZSnBuemprSkFMWGciLCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJvYnNlcnZhdGlvbiJ9.cwnIHj3jiAeu4hA7OVsHc7BcbYtGa3e299p5ayXnJB3BBYwQJy1T3djN4fPjHCW8ei8L7InSp4ckG77EgjncDQ"
+    ],
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "SquscpEgqJnqlB8d6BPNrPN2mJqBUYWNQ1dKJPVYdQA",
+       "kid": "Xbdw1GBa94svFBajtXInFu5i0vcss8sONNxggS7F2rQ"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "route": null,
+    "decision": "tier",
+    "effect": "contradicted",
+    "verdict": "fail"
+   }
+  },
+  {
+   "name": "assess: a look taken more than 60 s before the receipt does not count",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6IlhiZHcxR0JhOTRzdkZCYWp0WEluRnU1aTB2Y3NzOHNPTk54Z2dTN0YyclEiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJzZWVuIiwiZXhlY3V0b3IiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJpYXQiOjE3OTM4MzY3MzksImlzcyI6Imh0dHBzOi8vcHJvdmlkZXIuZXhhbXBsZSIsIm9hYyI6IjAuMiIsInJlY2VpcHQiOiJzaGEtMjU2Omt6LWU1ME9sSEtJX1lWUXBUUzUzQWhKRTU5R0hDOGpHbXoteXpONWRKZ1UiLCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJvYnNlcnZhdGlvbiJ9.CxMPkfX4EeX5QMHj-emWRcZrSkzy9hd5RxDevJgpYn6_vux7oR__nGQukv1B2FXBovQUuiFlyHGmTbcD6jNyAg"
+    ],
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "SquscpEgqJnqlB8d6BPNrPN2mJqBUYWNQ1dKJPVYdQA",
+       "kid": "Xbdw1GBa94svFBajtXInFu5i0vcss8sONNxggS7F2rQ"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "route": null,
+    "decision": "tier",
+    "effect": "cannot_establish",
+    "verdict": "cannot_establish"
+   }
+  },
+  {
+   "name": "assess: a look taken exactly 60 s before the receipt counts",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6IlhiZHcxR0JhOTRzdkZCYWp0WEluRnU1aTB2Y3NzOHNPTk54Z2dTN0YyclEiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJzZWVuIiwiZXhlY3V0b3IiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJpYXQiOjE3OTM4MzY3NDAsImlzcyI6Imh0dHBzOi8vcHJvdmlkZXIuZXhhbXBsZSIsIm9hYyI6IjAuMiIsInJlY2VpcHQiOiJzaGEtMjU2Omt6LWU1ME9sSEtJX1lWUXBUUzUzQWhKRTU5R0hDOGpHbXoteXpONWRKZ1UiLCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJvYnNlcnZhdGlvbiJ9.YAEQg2MVETV513YSgXadi08umYYCzbSl2Pqs0iw5mHCDowYeFbyk3e7OD24GFgR5Yl8VMcl_FBoC54wCUF6aBw"
+    ],
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "SquscpEgqJnqlB8d6BPNrPN2mJqBUYWNQ1dKJPVYdQA",
+       "kid": "Xbdw1GBa94svFBajtXInFu5i0vcss8sONNxggS7F2rQ"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "route": null,
+    "decision": "tier",
     "effect": "observed",
     "verdict": "pass"
+   }
+  },
+  {
+   "name": "assess: a stale not_seen does not fail an allowance",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6IlhiZHcxR0JhOTRzdkZCYWp0WEluRnU1aTB2Y3NzOHNPTk54Z2dTN0YyclEiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJub3Rfc2VlbiIsImV4ZWN1dG9yIjoiaHR0cHM6Ly9zaG9wLmV4YW1wbGUvb2FjIiwiaWF0IjoxNzkzODM2MzAwLCJpc3MiOiJodHRwczovL3Byb3ZpZGVyLmV4YW1wbGUiLCJvYWMiOiIwLjIiLCJyZWNlaXB0Ijoic2hhLTI1Njprei1lNTBPbEhLSV9ZVlFwVFM1M0FoSkU1OUdIQzhqR216LXl6TjVkSmdVIiwic3ViIjoicGVyc29uOjdmM2EiLCJ0eXBlIjoib2JzZXJ2YXRpb24ifQ.guHevW6zxQ-7f3i70IWWWqqgDKVIGKZkUCoucCAQ_xXa-uRfClb8qE0duwCBy_oBuRjdssiBzA4y2UQ4ABRICw",
+     "eyJhbGciOiJFZERTQSIsImtpZCI6IlhiZHcxR0JhOTRzdkZCYWp0WEluRnU1aTB2Y3NzOHNPTk54Z2dTN0YyclEiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJzZWVuIiwiZXhlY3V0b3IiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJpYXQiOjE3OTM4MzY4MzAsImlzcyI6Imh0dHBzOi8vcHJvdmlkZXIuZXhhbXBsZSIsIm9hYyI6IjAuMiIsInJlY2VpcHQiOiJzaGEtMjU2Omt6LWU1ME9sSEtJX1lWUXBUUzUzQWhKRTU5R0hDOGpHbXoteXpONWRKZ1UiLCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJvYnNlcnZhdGlvbiJ9.bTdAZ2WG98xJgw5ABPW46ew_HlmfqV1WZzy2UfAiVypj-9oGMkX4UWNowU5121Ko28FM9IIxrLYXZRWO26udBQ"
+    ],
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "SquscpEgqJnqlB8d6BPNrPN2mJqBUYWNQ1dKJPVYdQA",
+       "kid": "Xbdw1GBa94svFBajtXInFu5i0vcss8sONNxggS7F2rQ"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "route": null,
+    "decision": "tier",
+    "effect": "observed",
+    "verdict": "pass"
+   }
+  },
+  {
+   "name": "assess: no observations given at all (null)",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": null,
+    "observer_keys": null
+   },
+   "expect": {
+    "route": null,
+    "decision": "tier",
+    "effect": "cannot_establish",
+    "verdict": "cannot_establish"
+   }
+  },
+  {
+   "name": "assess: observations must be a list",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": "x",
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "SquscpEgqJnqlB8d6BPNrPN2mJqBUYWNQ1dKJPVYdQA",
+       "kid": "Xbdw1GBa94svFBajtXInFu5i0vcss8sONNxggS7F2rQ"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "assess: observations must be a list of tokens",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": [
+     5
+    ],
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "SquscpEgqJnqlB8d6BPNrPN2mJqBUYWNQ1dKJPVYdQA",
+       "kid": "Xbdw1GBa94svFBajtXInFu5i0vcss8sONNxggS7F2rQ"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "malformed"
    }
   },
   {
@@ -2303,6 +2920,48 @@
     },
     "observations": [
      "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJzZWVuIiwiZXhlY3V0b3IiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJpYXQiOjE3OTM4MzY4MzAsImlzcyI6Imh0dHBzOi8vc2hvcC5leGFtcGxlL29hYyIsIm9hYyI6IjAuMiIsInJlY2VpcHQiOiJzaGEtMjU2Omt6LWU1ME9sSEtJX1lWUXBUUzUzQWhKRTU5R0hDOGpHbXoteXpONWRKZ1UiLCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJvYnNlcnZhdGlvbiJ9.bTjy4oaxU2ksnJuMt9Vn1PHrL7H1MF_24vcNCgo6N__s-CeR3e6rJgJkst8MhtT_iEk977emIt_36TwxqiduDw"
+    ]
+   },
+   "expect": {
+    "error": "observer_not_independent"
+   }
+  },
+  {
+   "name": "assess: an observer under another name but with the executor's key",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ]
+    },
+    "observations": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJzZWVuIiwiZXhlY3V0b3IiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJpYXQiOjE3OTM4MzY4MzAsImlzcyI6Imh0dHBzOi8vcHJvdmlkZXIuZXhhbXBsZSIsIm9hYyI6IjAuMiIsInJlY2VpcHQiOiJzaGEtMjU2Omt6LWU1ME9sSEtJX1lWUXBUUzUzQWhKRTU5R0hDOGpHbXoteXpONWRKZ1UiLCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJvYnNlcnZhdGlvbiJ9.4QZJtwuQFxnho-mcyS-VJLEYzbcjqPn-pDbHuliJ3uTfzgGSMrCoe1YDeApIPBHsbn_xF5eMhs6EToOzr7RYBQ"
     ]
    },
    "expect": {
@@ -3114,6 +3773,171 @@
    }
   },
   {
+   "name": "assess: a consent made for another person",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1NjowSHNaZnFCekpNaG83UjV4QU8wcVhFalE2U1VybWtKYXZldEZBdjRUVldzIiwia2luZCI6ImNvbnNlbnQiLCJyZWYiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSJ9LCJpYXQiOjE3OTM4MzY4MDAsImlzcyI6Imh0dHBzOi8vc2hvcC5leGFtcGxlL29hYyIsIm9hYyI6IjAuMiIsIm91dGNvbWUiOiJvayIsInBvbGljeSI6InNoYS0yNTY6UlMwdlc0N3RuX0F2OWY5Y3Z4em1sb05QakthUUY1WlJJbWQzb19qc1BHWSIsInByZXYiOm51bGwsInByZXZpZXciOiJzaGEtMjU2OkJ6WF9xWjFBYlhKYURKY1hDY3ZadGNvLVJZT1BBVDdidGw3bWVqQ1VFLVUiLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJyb3V0ZSI6ImJvb2tpbmctYXBpIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6ImJvb2tfdGFibGUiLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6ImNvbXBlbnNhdGUiLCJ1bnRpbCI6MTc5MzkyMzIwMH19.yKZ9wD9ZCOhEwpDjlj5MM8aiEBWhptUqKzc1qUyNph6z79IIvDdVWR5e7Wm8pO1yByhvMq_TnBcZQ6E5XhrBAw",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcwODAsImlhdCI6MTc5MzgzNjc4MCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpCelhfcVoxQWJYSmFESmNYQ2N2WnRjby1SWU9QQVQ3YnRsN21lakNVRS1VIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMiIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjpvdGhlciIsInR5cGUiOiJjb25zZW50In0.ZVGhj6YSmcoY7z8czBeZrSlxIFMA8FuBjxMF1S7euha6NzI130C2cpJr8MQEkGKo5mFJNX8r3W9gUmawVMt7Ag",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
+   }
+  },
+  {
+   "name": "assess: a consent made for another executor",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1NjpCZUMxc3kzUTdjMHNtS1dUeVpTc1RNcl9BbkR2bTJIV1A5OFNoUU5reV9NIiwia2luZCI6ImNvbnNlbnQiLCJyZWYiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSJ9LCJpYXQiOjE3OTM4MzY4MDAsImlzcyI6Imh0dHBzOi8vc2hvcC5leGFtcGxlL29hYyIsIm9hYyI6IjAuMiIsIm91dGNvbWUiOiJvayIsInBvbGljeSI6InNoYS0yNTY6UlMwdlc0N3RuX0F2OWY5Y3Z4em1sb05QakthUUY1WlJJbWQzb19qc1BHWSIsInByZXYiOm51bGwsInByZXZpZXciOiJzaGEtMjU2OkJ6WF9xWjFBYlhKYURKY1hDY3ZadGNvLVJZT1BBVDdidGw3bWVqQ1VFLVUiLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJyb3V0ZSI6ImJvb2tpbmctYXBpIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6ImJvb2tfdGFibGUiLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6ImNvbXBlbnNhdGUiLCJ1bnRpbCI6MTc5MzkyMzIwMH19.EJjb5QY32Wk98AZ63TF4tkcEY_pPYIyhrmdZGCH4l13q_O26asvrNQzfFVXA0YFcj2_-p8E0kodU19edsZsTDw",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL290aGVyLmV4YW1wbGUvb2FjIiwiZXhwIjoxNzkzODM3MDgwLCJpYXQiOjE3OTM4MzY3ODAsImlzcyI6Imh0dHBzOi8vYXRsYXMuZXhhbXBsZS9zaWduZXIiLCJpdGVtcyI6W3siYWN0aW9uIjoic2hhLTI1NjpwTWhSbzBmd3dwcVpLeVN3eTVlUm9BSm5idjhzTHBlUkZNbjBoNjdyYkgwIiwicHJldmlldyI6InNoYS0yNTY6QnpYX3FaMUFiWEphREpjWENjdlp0Y28tUllPUEFUN2J0bDdtZWpDVUUtVSJ9XSwianRpIjoibl9jb25zZW50XzAwMDAwMDAwMDEiLCJvYWMiOiIwLjIiLCJzaWduZXIiOnsia2luZCI6ImN1c3RvZGlhbCJ9LCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJjb25zZW50In0._PCG__IS-fEfs1jMdX41-T7tYr90oLGr5x6_rh7orffJLx1avyUFNe_q4amzpYORvRA1mKmkUfeGv4K2Jy-zDQ",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
+   }
+  },
+  {
+   "name": "assess: a consent made for a time after the receipt",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1NjpWcFU4N2RFbV9zVkk3czl2U3M2UG82eTYxMG1wMmY2OFBzTXNoOWFiSFd3Iiwia2luZCI6ImNvbnNlbnQiLCJyZWYiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSJ9LCJpYXQiOjE3OTM4MzY4MDAsImlzcyI6Imh0dHBzOi8vc2hvcC5leGFtcGxlL29hYyIsIm9hYyI6IjAuMiIsIm91dGNvbWUiOiJvayIsInBvbGljeSI6InNoYS0yNTY6UlMwdlc0N3RuX0F2OWY5Y3Z4em1sb05QakthUUY1WlJJbWQzb19qc1BHWSIsInByZXYiOm51bGwsInByZXZpZXciOiJzaGEtMjU2OkJ6WF9xWjFBYlhKYURKY1hDY3ZadGNvLVJZT1BBVDdidGw3bWVqQ1VFLVUiLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJyb3V0ZSI6ImJvb2tpbmctYXBpIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6ImJvb2tfdGFibGUiLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6ImNvbXBlbnNhdGUiLCJ1bnRpbCI6MTc5MzkyMzIwMH19.JSybzucQfl32QP3lSMjFnERt-r7MZFGpzqGAXkdRbHu6WjkIqhPGiGE3Pr24c0hHUXV21wMSK3wkLAIUwnhFAw",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtY29uc2VudCtqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4Mzc1MDAsImlhdCI6MTc5MzgzNzMwMCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsIml0ZW1zIjpbeyJhY3Rpb24iOiJzaGEtMjU2OnBNaFJvMGZ3d3BxWkt5U3d5NWVSb0FKbmJ2OHNMcGVSRk1uMGg2N3JiSDAiLCJwcmV2aWV3Ijoic2hhLTI1NjpCelhfcVoxQWJYSmFESmNYQ2N2WnRjby1SWU9QQVQ3YnRsN21lakNVRS1VIn1dLCJqdGkiOiJuX2NvbnNlbnRfMDAwMDAwMDAwMSIsIm9hYyI6IjAuMiIsInNpZ25lciI6eyJraW5kIjoiY3VzdG9kaWFsIn0sInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6ImNvbnNlbnQifQ.4qvP9jotvuEVwpMFVC2Xl__iaNJBekJ4PPDhlqHSsvzGufjwa0I5bdwW1S0h8h9Od09zttB-QRImN7dhr7QGDA",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
+   }
+  },
+  {
    "name": "assess: a token given without its signer's keys",
    "op": "assess",
    "input": {
@@ -3220,6 +4044,226 @@
     "decision": "bound",
     "effect": "observed",
     "verdict": "pass"
+   }
+  },
+  {
+   "name": "assess: a mandate for another person",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OjFYcVlBUERzQWJnX2lUTEJpTTNXeXRFOEtwcnJ1T3RBWGZLd3hiWGhGS1UiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1Njp6RUE5cnlkbG1MS0poc3lxSXNOdUpjNGlUS3FpaUFEWWp4SVh0YmtrZ0hZIiwia2luZCI6Im1hbmRhdGUiLCJyZWYiOiJtZF9sdW5jaF8xIn0sImlhdCI6MTc5MzgzNjgwMCwiaXNzIjoiaHR0cHM6Ly9zaG9wLmV4YW1wbGUvb2FjIiwib2FjIjoiMC4yIiwib3V0Y29tZSI6Im9rIiwicHJldiI6bnVsbCwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6InNlbmRfZW1haWwiLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.0ZYPxbBagwRluLC9JCagHYo1nNV2MAKzop2CsFJdpeRva2ngfIKp-0C5uyRDVtS0jdDkpLph1ng6_nQUwSrhBQ",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiY2FsbHMiOnsicGVyX2RheSI6NX0sInJlY2lwaWVudHMiOlsiQGV4YW1wbGUuY29tIl19LCJleHAiOjE3OTM5MjMyMDAsImdvYWwiOiJSZXBseSB0byBsdW5jaCBwbGFucy4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4yIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOm90aGVyIiwidG9vbHMiOlsic2VuZF9lbWFpbCJdLCJ0eXBlIjoibWFuZGF0ZSJ9.yqcVGnlYbjV2FpzfSwM4M1V-gE3Lj6ZrMkuH7LnnqkJl5In18Uq1aKELL3yLr3KfLdWa22wgJGlxVWq0_-aVDQ",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
+   }
+  },
+  {
+   "name": "assess: a mandate for a window that ended before the receipt",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OjFYcVlBUERzQWJnX2lUTEJpTTNXeXRFOEtwcnJ1T3RBWGZLd3hiWGhGS1UiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1Njo2M3Ficm1SMVVkOUNCeWNQeHFoQkxvUVZSRzUxZjlDbmFyaWxHQnNXTmdRIiwia2luZCI6Im1hbmRhdGUiLCJyZWYiOiJtZF9sdW5jaF8xIn0sImlhdCI6MTc5MzgzNjgwMCwiaXNzIjoiaHR0cHM6Ly9zaG9wLmV4YW1wbGUvb2FjIiwib2FjIjoiMC4yIiwib3V0Y29tZSI6Im9rIiwicHJldiI6bnVsbCwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6InNlbmRfZW1haWwiLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.QzvuXHwIWXA21oAbzPrNCSadSl9k-29LZW27beAe2b7TZJCbp4FLgerSZJt55lsmiPNhV1_nvusN9ZOEucagCQ",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiY2FsbHMiOnsicGVyX2RheSI6NX0sInJlY2lwaWVudHMiOlsiQGV4YW1wbGUuY29tIl19LCJleHAiOjE3OTM4MzY3MzksImdvYWwiOiJSZXBseSB0byBsdW5jaCBwbGFucy4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4yIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJzZW5kX2VtYWlsIl0sInR5cGUiOiJtYW5kYXRlIn0.UwGmeYflTZobVJm1LzEx9JVp3-xaykqiQi1vsnzT6HXbXDlUIysxEkdRgdpmI2ZgsOzHuo_twHLlpHfnCxBrDg",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
+   }
+  },
+  {
+   "name": "assess: a mandate for a window that starts after the receipt",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OjFYcVlBUERzQWJnX2lUTEJpTTNXeXRFOEtwcnJ1T3RBWGZLd3hiWGhGS1UiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1NjozeW83dEl6bnRDdDFiaE4wa0lKTXZrcHc4Mm5SdjdSRWt4UUJ5ZkF2bWtBIiwia2luZCI6Im1hbmRhdGUiLCJyZWYiOiJtZF9sdW5jaF8xIn0sImlhdCI6MTc5MzgzNjgwMCwiaXNzIjoiaHR0cHM6Ly9zaG9wLmV4YW1wbGUvb2FjIiwib2FjIjoiMC4yIiwib3V0Y29tZSI6Im9rIiwicHJldiI6bnVsbCwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6InNlbmRfZW1haWwiLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.CHflHl327WsORzYOyRuId4KWauCZuk6EblrjUjjW3yHjtJKKfnId7k4MvOGGRUW9t6qQQk1uKyl4cpkbyNShBg",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiY2FsbHMiOnsicGVyX2RheSI6NX0sInJlY2lwaWVudHMiOlsiQGV4YW1wbGUuY29tIl19LCJleHAiOjE3OTM4NDA0MDAsImdvYWwiOiJSZXBseSB0byBsdW5jaCBwbGFucy4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODM2ODYxLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4yIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJzZW5kX2VtYWlsIl0sInR5cGUiOiJtYW5kYXRlIn0.qLezej4Loyr7hb9BgjX3-hG5OQBzbDzISxKPXgjnj4lvOq4HS_-P8ohA-7B2vQGwE40AGJtE-5mIbJai3OUsAA",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
+   }
+  },
+  {
+   "name": "assess: a mandate for another tool",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OjFYcVlBUERzQWJnX2lUTEJpTTNXeXRFOEtwcnJ1T3RBWGZLd3hiWGhGS1UiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1NjpDdmYyTTBzcE8wekxQSDNXOXc2ZWhuM0h4VHJoX0drWE43M0xrUVVmSVBVIiwia2luZCI6Im1hbmRhdGUiLCJyZWYiOiJtZF9sdW5jaF8xIn0sImlhdCI6MTc5MzgzNjgwMCwiaXNzIjoiaHR0cHM6Ly9zaG9wLmV4YW1wbGUvb2FjIiwib2FjIjoiMC4yIiwib3V0Y29tZSI6Im9rIiwicHJldiI6bnVsbCwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJDIiwidG9vbCI6InNlbmRfZW1haWwiLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.E3ry1CZgbsITgcE6xcGLPKEWexiCUVod9LxdD4QZ12ajXuG9d1S2arbuF0xYXwmqP4Sgqzz_xobW7v_Zze0yDA",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtbWFuZGF0ZStqd3MifQ.eyJib3VuZHMiOnsiY2FsbHMiOnsicGVyX2RheSI6NX0sInJlY2lwaWVudHMiOlsiQGV4YW1wbGUuY29tIl19LCJleHAiOjE3OTM5MjMyMDAsImdvYWwiOiJSZXBseSB0byBsdW5jaCBwbGFucy4iLCJob2xkZXIiOnsiaWQiOiJsdW5jaC1ib3QiLCJ0eXBlIjoiYWdlbnQifSwiaWF0IjoxNzkzODMzMjAwLCJpZCI6Im1kX2x1bmNoXzEiLCJpc3MiOiJodHRwczovL2F0bGFzLmV4YW1wbGUvc2lnbmVyIiwib2FjIjoiMC4yIiwic2lnbmVyIjp7ImtpbmQiOiJjdXN0b2RpYWwifSwic3ViIjoicGVyc29uOjdmM2EiLCJ0b29scyI6WyJhZGRfdGFzayJdLCJ0eXBlIjoibWFuZGF0ZSJ9.FKw0dmNAqGmL6iIdb65lvplHIoaqfUb5Y65dfvWi4rUTTsmga8c8eZl-Kz4OqXaHC9KxdiDlJjBdmLiabetzDw",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
    }
   },
   {
@@ -3357,6 +4401,116 @@
    }
   },
   {
+   "name": "assess: an undo request for another person",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1Njp3X0ZNeU93cDB5LXZWUjJIQTEwNF9oM2JKbTd2MWRoRDUxRF9qLVlIRnNRIiwia2luZCI6InVuZG8iLCJyZWYiOiJuX3VuZG9fMDAwMDAwMDAwMDAwMDEifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkIiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifSwidW5kb2VzIjoic2hhLTI1NjpNZzMtSlpXdl84S2x0NnVqa3UyS2JVRDZEeXB1NDRWczJoYmNCTU5nZWFvIn0.phFjdSZm9DzgVqhsl2u0P_l1_89dz5OJYavyO-n_uGB1W7-4mUNLFf3E1Py6AW-XtpSpSp2_VKDXo5AI6B1BBw",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtdW5kbytqd3MifQ.eyJhdWQiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJleHAiOjE3OTM4MzcxMzAsImlhdCI6MTc5MzgzNjgzMCwiaXNzIjoiaHR0cHM6Ly9hdGxhcy5leGFtcGxlL3NpZ25lciIsImp0aSI6Im5fdW5kb18wMDAwMDAwMDAwMDAwMSIsIm1vZGUiOiJuYXRpdmUiLCJvYWMiOiIwLjIiLCJyZWNlaXB0Ijoic2hhLTI1NjpNZzMtSlpXdl84S2x0NnVqa3UyS2JVRDZEeXB1NDRWczJoYmNCTU5nZWFvIiwic3ViIjoicGVyc29uOm90aGVyIiwidHlwZSI6InVuZG8ifQ.5K6e71l_EOr-qqUt4UuR0hR275IlWf8nz5g-MYjmv5z3gjhrhndJCSxJSA4J-rja2Pt0fnWwQFS7WNjytrraCQ",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
+   }
+  },
+  {
+   "name": "assess: an undo request for another executor",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsiZGlnZXN0Ijoic2hhLTI1Njpoamtzam02ZGxFUllSREh1M09PZm9wcUlIS0MzNlMtNi11LVNYc1JCWnQ0Iiwia2luZCI6InVuZG8iLCJyZWYiOiJuX3VuZG9fMDAwMDAwMDAwMDAwMDEifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkIiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifSwidW5kb2VzIjoic2hhLTI1NjpNZzMtSlpXdl84S2x0NnVqa3UyS2JVRDZEeXB1NDRWczJoYmNCTU5nZWFvIn0.CvhSqAtA9I4uVOrbv8KII-DO7xJvaNUlAuDDcjCl99oyPNJpLHGzlJQ-ZoxmfG3Ef-0i1ZhKoBhWnjMeeDvuAA",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "authority_token": "eyJhbGciOiJFZERTQSIsImtpZCI6IkhITEphaTJfQ1RyRFhxQW9Vd3pMRktFeDdwdjNQRXRNU0JCSHlpSlVLa1kiLCJ0eXAiOiJvYWMtdW5kbytqd3MifQ.eyJhdWQiOiJodHRwczovL290aGVyLmV4YW1wbGUvb2FjIiwiZXhwIjoxNzkzODM3MTMwLCJpYXQiOjE3OTM4MzY4MzAsImlzcyI6Imh0dHBzOi8vYXRsYXMuZXhhbXBsZS9zaWduZXIiLCJqdGkiOiJuX3VuZG9fMDAwMDAwMDAwMDAwMDEiLCJtb2RlIjoibmF0aXZlIiwib2FjIjoiMC4yIiwicmVjZWlwdCI6InNoYS0yNTY6TWczLUpaV3ZfOEtsdDZ1amt1MktiVUQ2RHlwdTQ0VnMyaGJjQk1OZ2VhbyIsInN1YiI6InBlcnNvbjo3ZjNhIiwidHlwZSI6InVuZG8ifQ.Ao2lAAG6pQegw12RjC62egZ8JiuVEj7AGX-8YJ5nWLRTCNLbBauZfoP8D4Hf0oA1XJl528WlPqbxv6XC-XJGAQ",
+    "authority_keys": {
+     "https://atlas.example/signer": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "J6AkymSondzIC5ASuuK4ow0xm0O_teJjFLyMXpOv-G4",
+       "kid": "HHLJai2_CTrDXqAoUwzLFKEx7pv3PEtMSBBHyiJUKkY"
+      },
+      {
+       "kty": "EC",
+       "crv": "P-256",
+       "x": "bRZ5pkkHfLdWcMfefXyi7BARo27h7UZUfe8uvsre8I0",
+       "y": "N2p014bYANzVmZmDIdTjKNtPyZ7O9hFFw9hA_TkXwxI",
+       "kid": "jqBlOQ7QrWz1AUBWRDnj9JlR-iZlIZkOvEyvQVoFhek"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "error": "authority_mismatch"
+   }
+  },
+  {
    "name": "assess: an undo request for another receipt",
    "op": "assess",
    "input": {
@@ -3434,7 +4588,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3454,7 +4614,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -3493,7 +4653,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": []
@@ -3543,7 +4709,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3556,7 +4728,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -3595,7 +4767,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3615,7 +4793,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -3654,7 +4832,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3674,7 +4858,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -3713,7 +4897,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3765,7 +4955,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3785,7 +4981,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -3824,7 +5020,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3844,7 +5046,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -3883,7 +5085,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3910,7 +5118,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -3949,7 +5157,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -3969,7 +5183,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -4016,7 +5230,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -4036,7 +5256,7 @@
      },
      {
       "effect": "pay_order",
-      "route": "tool-server-b",
+      "route": "direct-api",
       "decision": "exists",
       "effect_occurred": "no",
       "observed_by": "provider log"
@@ -4082,7 +5302,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [
@@ -4114,8 +5340,39 @@
       "key": "send_email credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "a",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      },
+     {
+      "effect": "send_email",
+      "key": "send_email credential",
+      "held_by": "executor only",
+      "records": "durable",
+      "routes": [
+       {
+        "route": "a",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
+     }
+    ],
+    "attempts": []
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "coverage: a row with no route",
+   "op": "coverage",
+   "input": {
+    "statement": [
      {
       "effect": "send_email",
       "key": "send_email credential",
@@ -4124,6 +5381,105 @@
       "routes": []
      }
     ],
+    "attempts": []
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "coverage: an effect named __proto__ is an ordinary name",
+   "op": "coverage",
+   "input": {
+    "statement": [
+     {
+      "effect": "__proto__",
+      "key": "__proto__ credential",
+      "held_by": "executor only",
+      "records": "durable",
+      "routes": [
+       {
+        "route": "api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
+     }
+    ],
+    "attempts": [
+     {
+      "effect": "__proto__",
+      "route": "api",
+      "decision": "none",
+      "effect_occurred": "yes",
+      "observed_by": "provider log"
+     }
+    ]
+   },
+   "expect": {
+    "result": "bypass",
+    "statement_wrong": false,
+    "effects": {
+     "__proto__": "bypass"
+    }
+   }
+  },
+  {
+   "name": "coverage: no statement and no attempts (null)",
+   "op": "coverage",
+   "input": {
+    "statement": null,
+    "attempts": null
+   },
+   "expect": {
+    "result": "not_checked",
+    "statement_wrong": false,
+    "effects": {}
+   }
+  },
+  {
+   "name": "coverage: attempts must be a list",
+   "op": "coverage",
+   "input": {
+    "statement": [
+     {
+      "effect": "send_email",
+      "key": "send_email credential",
+      "held_by": "executor only",
+      "records": "durable",
+      "routes": [
+       {
+        "route": "admin-console",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
+     },
+     {
+      "effect": "pay_order",
+      "key": "pay_order credential",
+      "held_by": "executor only",
+      "records": "durable",
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
+     }
+    ],
+    "attempts": {}
+   },
+   "expect": {
+    "error": "malformed"
+   }
+  },
+  {
+   "name": "coverage: a statement must be a list",
+   "op": "coverage",
+   "input": {
+    "statement": "x",
     "attempts": []
    },
    "expect": {
@@ -4183,7 +5539,13 @@
       "key": "pay_order credential",
       "held_by": "executor only",
       "records": "durable",
-      "routes": []
+      "routes": [
+       {
+        "route": "direct-api",
+        "credential": "staff login",
+        "control": "people only"
+       }
+      ]
      }
     ],
     "attempts": [

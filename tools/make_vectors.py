@@ -767,6 +767,13 @@ def evidence() -> list[dict[str, Any]]:
            anchors=[seal(4, key=WALLET, iss=WALLET_ISS)])
     export("an anchor signed by the executor's own key", err("anchor_not_independent"), rs[:4],
            anchors=[seal(4, key=EXEC, iss=EXECUTOR)], anchor_keys=EXEC_KEYS)
+    export("an anchor under another name but signed with the executor's key", err("anchor_not_independent"), rs[:4],
+           anchors=[seal(4, key=EXEC, iss="https://notary.example")], anchor_keys={"https://notary.example": [EXEC.jwk]})
+    export("no anchors given (null)", report(1, 4, None, "prefix", "no_anchor"), rs[:4], anchors=None, anchor_keys=None)
+    export("anchors must be a list", err("malformed"), rs[:4], anchors="x")
+    export("anchors must be a list of tokens", err("malformed"), rs[:4], anchors=[5])
+    export("no tokens given (null)", report(None, None, None, "prefix", "no_anchor"), None)
+    export("tokens must be a list", err("malformed"), "x")
     export("an anchor whose head is another receipt's", err("seal_mismatch"), rs[:4], anchors=[seal(3, head=rs[3])])
     export("an anchor for another executor", err("seal_mismatch"), rs[:4], anchors=[seal(4, executor=OTHER_EXECUTOR)])
     export("an anchor for another person", err("subject_mismatch"), rs[:4], anchors=[seal(4, sub="person:other")])
@@ -796,7 +803,7 @@ def evidence() -> list[dict[str, Any]]:
     # 8.5 assess: route, decision and effect, then the verdict
     def watcher(receipt: str, effect: str, **kw: Any) -> str:
         return make_observation(key=kw.pop("key", provider), iss=kw.pop("iss", provider_iss), sub=kw.pop("sub", PERSON),
-                                executor=kw.pop("executor", EXECUTOR), receipt_token=receipt, effect=effect, now=NOW + 30, **kw)
+                                executor=kw.pop("executor", EXECUTOR), receipt_token=receipt, effect=effect, now=kw.pop("now", NOW + 30), **kw)
 
     def rcpt(**fields: Any) -> str:
         return make_receipt(key=EXEC, payload={"iss": EXECUTOR, "sub": PERSON, "seq": 1, "prev": None, "iat": NOW, "tool": "add_task", "tier": "A",
@@ -816,8 +823,19 @@ def evidence() -> list[dict[str, Any]]:
     assessed("an allowance nobody checked", verdict(None, "tier", "cannot_establish", "cannot_establish"), t)
     assessed("an allowance an independent reader saw", verdict(None, "tier", "observed", "pass"), t, watcher(t, "seen"))
     assessed("an allowance an independent reader did not see", verdict(None, "tier", "not_observed", "fail"), t, watcher(t, "not_seen"))
-    assessed("one reader saw it, another did not: seen wins", verdict(None, "tier", "observed", "pass"), t, watcher(t, "not_seen"),
+    assessed("one reader saw it, another did not: they conflict", verdict(None, "tier", "contradicted", "fail"), t, watcher(t, "not_seen"),
              watcher(t, "seen", subject=digest({"id": 1})))
+    assessed("a conflict on an unknown outcome", verdict(None, "tier", "contradicted", "fail"), rcpt(outcome="unknown"),
+             watcher(rcpt(outcome="unknown"), "not_seen"), watcher(rcpt(outcome="unknown"), "seen"))
+    assessed("a look taken more than 60 s before the receipt does not count", verdict(None, "tier", "cannot_establish", "cannot_establish"), t,
+             watcher(t, "seen", now=NOW - 61))
+    assessed("a look taken exactly 60 s before the receipt counts", verdict(None, "tier", "observed", "pass"), t, watcher(t, "seen", now=NOW - 60))
+    assessed("a stale not_seen does not fail an allowance", verdict(None, "tier", "observed", "pass"), t, watcher(t, "not_seen", now=NOW - 500),
+             watcher(t, "seen"))
+    assessed("no observations given at all (null)", verdict(None, "tier", "cannot_establish", "cannot_establish"), t, observations=None,
+             observer_keys=None)
+    assessed("observations must be a list", err("malformed"), t, observations="x", observer_keys=obs_keys)
+    assessed("observations must be a list of tokens", err("malformed"), t, observations=[5], observer_keys=obs_keys)
     assessed("a reader that could not check counts as nobody", verdict(None, "tier", "cannot_establish", "cannot_establish"), t,
              watcher(t, "uncheckable", vantage="provider"))
     assessed("one decision, two effects with different subjects", verdict(None, "tier", "duplicate", "fail"), t,
@@ -836,6 +854,8 @@ def evidence() -> list[dict[str, Any]]:
              watcher(unsure, "not_seen"))
     assessed("the executor cannot observe its own effect", err("observer_not_independent"), t,
              watcher(t, "seen", key=EXEC, iss=EXECUTOR), observer_keys=EXEC_KEYS)
+    assessed("an observer under another name but with the executor's key", err("observer_not_independent"), t,
+             watcher(t, "seen", key=EXEC), observer_keys={provider_iss: [EXEC.jwk]})
     assessed("an observation of another receipt", err("receipt_mismatch"), t, watcher(denied, "seen"))
     assessed("an observation about another person", err("subject_mismatch"), t, watcher(t, "seen", sub="person:other"))
     assessed("an observation for another executor", err("executor_mismatch"), t, watcher(t, "seen", executor=OTHER_EXECUTOR))
@@ -879,6 +899,13 @@ def evidence() -> list[dict[str, Any]]:
     forged = consent([book_preview], key=ATTACKER)
     assessed("a consent signed by an unknown key", err("unknown_key"),
              decided({"kind": "consent", "ref": jti, "digest": token_digest(forged)}), authority_token=forged, authority_keys=USER_KEYS)
+    def bound_to(token: str) -> str:
+        return decided({"kind": "consent", "ref": jti, "digest": token_digest(token)})
+
+    for what, change in [("another person", {"sub": "person:other"}), ("another executor", {"aud": "https://other.example/oac"}),
+                         ("a time after the receipt", {"iat": NOW + 500, "exp": NOW + 700})]:
+        moved = resign(book_consent, change)
+        assessed(f"a consent made for {what}", err("authority_mismatch"), bound_to(moved), authority_token=moved, authority_keys=USER_KEYS)
     assessed("a token given without its signer's keys", err("malformed"), good, authority_token=book_consent)
     md = make_mandate(key=USER, payload={
         "id": "md_lunch_1", "iss": SIGNER, "sub": PERSON, "holder": {"type": "agent", "id": "lunch-bot"}, "goal": "Reply to lunch plans.",
@@ -890,6 +917,11 @@ def evidence() -> list[dict[str, Any]]:
 
     assessed("a mandate that is the one named", verdict(None, "bound", "observed", "pass"), by_mandate("md_lunch_1"),
              watcher(by_mandate("md_lunch_1"), "seen"), authority_token=md, authority_keys=USER_KEYS)
+    for what, change in [("another person", {"sub": "person:other"}), ("a window that ended before the receipt", {"exp": NOW - 61, "iat": NOW - 3600}),
+                         ("a window that starts after the receipt", {"iat": NOW + 61, "exp": NOW + 3600}), ("another tool", {"tools": ["add_task"]})]:
+        moved = resign(md, change, typ="oac-mandate+jws")
+        recd = rcpt(tool="send_email", tier="C", authority={"kind": "mandate", "ref": "md_lunch_1", "digest": token_digest(moved)}, action=action_digest(mail(1)))
+        assessed(f"a mandate for {what}", err("authority_mismatch"), recd, authority_token=moved, authority_keys=USER_KEYS)
     assessed("a mandate with another id", err("authority_mismatch"), by_mandate("md_other"), authority_token=md, authority_keys=USER_KEYS)
     original = rcpt(tool="add_task", tier="B", undo={"kind": "native", "until": NOW + 600, "token": "undo_7Qx"})
     request = make_undo(key=USER, iss=SIGNER, sub=PERSON, aud=EXECUTOR, receipt_token=original, mode="native", now=NOW + 30,
@@ -900,6 +932,10 @@ def evidence() -> list[dict[str, Any]]:
 
     assessed("an undo request for the receipt it undoes", verdict(None, "bound", "observed", "pass"), by_undo(token_digest(original)),
              watcher(by_undo(token_digest(original)), "seen"), authority_token=request, authority_keys=USER_KEYS)
+    for what, change in [("another person", {"sub": "person:other"}), ("another executor", {"aud": "https://other.example/oac"})]:
+        moved = resign(request, change, typ="oac-undo+jws")
+        recd = rcpt(tier="B", authority={"kind": "undo", "ref": "n_undo_00000000000001", "digest": token_digest(moved)}, undoes=token_digest(original))
+        assessed(f"an undo request for {what}", err("authority_mismatch"), recd, authority_token=moved, authority_keys=USER_KEYS)
     assessed("an undo request for another receipt", err("authority_mismatch"), by_undo(digest({"other": 1})), authority_token=request,
              authority_keys=USER_KEYS)
 
@@ -917,17 +953,17 @@ def evidence() -> list[dict[str, Any]]:
     def out(result: str, wrong: bool, **effects: str) -> dict[str, Any]:
         return {"result": result, "statement_wrong": wrong, "effects": effects}
 
-    both = [row("send_email", ["admin-console"]), row("pay_order", [])]
-    refused = [tried("send_email", "tool-server-b"), tried("send_email", "admin-console", decision="none"), tried("pay_order", "tool-server-b")]
+    both = [row("send_email", ["admin-console"]), row("pay_order", ["direct-api"])]
+    refused = [tried("send_email", "tool-server-b"), tried("send_email", "admin-console", decision="none"), tried("pay_order", "direct-api")]
     cov("every listed route tried, nothing happened", out("covered", False, send_email="covered", pay_order="covered"), both, refused)
     cov("no attempts", out("not_checked", False, send_email="not_checked", pay_order="not_checked"), both, [])
     cov("nothing stated, nothing tried", out("not_checked", False), [], [])
     cov("a listed route was never tried", out("incomplete", False, send_email="incomplete", pay_order="covered"), both,
-        [tried("send_email", "tool-server-b"), tried("pay_order", "tool-server-b")])
+        [tried("send_email", "tool-server-b"), tried("pay_order", "direct-api")])
     cov("an attempt whose outcome could not be told", out("incomplete", False, send_email="incomplete", pay_order="covered"), both,
         [tried("send_email", "tool-server-b", "cannot_tell"), refused[1], refused[2]])
     cov("records kept in memory", out("incomplete", False, send_email="incomplete", pay_order="covered"),
-        [row("send_email", ["admin-console"], "memory"), row("pay_order", [])], refused)
+        [row("send_email", ["admin-console"], "memory"), row("pay_order", ["direct-api"])], refused)
     cov("one effect checked, one not", out("incomplete", False, send_email="covered", pay_order="not_checked"), both, refused[:2])
     cov("the effect happened on a listed route", out("bypass", False, send_email="bypass", pay_order="covered"), both,
         [tried("send_email", "admin-console", "yes", "none"), refused[0], refused[2]])
@@ -941,7 +977,13 @@ def evidence() -> list[dict[str, Any]]:
         [*refused, tried("send_email", "nightly-job")])
     cov("a bypass beside an unchecked effect", out("bypass", False, send_email="bypass", pay_order="not_checked"), both,
         [tried("send_email", "admin-console", "yes", "none")])
-    cov("an effect listed twice", err("malformed"), [row("send_email", []), row("send_email", [])], [])
+    cov("an effect listed twice", err("malformed"), [row("send_email", ["a"]), row("send_email", ["a"])], [])
+    cov("a row with no route", err("malformed"), [row("send_email", [])], [])
+    cov("an effect named __proto__ is an ordinary name", out("bypass", False, **{"__proto__": "bypass"}), [row("__proto__", ["api"])],
+        [tried("__proto__", "api", "yes", "none")])
+    cov("no statement and no attempts (null)", out("not_checked", False), None, None)
+    cov("attempts must be a list", err("malformed"), both, {})
+    cov("a statement must be a list", err("malformed"), "x", [])
     cov("a route listed twice", err("malformed"), [row("send_email", ["a", "a"])], [])
     cov("an attempt that says nothing about a decision", err("malformed"), both, [{**refused[0], "decision": "maybe"}])
     return c
