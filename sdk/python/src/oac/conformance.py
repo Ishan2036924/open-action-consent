@@ -73,16 +73,19 @@ def _chain(i: Mapping[str, Any]) -> Any:
     return {"ok": True}
 
 
+def _keys(i: Mapping[str, Any], name: str) -> KeySet | None:
+    return None if i.get(name) is None else KeySet(i[name])
+
+
 def _export(i: Mapping[str, Any]) -> Any:
-    return verify_export(i["tokens"], keys=KeySet(i["keys"]), executor=i["executor"], sub=i.get("sub"), anchors=i.get("anchors", []),
-                         anchor_keys=KeySet(i["anchor_keys"]) if "anchor_keys" in i else None, expect=i.get("expect"))
+    return verify_export(i.get("tokens"), keys=KeySet(i["keys"]), executor=i["executor"], sub=i.get("sub"), anchors=i.get("anchors"),
+                         anchor_keys=_keys(i, "anchor_keys"), expect=i.get("expect"))
 
 
 def _assess(i: Mapping[str, Any]) -> Any:
-    return assess(i["receipt_token"], keys=KeySet(i["keys"]), executor=i["executor"], observations=i.get("observations", []),
-                  observer_keys=KeySet(i["observer_keys"]) if "observer_keys" in i else None,
-                  authority_token=i.get("authority_token"),
-                  authority_keys=KeySet(i["authority_keys"]) if "authority_keys" in i else None)
+    return assess(i["receipt_token"], keys=KeySet(i["keys"]), executor=i["executor"], observations=i.get("observations"),
+                  observer_keys=_keys(i, "observer_keys"), authority_token=i.get("authority_token"),
+                  authority_keys=_keys(i, "authority_keys"))
 
 
 def _undo(i: Mapping[str, Any]) -> Any:
@@ -126,7 +129,7 @@ OPS: dict[str, Callable[[Mapping[str, Any]], Any]] = {
     "verify_chain": _chain,
     "verify_export": _export,
     "assess": _assess,
-    "coverage": lambda i: coverage(i["statement"], i["attempts"]),
+    "coverage": lambda i: coverage(i.get("statement"), i.get("attempts")),
     "check_undo": _undo,
     "claim_occurrence": _occurrence,
     "status_bit": lambda i: {"revoked": bit(decode(i["encoded_list"]), i["index"])},

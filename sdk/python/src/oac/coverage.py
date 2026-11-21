@@ -19,9 +19,9 @@ def _row(row: Mapping[str, Any], tried: Sequence[Mapping[str, Any]]) -> str:
     return "covered"
 
 
-def coverage(statement: Sequence[Mapping[str, Any]], attempts: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+def coverage(statement: Sequence[Mapping[str, Any]] | None, attempts: Sequence[Mapping[str, Any]] | None) -> dict[str, Any]:
     """Four results per effect and for the whole claim, never a score. `statement_wrong`: an effect happened on a route the statement does not list."""
-    rows, tried = shapes.coverage_statement(list(statement)), shapes.coverage_attempts(list(attempts))
+    rows, tried = shapes.coverage_statement(statement), shapes.coverage_attempts(attempts)
     listed = {r["effect"]: {x["route"] for x in r["routes"]} for r in rows}
     happened = [a for a in tried if a["effect_occurred"] == "yes"]
     effects = {r["effect"]: _row(r, [a for a in tried if a["effect"] == r["effect"]]) for r in rows}

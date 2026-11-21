@@ -109,7 +109,8 @@ EFFECTS = [  # outcome, observations (effect, subject), effect, verdict
     ("ok", [], "cannot_establish", "cannot_establish"),
     ("ok", [("seen", None)], "observed", "pass"),
     ("ok", [("not_seen", None)], "not_observed", "fail"),
-    ("ok", [("not_seen", None), ("seen", None)], "observed", "pass"),
+    ("ok", [("not_seen", None), ("seen", None)], "contradicted", "fail"),
+    ("unknown", [("not_seen", None), ("seen", None)], "contradicted", "fail"),
     ("ok", [("uncheckable", None)], "cannot_establish", "cannot_establish"),
     ("ok", [("seen", 1), ("seen", 2)], "duplicate", "fail"),
     ("ok", [("seen", 1), ("seen", 1)], "observed", "pass"),
@@ -182,19 +183,116 @@ def tried(effect: str, route: str, occurred: str = "no") -> dict:
     ([row("e", ["r"])], [tried("e", "x"), tried("e", "r")], "covered", False, {"e": "covered"}),
     ([row("e", ["r"])], [], "not_checked", False, {"e": "not_checked"}),
     ([row("e", ["r"])], [tried("e", "x")], "incomplete", False, {"e": "incomplete"}),
-    ([row("e", [])], [tried("e", "x", "cannot_tell")], "incomplete", False, {"e": "incomplete"}),
-    ([row("e", [], "memory")], [tried("e", "x")], "incomplete", False, {"e": "incomplete"}),
+    ([row("e", ["x"])], [tried("e", "x", "cannot_tell")], "incomplete", False, {"e": "incomplete"}),
+    ([row("e", ["x"], "memory")], [tried("e", "x")], "incomplete", False, {"e": "incomplete"}),
     ([row("e", ["r"])], [tried("e", "r", "yes")], "bypass", False, {"e": "bypass"}),
-    ([row("e", ["r"]), row("f", [])], [tried("e", "r"), tried("e", "z", "yes"), tried("f", "x")], "bypass", True, {"e": "bypass", "f": "covered"}),
-    ([row("e", [])], [tried("g", "z", "yes")], "bypass", True, {"e": "not_checked", "g": "bypass"}),
-    ([row("e", []), row("f", [])], [tried("e", "x")], "incomplete", False, {"e": "covered", "f": "not_checked"}),
+    ([row("e", ["r"]), row("f", ["x"])], [tried("e", "r"), tried("e", "z", "yes"), tried("f", "x")], "bypass", True, {"e": "bypass", "f": "covered"}),
+    ([row("e", ["x"])], [tried("g", "z", "yes")], "bypass", True, {"e": "not_checked", "g": "bypass"}),
+    ([row("e", ["x"]), row("f", ["x"])], [tried("e", "x")], "incomplete", False, {"e": "covered", "f": "not_checked"}),
     ([], [], "not_checked", False, {}),
 ])
 def test_coverage_results(statement, attempts, result, wrong, effects) -> None:
     assert coverage(statement, attempts) == {"result": result, "statement_wrong": wrong, "effects": effects}
 
 
+def test_coverage_refuses_a_row_without_routes_and_reads_none_as_empty() -> None:
+    assert code(coverage, [row("e", [])], []) == "malformed"
+    assert coverage(None, None) == {"result": "not_checked", "statement_wrong": False, "effects": {}}
+    assert code(coverage, [], {}) == "malformed"
+    assert code(coverage, "x", []) == "malformed"
+
+
+def test_coverage_names_are_ordinary_data() -> None:
+    got = coverage([row("__proto__", ["api"])], [tried("__proto__", "api", "yes")])
+    assert got == {"result": "bypass", "statement_wrong": False, "effects": {"__proto__": "bypass"}}
+
+
 def test_coverage_refuses_a_malformed_statement() -> None:
-    assert code(coverage, [row("e", []), row("e", [])], []) == "malformed"
+    assert code(coverage, [row("e", ["x"]), row("e", ["x"])], []) == "malformed"
     assert code(coverage, [row("e", ["r", "r"])], []) == "malformed"
     assert code(coverage, [], [{**tried("e", "r"), "effect_occurred": "maybe"}]) == "malformed"
+
+
+def test_independence_is_by_key_not_only_by_name() -> None:
+    renamed = make_seal(key=EXEC, iss="https://notary.example", sub=PERSON, executor=EX, seq=4, head_token=RS[3], now=NOW)
+    assert code(export, RS[:4], renamed, anchor_keys=KeySet({"https://notary.example": [EXEC.jwk]})) == "anchor_not_independent"
+    rec = receipt()
+    assert code(judge, rec, watch(rec, "seen", key=EXEC), observer_keys=KeySet({PROVIDER: [EXEC.jwk]})) == "observer_not_independent"
+
+
+def test_none_and_wrong_types_are_read_the_same_way_everywhere() -> None:
+    rec = receipt()
+    assert verify_export(RS[:4], keys=KEYS, executor=EX, anchors=None, anchor_keys=None)["reason"] == "no_anchor"
+    assert verify_export(None, keys=KEYS, executor=EX)["first"] is None
+    assert code(verify_export, RS[:4], keys=KEYS, executor=EX, anchors="x") == "malformed"
+    assert code(verify_export, RS[:4], keys=KEYS, executor=EX, anchors=[5], anchor_keys=USER_KEYS) == "malformed"
+    assert code(verify_export, "x", keys=KEYS, executor=EX) == "malformed"
+    assert assess(rec, keys=KEYS, executor=EX, observations=None)["verdict"] == "cannot_establish"
+    assert code(assess, rec, keys=KEYS, executor=EX, observations="x", observer_keys=SEER_KEYS) == "malformed"
+    assert code(assess, rec, keys=KEYS, executor=EX, observations=[5], observer_keys=SEER_KEYS) == "malformed"
+
+
+def test_a_stale_look_does_not_count_and_sixty_seconds_does() -> None:
+    rec = receipt(5)  # iat NOW + 5
+    old = make_observation(key=SEER, iss=PROVIDER, sub=PERSON, executor=EX, receipt_token=rec, effect="seen", now=NOW + 5 - 61)
+    edge = make_observation(key=SEER, iss=PROVIDER, sub=PERSON, executor=EX, receipt_token=rec, effect="seen", now=NOW + 5 - 60)
+    assert judge(rec, old)["effect"] == "cannot_establish"
+    assert judge(rec, edge)["effect"] == "observed"
+
+
+def test_the_authority_token_must_be_for_this_person_executor_and_time() -> None:
+    import base64
+
+    from oac.jcs import parse
+    from oac.jws import sign
+
+    prev = build_preview(profile={"oac": "0.2", "type": "action-profile", "tool": "add_task", "effect": "write", "undo": {"kind": "native", "window_s": 600},
+                                  "tier_floor": "A", "binds": {"title": "title"}}, action=TASK, executor=EX, sub=PERSON, summary="Add", now=NOW)
+    cons = make_consent(key=USER, iss=SIGNER, sub=PERSON, aud=EX, previews=[prev], now=NOW, jti="n_consent_0000000001")
+    body = parse(base64.urlsafe_b64decode(cons.split(".")[1] + "=="))
+
+    def under(token: str) -> str:
+        return receipt(tier="C", authority={"kind": "consent", "ref": "n_consent_0000000001", "digest": token_digest(token)},
+                       undo={"kind": "compensate", "until": NOW + 99}, preview=digest(prev))
+
+    assert judge(under(cons), authority_token=cons, authority_keys=USER_KEYS)["decision"] == "bound"
+    for change in ({"sub": "person:2"}, {"aud": "https://other.example/oac"}, {"iat": NOW + 62, "exp": NOW + 200}):
+        moved = sign(body | change, USER, "oac-consent+jws")
+        assert code(judge, under(moved), authority_token=moved, authority_keys=USER_KEYS) == "authority_mismatch"
+
+
+def test_a_mandate_must_be_for_this_person_tool_and_time() -> None:
+    from oac import make_mandate
+
+    def mandate(**change) -> str:
+        return make_mandate(key=USER, payload={"id": "md_1", "iss": SIGNER, "sub": PERSON, "holder": {"type": "agent", "id": "bot"}, "goal": "g",
+                            "tools": ["add_task"], "bounds": {"calls": {"per_day": 5}}, "iat": NOW - 100, "exp": NOW + 100,
+                            "signer": {"kind": "custodial"}} | change)
+
+    def under(token: str, **fields) -> str:
+        return receipt(tier="C", authority={"kind": "mandate", "ref": "md_1", "digest": token_digest(token)}, **fields)
+
+    good = mandate()
+    assert judge(under(good), authority_token=good, authority_keys=USER_KEYS)["decision"] == "bound"
+    for token, fields in [(mandate(sub="person:2"), {}), (mandate(tools=["send_email"]), {}), (mandate(exp=NOW), {"iat": NOW + 61}),
+                          (mandate(iat=NOW + 100, exp=NOW + 200), {"iat": NOW + 30})]:
+        assert code(judge, under(token, **fields), authority_token=token, authority_keys=USER_KEYS) == "authority_mismatch"
+
+
+def test_an_undo_request_must_be_for_this_person_and_executor() -> None:
+    from oac import make_undo
+
+    orig = receipt(tier="B", undo={"kind": "native", "until": NOW + 600, "token": "u1"})
+
+    def request(**kw) -> str:
+        return make_undo(key=USER, iss=SIGNER, sub=kw.get("sub", PERSON), aud=kw.get("aud", EX), receipt_token=orig, mode="native", now=NOW,
+                         jti="n_undo_00000000000001")
+
+    def under(token: str) -> str:
+        return receipt(tier="B", authority={"kind": "undo", "ref": "n_undo_00000000000001", "digest": token_digest(token)}, undoes=token_digest(orig))
+
+    good = request()
+    assert judge(under(good), authority_token=good, authority_keys=USER_KEYS)["decision"] == "bound"
+    for kw in ({"sub": "person:2"}, {"aud": "https://other.example/oac"}):
+        bad = request(**kw)
+        assert code(judge, under(bad), authority_token=bad, authority_keys=USER_KEYS) == "authority_mismatch"

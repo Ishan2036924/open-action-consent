@@ -7,7 +7,8 @@ from typing import Any
 
 from oac import shapes
 from oac.errors import OACError
-from oac.jws import KeySet, SigningKey, sign, token_digest, verify
+from oac.jcs import parse
+from oac.jws import KeySet, SigningKey, b64url_decode, sign, token_digest, verify
 from oac.occurrence import scope
 
 TYP = "oac-receipt+jws"
@@ -100,9 +101,9 @@ def check_seals(chain: Sequence[Mapping[str, Any]], tokens: Sequence[str], *, se
             raise OACError("seal_mismatch", "the seal does not match this chain")
 
 
-def independent(iss: str, executor: str, code: str) -> None:
-    """A witness of the executor must not be the executor (spec 8.4, 8.5)."""
-    if iss == executor:
+def independent(token: str, iss: str, executor: str, executor_keys: KeySet, code: str) -> None:
+    """A witness of the executor must not be the executor, by name or by key (spec 8.4, 8.5)."""
+    if iss == executor or executor_keys.get(parse(b64url_decode(token.split(".")[0]))["kid"]) is not None:
         raise OACError(code, "the executor cannot vouch for itself")
 
 
@@ -130,6 +131,7 @@ def verify_export(
     expect: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """verify_chain, then say how much of the export is proven complete by anchors the executor does not hold (spec 8.4)."""
+    tokens, anchors = shapes.token_list(tokens, "tokens"), shapes.token_list(anchors, "anchors")
     chain = verify_chain(tokens, keys=keys, executor=executor, sub=sub)
     first, last = (chain[0]["seq"], chain[-1]["seq"]) if chain else (None, None)
     if anchors and anchor_keys is None:
@@ -138,7 +140,7 @@ def verify_export(
     for token in anchors:
         a = verify(token, anchor_keys, SEAL_TYP)
         shapes.seal(a)
-        independent(a["iss"], executor, "anchor_not_independent")
+        independent(token, a["iss"], executor, keys, "anchor_not_independent")
         if (sub or (chain[0]["sub"] if chain else a["sub"])) != a["sub"]:
             raise OACError("subject_mismatch")
         if a["executor"] != executor:
