@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.5.2 (2026-11-21)
+
+Robustness fixes found by new property-based fuzzing; no change to the spec, the vectors or any valid object.
+
+- Key sets refuse a broken key document with `malformed`. A JWK missing a member (`{"kty": "OKP"}`), one key where a
+  list was expected, or a non-object key raised `KeyError`, `ValueError` or `TypeError` (Python) and `TypeError`
+  (TypeScript) instead of an `OACError`. Issuer keys come from the network (`keyset_from`), so a hostile issuer could
+  crash a verifier that only expects `OACError`.
+- TypeScript `canonical` refuses values JSON cannot hold, as Python already did. An array with holes was written as
+  `[1,,2]` (not JSON), and a `Date`, `Map`, `Set`, typed array or boxed string became `{}` or an object of index keys,
+  so `digest` and `sign` could cover something other than what the caller meant.
+- Fuzzing: Hypothesis (Python) and fast-check (TypeScript) properties over strict JSON and JCS (round trip,
+  idempotence, deep nesting), compact JWS on hostile and edited tokens, hostile keys, the receipt, seal and observation
+  shapes, `verify_export`, `verify_chain` seals and `assess` (including payloads signed by a trusted key): each must
+  refuse with `OACError` and a known code, never another exception. A seeded corpus checks that Python and TypeScript
+  JCS agree byte for byte, refusals included. They run in the normal test suites (100 examples each) and in a new
+  `fuzz` CI job (1,000); `OAC_FUZZ_EXAMPLES` sets the budget. `hypothesis` joins the `test` extra; fast-check is a
+  pinned dev dependency.
+- CI lints the Python SDK, tests, tools and examples with ruff (from the hash lock; `ruff.toml`); the six findings
+  were four unused imports and two lambdas assigned to names, fixed without a behaviour change.
+- `CONTRIBUTING.md` says how a change lands (pull request against `main`, required checks green); `SECURITY.md` says
+  GitHub private vulnerability reporting is enabled.
+
 ## 0.5.1 (2026-11-21)
 
 - Security fix in `assess` (spec 8.5). In 0.5.0 an observation dated more than 60 seconds before its receipt was

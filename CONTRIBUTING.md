@@ -8,9 +8,17 @@ Thank you for helping. OAC is small on purpose; every rule must be checkable, an
 tools/check_all.sh            # PYTHON=/path/to/python to choose an interpreter
 ```
 
-Python needs `cryptography` and `pytest` (and `jsonschema` for the schema check). TypeScript needs only Node 23.6+.
+Python needs `cryptography` and `pytest` (`hypothesis` for the fuzz tests, `jsonschema` for the schema check, `ruff`
+for lint; `pip install --require-hashes -r ci/test.txt` gets all of them). TypeScript needs only Node 23.6+ (`npm ci`
+in `sdk/typescript` adds fast-check for its fuzz tests). The fuzz tests are seeded; `OAC_FUZZ_EXAMPLES=5000` runs
+them longer.
 
 ## How a change lands
+
+Every change comes in as a pull request against `main`; nothing is pushed to `main` directly. The required CI checks
+(`python`, `typescript`, `browser-tools`, `agent-frameworks`) must pass before a maintainer merges it; `fuzz` and
+CodeQL run on every pull request too, and a failure there is fixed, not waved through. Security problems do
+not go in a pull request or a public issue: report them privately as `SECURITY.md` says.
 
 1. **Spec first.** Say in `spec/` what a verifier must do and which error code it reports, in which order.
 2. **Vectors next.** Add cases to `tools/make_vectors.py` with the expected result written by hand from the spec,
