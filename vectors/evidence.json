@@ -2095,7 +2095,7 @@
    }
   },
   {
-   "name": "assess: a look taken more than 60 s before the receipt does not count",
+   "name": "assess: an observation dated more than 60 s before its receipt shows the receipt's time is false",
    "op": "assess",
    "input": {
     "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
@@ -2143,8 +2143,8 @@
    "expect": {
     "route": null,
     "decision": "tier",
-    "effect": "cannot_establish",
-    "verdict": "cannot_establish"
+    "effect": "contradicted",
+    "verdict": "fail"
    }
   },
   {
@@ -2201,7 +2201,7 @@
    }
   },
   {
-   "name": "assess: a stale not_seen does not fail an allowance",
+   "name": "assess: a not_seen dated well before its receipt contradicts the receipt's time",
    "op": "assess",
    "input": {
     "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODM2ODAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoib2siLCJwcmV2IjpudWxsLCJyZXN1bHQiOiJzaGEtMjU2OlFHTHRyM1VQdUFkT2ZvUGd5UUtNbE9Na2FLaTI4V0ZIZERLTzhFVVZENU0iLCJzZXEiOjEsInN1YiI6InBlcnNvbjo3ZjNhIiwidGllciI6IkEiLCJ0b29sIjoiYWRkX3Rhc2siLCJ0eXBlIjoicmVjZWlwdCIsInVuZG8iOnsia2luZCI6Im5vbmUifX0.zuGZnrN2G0e5x__6EEo-MCRPyE9WVuUnb0DKM2RU46IZIG29JlAnR_CHDs2y3isgMHLsxGqVwjbWN3q0L-2qBg",
@@ -2250,8 +2250,114 @@
    "expect": {
     "route": null,
     "decision": "tier",
-    "effect": "observed",
-    "verdict": "pass"
+    "effect": "contradicted",
+    "verdict": "fail"
+   }
+  },
+  {
+   "name": "assess: a denial dated an hour ahead cannot hide an effect seen before that time",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODQwNDAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoiZmFpbGVkIiwicHJldiI6bnVsbCwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJBIiwidG9vbCI6ImFkZF90YXNrIiwidHlwZSI6InJlY2VpcHQiLCJ1bmRvIjp7ImtpbmQiOiJub25lIn19.FXbk7MFXkbrYm0YtJttcNT7YBbHeleGcB3D-0ZYk9dahr88UlO5oDRb-yPMrvcFfzC9uhK75746lX3gNXfILAA",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6IlhiZHcxR0JhOTRzdkZCYWp0WEluRnU1aTB2Y3NzOHNPTk54Z2dTN0YyclEiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJzZWVuIiwiZXhlY3V0b3IiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJpYXQiOjE3OTM4MzY4MzAsImlzcyI6Imh0dHBzOi8vcHJvdmlkZXIuZXhhbXBsZSIsIm9hYyI6IjAuMiIsInJlY2VpcHQiOiJzaGEtMjU2OlZhejRpaXlaLUNQcHR3U1F2Rmx5YjN1bl9aNlZUX3dVTV8zTWJibE9SQ1UiLCJzdWIiOiJwZXJzb246N2YzYSIsInR5cGUiOiJvYnNlcnZhdGlvbiJ9.ftHVPLUj0Aot0qcj-uX6OMc2Hl9SnJacl-sYBdQ3CRSOblKSXRSpoKxpwo-Ch_IeRfHS0_cENMk_JpvcFIp0AQ"
+    ],
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "SquscpEgqJnqlB8d6BPNrPN2mJqBUYWNQ1dKJPVYdQA",
+       "kid": "Xbdw1GBa94svFBajtXInFu5i0vcss8sONNxggS7F2rQ"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "route": null,
+    "decision": "tier",
+    "effect": "contradicted",
+    "verdict": "fail"
+   }
+  },
+  {
+   "name": "assess: an uncheckable look dated well before its receipt still contradicts the receipt's time",
+   "op": "assess",
+   "input": {
+    "receipt_token": "eyJhbGciOiJFZERTQSIsImtpZCI6ImZKeXBFa3NWaXozSnN0ZkVqeDNLLWNra29SRHFqeTMxVk9BemlndGVFNzQiLCJ0eXAiOiJvYWMtcmVjZWlwdCtqd3MifQ.eyJhY3Rpb24iOiJzaGEtMjU2OlRxWExTd1RlOUZFWFB2OGtYNTBhVHlORTkxR3hhMGJGc2UwR05xQ0VHa1kiLCJhdXRob3JpdHkiOnsia2luZCI6InRpZXIifSwiaWF0IjoxNzkzODQwNDAwLCJpc3MiOiJodHRwczovL3Nob3AuZXhhbXBsZS9vYWMiLCJvYWMiOiIwLjIiLCJvdXRjb21lIjoiZmFpbGVkIiwicHJldiI6bnVsbCwicmVzdWx0Ijoic2hhLTI1NjpRR0x0cjNVUHVBZE9mb1BneVFLTWxPTWthS2kyOFdGSGRES084RVVWRDVNIiwic2VxIjoxLCJzdWIiOiJwZXJzb246N2YzYSIsInRpZXIiOiJBIiwidG9vbCI6ImFkZF90YXNrIiwidHlwZSI6InJlY2VpcHQiLCJ1bmRvIjp7ImtpbmQiOiJub25lIn19.FXbk7MFXkbrYm0YtJttcNT7YBbHeleGcB3D-0ZYk9dahr88UlO5oDRb-yPMrvcFfzC9uhK75746lX3gNXfILAA",
+    "keys": {
+     "https://shop.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "OSGls7Aid0v8ObuWH_zJiLesdEndLbsqBJihNc1uKX4",
+       "kid": "fJypEksViz3JstfEjx3K-ckkoRDqjy31VOAzigteE74"
+      }
+     ],
+     "https://other.example/oac": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "S9PkN6bocWmFX-TON7sJobdjeQCULcIz10rY0ikYnS4",
+       "kid": "i3xw-XmI_ax040Qy0mhQ5PxLw78uWtCQ0BFqA-uSriE"
+      }
+     ]
+    },
+    "executor": "https://shop.example/oac",
+    "observations": [
+     "eyJhbGciOiJFZERTQSIsImtpZCI6IlhiZHcxR0JhOTRzdkZCYWp0WEluRnU1aTB2Y3NzOHNPTk54Z2dTN0YyclEiLCJ0eXAiOiJvYWMtb2JzZXJ2YXRpb24randzIn0.eyJlZmZlY3QiOiJ1bmNoZWNrYWJsZSIsImV4ZWN1dG9yIjoiaHR0cHM6Ly9zaG9wLmV4YW1wbGUvb2FjIiwiaWF0IjoxNzkzODM2ODMwLCJpc3MiOiJodHRwczovL3Byb3ZpZGVyLmV4YW1wbGUiLCJvYWMiOiIwLjIiLCJyZWNlaXB0Ijoic2hhLTI1NjpWYXo0aWl5Wi1DUHB0d1NRdkZseWIzdW5fWjZWVF93VU1fM01iYmxPUkNVIiwic3ViIjoicGVyc29uOjdmM2EiLCJ0eXBlIjoib2JzZXJ2YXRpb24ifQ.6DKsXE0HV2Oi0x6NX2-Q_ziNT4HR6QWr9yTs1FVFGL-Ro-BMwatR3pLkslK-ouZtfgCewRWFFOxOU8K-yYoYCQ"
+    ],
+    "observer_keys": {
+     "https://provider.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "SquscpEgqJnqlB8d6BPNrPN2mJqBUYWNQ1dKJPVYdQA",
+       "kid": "Xbdw1GBa94svFBajtXInFu5i0vcss8sONNxggS7F2rQ"
+      }
+     ],
+     "https://wallet.example": [
+      {
+       "kty": "OKP",
+       "crv": "Ed25519",
+       "x": "Tv-cF7Zg0w9Zfh9wAKIEWD7VkerqWvwtqWdJ55hfzTI",
+       "kid": "ks0VIzzjQB0f-vgSNPRQVAYES0F8eUNJKL7UGadOIek"
+      }
+     ]
+    }
+   },
+   "expect": {
+    "route": null,
+    "decision": "tier",
+    "effect": "contradicted",
+    "verdict": "fail"
    }
   },
   {

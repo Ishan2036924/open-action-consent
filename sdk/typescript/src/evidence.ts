@@ -41,7 +41,7 @@ function observed(r: Record<string, any>, token: string, obs: string[] | null | 
     if (o.sub !== r.sub) throw new OACError("subject_mismatch");
     if (o.executor !== executor) throw new OACError("executor_mismatch");
     if (o.receipt !== tokenDigest(token)) throw new OACError("receipt_mismatch", "the observation is about another receipt");
-    if (o.iat >= r.iat - SKEW_S) out.push(o); // a look taken well before the action says nothing about it
+    out.push(o);
   }
   return out;
 }
@@ -82,7 +82,10 @@ export function assess(receiptToken: string, o: {
   shapes.receipt(r);
   checkSemantics(r);
   if (r.iss !== o.executor) throw new OACError("chain_issuer");
-  const effect = effectOf(r.outcome, observed(r, receiptToken, o.observations, o.observerKeys, o.executor, o.keys));
+  const seen = observed(r, receiptToken, o.observations, o.observerKeys, o.executor, o.keys);
+  // An observation names this receipt's digest, so it was made after the receipt existed. One dated more than
+  // SKEW_S before the receipt shows that the executor's own time on the receipt is false (spec 8.5).
+  const effect = seen.some((x) => x.iat < r.iat - SKEW_S) ? "contradicted" : effectOf(r.outcome, seen);
   const decision = decide(r, o.authorityToken, o.authorityKeys);
   let verdict = "cannot_establish";
   if (["not_observed", "contradicted", "duplicate"].includes(effect)) verdict = "fail";

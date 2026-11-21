@@ -827,11 +827,16 @@ def evidence() -> list[dict[str, Any]]:
              watcher(t, "seen", subject=digest({"id": 1})))
     assessed("a conflict on an unknown outcome", verdict(None, "tier", "contradicted", "fail"), rcpt(outcome="unknown"),
              watcher(rcpt(outcome="unknown"), "not_seen"), watcher(rcpt(outcome="unknown"), "seen"))
-    assessed("a look taken more than 60 s before the receipt does not count", verdict(None, "tier", "cannot_establish", "cannot_establish"), t,
-             watcher(t, "seen", now=NOW - 61))
+    assessed("an observation dated more than 60 s before its receipt shows the receipt's time is false",
+             verdict(None, "tier", "contradicted", "fail"), t, watcher(t, "seen", now=NOW - 61))
     assessed("a look taken exactly 60 s before the receipt counts", verdict(None, "tier", "observed", "pass"), t, watcher(t, "seen", now=NOW - 60))
-    assessed("a stale not_seen does not fail an allowance", verdict(None, "tier", "observed", "pass"), t, watcher(t, "not_seen", now=NOW - 500),
-             watcher(t, "seen"))
+    assessed("a not_seen dated well before its receipt contradicts the receipt's time", verdict(None, "tier", "contradicted", "fail"), t,
+             watcher(t, "not_seen", now=NOW - 500), watcher(t, "seen"))
+    future_denial = rcpt(outcome="failed", iat=NOW + 3600)
+    assessed("a denial dated an hour ahead cannot hide an effect seen before that time", verdict(None, "tier", "contradicted", "fail"),
+             future_denial, watcher(future_denial, "seen", now=NOW + 30))
+    assessed("an uncheckable look dated well before its receipt still contradicts the receipt's time",
+             verdict(None, "tier", "contradicted", "fail"), future_denial, watcher(future_denial, "uncheckable", now=NOW + 30))
     assessed("no observations given at all (null)", verdict(None, "tier", "cannot_establish", "cannot_establish"), t, observations=None,
              observer_keys=None)
     assessed("observations must be a list", err("malformed"), t, observations="x", observer_keys=obs_keys)
