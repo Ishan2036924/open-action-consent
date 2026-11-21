@@ -50,12 +50,17 @@ def digest(value: Any) -> str:
 
 
 def thumbprint(jwk: Mapping[str, Any]) -> str:
+    if not isinstance(jwk, Mapping):
+        raise OACError("malformed", "a key is a JSON object")
     if jwk.get("kty") == "OKP":
-        members = {k: jwk[k] for k in ("crv", "kty", "x")}
+        names: tuple[str, ...] = ("crv", "kty", "x")
     elif jwk.get("kty") == "EC":
-        members = {k: jwk[k] for k in ("crv", "kty", "x", "y")}
+        names = ("crv", "kty", "x", "y")
     else:
         raise OACError("malformed", "unsupported key type")
+    if any(k not in jwk for k in names):
+        raise OACError("malformed", "key is missing a member")
+    members = {k: jwk[k] for k in names}
     return b64url(hashlib.sha256(canonical_bytes(members)).digest())
 
 
@@ -109,7 +114,11 @@ class KeySet:
         if not isinstance(by_issuer, Mapping):
             raise OACError("malformed", "keys are grouped by issuer: {iss: [jwk, ...]}")
         for iss, jwks in by_issuer.items():
+            if isinstance(jwks, (str, bytes, Mapping)) or not isinstance(jwks, Iterable):
+                raise OACError("malformed", "keys are grouped by issuer: {iss: [jwk, ...]}")
             for jwk in jwks:
+                if not isinstance(jwk, Mapping):
+                    raise OACError("malformed", "a key is a JSON object")
                 j = dict(jwk)
                 kid = thumbprint(j)
                 if j.get("kid", kid) != kid:

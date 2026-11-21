@@ -131,3 +131,18 @@ def test_non_ascii_token_is_malformed_not_a_crash() -> None:
     with pytest.raises(OACError) as e:
         verify("é.a.b", KeySet({}), "t")
     assert e.value.code == "malformed"
+
+
+@pytest.mark.parametrize("by_issuer", [
+    {"iss": [{"kty": "OKP"}]},  # was KeyError: 'crv'
+    {"iss": [{"kty": "EC", "crv": "P-256", "x": "AA"}]},  # was KeyError: 'y'
+    {"iss": {"kty": "OKP"}},  # one key, not a list: was ValueError
+    {"iss": [None]},  # was TypeError
+    {"iss": 5},  # was TypeError
+    {"iss": "abc"},
+])
+def test_malformed_key_documents_are_refused_with_oac_error(by_issuer) -> None:
+    # found by tests/test_fuzz.py: issuer keys come from the network, so a broken one is "malformed", not a crash
+    with pytest.raises(OACError) as e:
+        KeySet(by_issuer)
+    assert e.value.code == "malformed"

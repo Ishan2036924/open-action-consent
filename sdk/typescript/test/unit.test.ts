@@ -47,3 +47,15 @@ test("ES256 signatures are low-S; non-ASCII tokens and a BOM are malformed", () 
   assert.equal(code(() => parse(new Uint8Array([0xef, 0xbb, 0xbf, 0x7b, 0x7d]))), "malformed");
   assert.equal(code(() => parse("[".repeat(5000) + "]".repeat(5000))), "malformed");
 });
+
+test("malformed key documents and non-JSON values are refused with OACError (found by fuzz.test.ts)", () => {
+  // was TypeError: jwks is not iterable / cannot read properties of null
+  for (const by of [{ iss: [{ kty: "OKP" }] }, { iss: [{ kty: "EC", crv: "P-256", x: "AA" }] }, { iss: { kty: "OKP" } }, { iss: [null] }, { iss: 5 }, { iss: "abc" }]) {
+    assert.equal(code(() => new KeySet(by as never)), "malformed");
+  }
+  // canonical wrote "[1,,2]" (not JSON) for an array with holes, and "{}" or index keys for these, where Python refuses
+  for (const v of [[1, , 2], new Array(2), new Date(0), new Map([["a", 1]]), new Set([1]), new Uint8Array([1]), new String("ab"), { a: new Date(0) }]) {
+    assert.equal(code(() => canonical(v)), "malformed");
+  }
+  assert.equal(canonical(Object.assign(Object.create(null), { b: 1, a: [2] })), '{"a":[2],"b":1}');
+});
