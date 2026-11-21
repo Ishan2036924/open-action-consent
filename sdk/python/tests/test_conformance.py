@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
 
 import oac.consent
+import oac.evidence
 import oac.shapes
 import oac.jws
 import oac.mandate
@@ -33,6 +35,11 @@ def _noop(*args: object, **kwargs: object) -> None:
     return None
 
 
+def _by_name_only(token: str, iss: str, executor: str, executor_keys: object, code: str) -> None:
+    if iss == executor:
+        raise oac.receipts.OACError(code)
+
+
 MUTATIONS = [
     ("no signature check", oac.jws, "_check_sig", _noop, "forged: attacker signs"),
     ("no preview-to-argument binding", oac.consent, "check_binding", _noop, "preview fields do not match the arguments"),
@@ -47,6 +54,13 @@ MUTATIONS = [
     ("undo receipt rules off", oac.undo, "check_semantics", _noop, "undo of an invalid receipt"),
     ("device proof ignored", oac.consent, "verify_device_proof", _noop, "user present but not verified"),
     ("occurrence state ignored", oac.occurrence, "_refuse", _noop, "last attempt is unknown"),
+    ("anchors not placed against the export", oac.receipts, "_place", lambda chain, *a: bool(chain), "an anchor says the chain reached 6"),
+    ("anchor independence off", oac.receipts, "independent", _noop, "anchor signed by the executor's own key"),
+    ("independence by name only", oac.receipts, "independent", _by_name_only, "under another name but signed with the executor's key"),
+    ("observer independence off", oac.evidence, "independent", _noop, "the executor cannot observe its own effect"),
+    ("authority binding off", oac.evidence, "_binds", lambda *a: True, "a consent for another action"),
+    ("effects always observed", oac.evidence, "_effect", lambda *a: "observed", "did not see"),
+    ("coverage rows always covered", sys.modules["oac.coverage"], "_row", lambda *a: "covered", "the effect happened on a listed route"),
     ("backup flags ignored", oac.webauthn, "BACKED_UP", 0, "backed up but not backup eligible"),
     ("device binding ignored", oac.webauthn, "BACKUP_ELIGIBLE", 0, "executor wants one bound to the device"),
 ]

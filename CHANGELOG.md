@@ -1,7 +1,42 @@
 # Changelog
 
-## Unreleased (no package changes)
+## 0.5.0 (2026-11-20)
 
+Adds completeness anchors, independent observations and a checkable coverage result. Everything is additive: objects
+an older SDK made stay valid and every earlier vector gives the same result. One caution: a receipt that carries the
+new `route` or `policy` field is refused by a verifier older than 0.5 (`malformed`, unknown field), so add them only
+for verifiers that know them.
+
+- Completeness (spec 8.4, new): `verify_export` / `verifyExport` checks an export against anchors, seals signed by a
+  key whose issuer is not the executor, and against the verifier's own `expect` count. A chain of six cut to four still
+  verifies as a chain, so the report says so: `{first, last, proven_to, status, reason}` with `status` `complete` or
+  `prefix` (`no_anchor`, `unanchored_tail`, `unanchored_start`). New codes `chain_truncated` and
+  `anchor_not_independent`. `verify_chain` and every earlier vector are unchanged. Raised by ceyptoslim on MCP
+  SEP-2848 ([write-up](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262)).
+- Observations and verdicts (spec 8.5, new): the signed observation (`typ` `oac-observation+jws`,
+  `schemas/observation.schema.json`, `make_observation`) by a reader other than the executor, and `assess`, which
+  returns `route`, `decision`, `effect` (`observed`, `not_observed`, `cannot_establish`, `absent`, `contradicted`,
+  `duplicate`) and a `verdict`, never one merged pass. New codes `authority_mismatch` and `observer_not_independent`.
+  Receipts gain optional `route` and `policy`.
+- Coverage is checkable (13.2): `schemas/coverage.schema.json` and `coverage(statement, attempts)` give `covered`,
+  `bypass`, `incomplete` or `not_checked` per effect, and `statement_wrong` when an effect happened on a route the
+  statement does not list. The rule 3 wording points to the schema.
+- Spec 6.2: the Consent item's `preview` digest is the digest of what the approver was shown (compare OpenID4VP
+  `transaction_data_hashes`). Spec 12: records after the latest anchor are not protected; an executor's statement that
+  it did something is a claim about itself.
+- Mappings: SCITT is RFC 9943 and COSE Receipts RFC 9942; C2SP witnesses as anchor issuers; a SEP-2848 field table and
+  outcome mapping (`ok` to `approved-executed`, `unknown` to `outcome-unknown`, `failed` is not `execution-error`).
+  SEP-2848 is a draft with no sponsor; nothing says it is adopted.
+- Independence is by key as well as by name: an anchor or observation signed with any key the verifier holds for the
+  executor is refused, whatever issuer name it carries. A custodial signer run by the executor's operator is not
+  independent; use a witness.
+- `assess` binds the authority token more tightly: person (`sub`), executor (`aud`), time, and for a Mandate the tool.
+  Seen and not seen from independent readers is `contradicted` (fail), and a look taken more than 60 s before the
+  receipt does not count. `duplicate` needs `subject`.
+- Inputs: a null or missing list of anchors, observations, statement rows or attempts is empty in both SDKs, and a
+  wrong type is `malformed`. The TypeScript `coverage` no longer loses an effect named `__proto__`. A coverage row must
+  list at least one route.
+- Conformance: new ops `verify_export`, `assess`, `coverage` and `vectors/evidence.json` (110 cases), 351 in all.
 - Deployment coverage (13.2): each bypass attempt records the route, whether a decision exists for that exact action,
   and whether the effect occurred as separate fields; the coverage statement lists every other route to an effect
   with the credential it holds and the control it passes through; an effect on an unlisted route breaks the whole claim; and

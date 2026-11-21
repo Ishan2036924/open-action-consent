@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oac:0.2:observation",
+  "title": "OAC 0.2 Observation (JWS payload, typ oac-observation+jws)",
+  "description": "Signed by a reader that is not the executor (for example the provider, a third party or the person): it saw, did not see, or could not check the effect of one receipt. iss MUST NOT be the executor. uncheckable counts as no observation. subject is the digest of what was seen (the provider's record id, a sent-message digest); two seen observations of one receipt with different subjects mean one decision had two effects.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "oac",
+    "type",
+    "iss",
+    "sub",
+    "executor",
+    "receipt",
+    "effect",
+    "iat"
+  ],
+  "properties": {
+    "oac": {
+      "$ref": "urn:oac:0.2:common#/$defs/version"
+    },
+    "type": {
+      "const": "observation"
+    },
+    "iss": {
+      "$ref": "urn:oac:0.2:common#/$defs/id"
+    },
+    "sub": {
+      "$ref": "urn:oac:0.2:common#/$defs/id"
+    },
+    "executor": {
+      "$ref": "urn:oac:0.2:common#/$defs/id"
+    },
+    "receipt": {
+      "description": "token_digest of the receipt this is about.",
+      "$ref": "urn:oac:0.2:common#/$defs/digest"
+    },
+    "effect": {
+      "enum": [
+        "seen",
+        "not_seen",
+        "uncheckable"
+      ]
+    },
+    "subject": {
+      "$ref": "urn:oac:0.2:common#/$defs/digest"
+    },
+    "route": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "vantage": {
+      "enum": [
+        "provider",
+        "third_party",
+        "person"
+      ]
+    },
+    "iat": {
+      "$ref": "urn:oac:0.2:common#/$defs/time"
+    }
+  }
+}

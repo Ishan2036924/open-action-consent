@@ -5,6 +5,10 @@ Status: draft. Not endorsed by any standards body. Licensed under CC-BY-4.0 (see
 Objects in this draft say `"oac":"0.2"`. Objects labelled `"0.1"` came from earlier drafts (SDKs up to 0.3.0) and
 are refused (`malformed`): receipts there may lack `authority.digest`, and `pay` profiles may lack an `occurrence`.
 
+The SDKs' 0.5.0 release adds optional objects and fields to this draft (8.1 `route` and `policy`, 8.4, 8.5) without
+changing the wire label: objects an older SDK made stay valid, and a receipt that carries `route` or `policy` needs a
+0.5 verifier.
+
 The key words MUST, MUST NOT, SHOULD, SHOULD NOT and MAY are to be read as described in RFC 2119 and RFC 8174 when,
 and only when, they appear in all capitals.
 
@@ -59,13 +63,13 @@ The **action** is `{"tool": <name>, "args": <object>}` and its digest is `digest
 
 ### 3.3 Signed objects
 
-Consent, Mandate, Receipt and Undo request are JWS compact serializations (RFC 7515):
+Consent, Mandate, Receipt, Undo request, status list, seal and observation are JWS compact serializations (RFC 7515):
 
 - the token is ASCII; the protected header is exactly `{"alg", "kid", "typ"}`, canonical;
 - `alg` is `EdDSA` (Ed25519, RFC 8037) or `ES256` (P-256, signature as raw r||s with s at most n/2);
 - `kid` is the RFC 7638 thumbprint of the signing key's public JWK;
-- `typ` is `oac-consent+jws`, `oac-mandate+jws`, `oac-receipt+jws` or `oac-undo+jws`, and a verifier MUST check
-  it, so that no object can pass for another;
+- `typ` is `oac-consent+jws`, `oac-mandate+jws`, `oac-receipt+jws`, `oac-undo+jws`, `oac-status+jws`,
+  `oac-seal+jws` or `oac-observation+jws`, and a verifier MUST check it, so that no object can pass for another;
 - the payload is the canonical bytes of the object.
 
 A verifier MUST refuse a token whose header or payload is not byte-for-byte the canonical form of what it parses to
@@ -295,6 +299,13 @@ Schema: `schemas/consent.schema.json`. Signed by the person's signer, `typ` `oac
 - `exp - iat` at most 900.
 - `jti` is single-use, at least 16 characters of base64url alphabet.
 - `payment` is present if and only if one item pays (section 9).
+- Each item's `preview` is the digest of what the approver was shown. The Preview is the render model the client MUST
+  show (6.1 rule 5: `summary`, `fields`, `details`, `undo`, `cancel_policy`), and the executor binds the action to that
+  same digest (6.3 steps 5.2 and 5.3). So the signature covers the exact text the person read, and the receipt's
+  `preview` (8.1) names it again. OpenID4VP does the same with `transaction_data_hashes`, a digest of the
+  transaction data the wallet was asked to display. A signed approval that does not carry the digest of what the
+  approver was shown, and the digest the decision was bound to, shows only that someone signed something
+  (ceyptoslim, [MCP SEP-2848 thread](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262)).
 
 ### 6.3 Verifying a Consent
 
@@ -441,6 +452,12 @@ Rules beyond the schema (`receipt_invalid`):
 tool's profile names an `occurrence`, the receipt carries its value in `occurrence`, and the profile's
 `occurrence_scope`, if any, in `occurrence_scope`.
 
+A receipt MAY carry two more fields. `route` (1 to 128 characters) is the route id from the coverage statement (13.2)
+that the action took, recorded by the executor at the point of effect. `policy` is the digest of the policy in force
+when the executor decided. Neither is part of any older check. A verifier older than 0.5 refuses a receipt that carries
+either (`malformed`: unknown field), so an executor adds them only for verifiers that know them; receipts without them
+are unchanged.
+
 `result` is the digest of the action's result. Receipts SHOULD NOT carry personal data in clear: they carry digests,
 and a store holds the details.
 
@@ -459,8 +476,8 @@ undo receipts.
 `token_digest` of receipt `seq`. When an export is verified with seals, each seal MUST verify under the signer's keys,
 name the same person (`subject_mismatch`) and this executor, and name a receipt in the export whose `token_digest`
 equals `head` (`seal_mismatch`). A seal therefore exposes any later rewrite of the receipts it covers. A seal and
-its receipt MAY also be registered in an IETF SCITT transparency service, so a third party can see that the head
-existed at that time; OAC 0.2 does not require it.
+its receipt MAY also be registered in an IETF SCITT transparency service (RFC 9943), so a third party can see that the
+head existed at that time; OAC 0.2 does not require it. Seals also anchor an export against truncation (8.4).
 
 ### 8.3 Undo request
 
@@ -486,6 +503,120 @@ own signed-in session for a tier B native undo; the signed request is what makes
 
 "Undo this run" is a list of undo requests, newest receipt first. Receipts whose kind is `none` MUST be listed to the
 person as "cannot be undone", never skipped silently.
+
+### 8.4 Completeness
+
+A chain proves order, not completeness. Cutting receipts off the end of a chain leaves a shorter chain in which every
+check of 8.2 still passes: a chain of six receipts cut to four verifies clean. ceyptoslim measured exactly that and
+wrote that completeness needs an anchor the writer does not hold
+([write-up](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262)). So "verified" and "complete" are two results, and a verifier MUST NOT merge them.
+
+An **anchor** is a seal (8.2) used for this, with one more rule: it MUST NOT be signed by the executor, by name or by
+key (`anchor_not_independent`). Independence is by key: an anchor is refused when its issuer is the executor, and also
+when its signing key is any key the verifier holds for the executor, whatever issuer name the anchor carries. The
+person's signer, a witness, or a seal registered in a SCITT transparency service qualify. The executor's own seal does
+not, because an executor that cuts its chain can sign a fresh head for the shorter one. A custodial signer run by the
+same operator as the executor is not independent in substance either, whatever its keys are called, so use a witness
+the operator does not control.
+
+Verifying an export with anchors (`verify_export`) first runs every check of 8.2 on the receipts. Then, for each
+anchor, in order: the signature under the anchor keys; the issuer is not the executor (`anchor_not_independent`); the
+same person (`subject_mismatch`) and this executor (`seal_mismatch`); then its place against the export:
+
+- `seq` inside the export: `head` equals that receipt's `token_digest` (`seal_mismatch`);
+- `seq` after the export's last receipt, or the export is empty: the export was cut (`chain_truncated`);
+- `seq` one before the export's first receipt: `head` equals that receipt's `prev` (`seal_mismatch`);
+- `seq` earlier than that: it says nothing about this export and is ignored.
+
+The verifier MAY also keep its own count, `{"seq": n, "head": <digest>}` with `head` optional: not signed, held by the
+verifier itself (for example the last receipt it was handed). A count after the export's last receipt is
+`chain_truncated`; a `head` that differs from the receipt at `n` is `seal_mismatch`. A count can refuse an export; it
+never turns one into `complete`.
+
+The report has five members:
+
+| member | meaning |
+|---|---|
+| `first`, `last` | the first and last `seq` in the export (`null` for an empty one) |
+| `proven_to` | the highest `seq` an anchor vouches for (`null` when none does) |
+| `status` | `complete` only if `proven_to` equals `last` and the start is proven: `first` is 1, or an anchor sits at `first - 1`. Otherwise `prefix`: a valid chain whose end or start is unproven |
+| `reason` | `null` when complete; else `no_anchor`, `unanchored_tail` (anchored, but not to `last`) or `unanchored_start` |
+
+Completeness is proven only up to the latest anchor that the verifier got from whoever holds it, never from the writer.
+An anchor the executor hands over with the export proves nothing the executor could not forge. Records written after
+the latest anchor are not protected (section 12).
+
+### 8.5 Observations and evidence verdicts
+
+A receipt is the executor's statement about what the executor did. Three questions about one action have three
+separate answers, and one combined field can report a pass for an action that ran twice, once with a decision and once
+without (ceyptoslim, [write-up](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262)):
+
+- **route**: the path the action took (the receipt's `route`, 8.1);
+- **decision**: what allowed it (the receipt's `authority`, and the token it names);
+- **effect**: whether the effect happened, as seen by someone other than the executor.
+
+**Observation.** A reader other than the executor signs an observation (`schemas/observation.schema.json`, `typ`
+`oac-observation+jws`):
+
+```json
+{"oac":"0.2","type":"observation","iss":"https://provider.example","sub":"person:7f3a","executor":"https://shop.example/oac",
+ "receipt":"sha-256:<token_digest of the receipt>","effect":"seen","subject":"sha-256:<what was seen>",
+ "vantage":"provider","iat":1793836900}
+```
+
+`effect` is `seen`, `not_seen` or `uncheckable` (the reader could not check; it counts as no observation).
+`subject` is the digest of what was observed (the provider's record id, the sent message). `route` and `vantage`
+(`provider`, `third_party` or `person`) are optional. The observer MUST NOT be the executor, by name or by key
+(`observer_not_independent`): `iss` is not the executor and the signing key is none of the keys the verifier holds for
+it. An executor's statement that it did something is a claim about itself. As with anchors, an observer run by the
+executor's own operator is not independent in substance.
+
+**Assessing a receipt** (`assess`) takes the receipt, any observations with the observer's keys, and optionally the
+token the receipt names as its authority with its signer's keys. It verifies the receipt (8.1, `chain_issuer`) and each
+observation: signature, not the executor by name or key (`observer_not_independent`), the same person
+(`subject_mismatch`), this executor (`executor_mismatch`), and `receipt` equal to the `token_digest` of this receipt
+(`receipt_mismatch`). An observation whose `iat` is more than 60 seconds before the receipt's `iat` does not count, as if
+it were `uncheckable`: a look taken before the action says nothing about it. It returns:
+
+| member | values |
+|---|---|
+| `route` | the receipt's `route`, or `null` |
+| `decision` | `tier` (authority kind `tier`, tiers A and B); `bound` (a token was given, its `token_digest` equals `authority.digest`, and it covers this action, below); `unverified` (no token given) |
+| `effect` | see below |
+| `verdict` | `pass`, `fail` or `cannot_establish` |
+
+A token that is given but does not match is an error, `authority_mismatch`, not a quiet `unverified`. Every kind needs
+its `sub` to equal the receipt's `sub`. A Consent matches when also its `aud` is the receipt's `iss`, its `jti` is the
+receipt's `authority.ref`, its `iat` is not more than 60 seconds after the receipt's `iat`, and one item has `preview`
+equal to the receipt's `preview` and `action` equal to the receipt's `action` (so the decision was bound to the digest
+of what the approver was shown, 6.2). A Mandate matches when its `id` is the `ref`, the receipt's `tool` is one of its
+`tools`, and the receipt's `iat` lies between the Mandate's `iat` and `exp`, with 60 seconds of slack either way (a
+Mandate names no executor, so there is no audience to compare). An Undo request matches when its `aud` is the
+receipt's `iss`, its `jti` is the `ref`, and its `receipt` is the receipt's `undoes`.
+
+`effect` depends on the receipt's `outcome`, and an allowance and a denial are not symmetric:
+
+| outcome | observations | effect |
+|---|---|---|
+| `ok` (an allowance) | some `seen`, none `not_seen` | `observed` |
+| `ok` | none `seen`, some `not_seen` | `not_observed` |
+| `ok` | neither (none, or only `uncheckable`) | `cannot_establish` |
+| `failed` (a denial) | none `seen` | `absent` |
+| `failed` | some `seen` | `contradicted` |
+| any | both `seen` and `not_seen` | `contradicted`: independent readers disagree |
+| `unknown` | some `seen`, none `not_seen` | `observed` |
+| `unknown` | none `seen` | `cannot_establish` |
+| any | `seen` observations whose `subject`s differ | `duplicate`: one decision, two effects |
+
+`duplicate` needs `subject`: two sightings without one cannot be told apart from one effect seen twice, so an observer
+that can tell effects apart SHOULD always carry it. Observations that do not count (stale, `uncheckable`) are left out
+before this table is read.
+
+An allowance has to be seen to count; a denial stands until someone sees the effect. `verdict` is `fail` for
+`not_observed`, `contradicted` (a conflict is never a pass) and `duplicate`, whatever the decision. It is `pass` when the decision is `tier` or
+`bound` and the effect is `observed` (an allowance) or `absent` (a denial). Anything else is `cannot_establish`: for
+example an effect no one checked, or an observed effect whose decision was never verified.
 
 ## 9. Payments
 
@@ -547,6 +678,13 @@ points to it or exports to it (`mappings.md`).
   limits; share only what a verifier needs (digests prove a match without the content).
 - **Profiles are claims.** A tool can lie in its Action Profile (claim `native` and do something irreversible).
   Executors review profiles before trusting them and apply a policy floor to unreviewed tools.
+- **Truncation.** A chain verifies the same after its last receipts are cut off. Only an anchor the executor does not
+  hold (8.4) shows that the end is missing, and records written after the latest anchor are not protected: the
+  verifier reports a `prefix`, never `complete`, until a later anchor covers them.
+- **The executor's word.** A receipt is the executor's statement about itself. That an effect happened is shown by an
+  observation from a reader other than the executor (8.5): for an allowance a missing observation is
+  `cannot_establish`, not a pass. A denial (outcome `failed`) stands until a reader reports seeing the effect, and then
+  it is `contradicted`.
 - **One way in.** The checks protect an effect only if nothing reaches that effect without them. A second tool server
   with write access to the same database, a script with the same API key, or an admin console can send the mail or
   move the money with no Preview and no Consent, while every Receipt stays consistent. The defence is to guard the
@@ -574,14 +712,21 @@ A deployment that claims OAC protects an effect (an action of tier C) MUST meet 
    every credential found there. The effect MUST NOT happen. The check runs again whenever a key, tool server or
    route is added. Each attempt is recorded in three separate fields: the route, whether a decision exists for that
    exact action, and whether the effect occurred. One combined field can report a pass for an action that ran twice,
-   once with a decision and once without.
+   once with a decision and once without. In a bypass check the Consent is never presented, so any effect that occurred
+   is a `bypass` whatever `decision` says; `decision` is kept so the record shows whether a verified Consent existed
+   for that action (a bypass with one is worse than a bypass with none). The three fields and the coverage statement have a schema
+   (`schemas/coverage.schema.json`), and the `coverage` check of the conformance vectors turns them into the results
+   below. The recording rule is ceyptoslim's
+   ([write-up](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262)).
 4. **Keep the records.** The records the checks rely on MUST survive restarts and redeploys, under the same atomic
    rules: used `jti`s until they expire (6.3), Mandate usage counts (7.3), occurrence records and the
    `occurrence_scope` each tool had (5.1), and Receipts with the token bytes they name (3.3, 8). Otherwise a restart
    lets a used Consent run again, resets a Mandate's limits, or makes a paid order look new. The reference SDKs'
    stores live in memory; passing the vectors does not show that a deployment keeps its records.
 
-The deployment SHOULD publish a coverage statement, one row per effect: the key and who holds it; every other route
+The deployment SHOULD publish a coverage statement, one row per effect (`routes` lists every route the check tried, at
+least one: when the executor is the only other way in, list the direct one, the credential an agent could use on its
+own, with its control): the key and who holds it; every other route
 that can reach the effect (other interfaces, batch and repair jobs, internal callers), with the credential it holds and
 the control it passes through, or that it passes through none; where its records are kept (rule 4); and the bypass
 check result. For example:
@@ -598,3 +743,10 @@ skipped one), `not_checked`. Only `covered` supports a claim that OAC protects t
 failure, not a failure of the vectors. An effect seen on a route the statement does not list is a `bypass` and also
 shows the statement is wrong, so the whole claim falls, not only that run. `covered` speaks for the listed routes: it
 is coverage of the inventory, not proof about the whole system.
+
+`coverage(statement, attempts)` gives one result per effect and one for the whole claim. An effect that occurred on
+any attempt is `bypass`. An effect that occurred on a route the statement does not list (or an effect it does not list
+at all) is also a `bypass`, and the result carries `statement_wrong: true`: the claim is `bypass` as a whole while each
+row keeps its own result. A listed route with no attempt, an attempt whose outcome could not be told, or records kept
+in memory is `incomplete`; an effect with no attempts is `not_checked`. The whole claim is `covered` only if every row
+is.

@@ -24,6 +24,7 @@ from oac.receipts import make_receipt  # noqa: E402
 from oac.testing import vector_key  # noqa: E402
 from oac.undo import make_undo  # noqa: E402
 from oac.receipts import make_seal  # noqa: E402
+from oac.evidence import make_observation  # noqa: E402
 from oac.status import encode, make_status_list  # noqa: E402
 from oac.testing import passkey_proof  # noqa: E402
 from oac.webauthn import BACKED_UP, BACKUP_ELIGIBLE, USER_PRESENT, USER_VERIFIED  # noqa: E402
@@ -723,11 +724,276 @@ def gap_closers() -> list[dict[str, Any]]:
     return c
 
 
+def evidence() -> list[dict[str, Any]]:
+    c: list[dict[str, Any]] = []
+    res = digest({"ok": True})
+    task = {"tool": "add_task", "args": {"title": "Call the dentist"}}
+    policy = digest({"policy": "vectors-1"})
+    provider, provider_iss = vector_key("provider"), "https://provider.example"
+    obs_keys = {provider_iss: [provider.jwk], WALLET_ISS: [WALLET.jwk]}
+    anchor_keys = {**USER_KEYS, **{k: v for k, v in obs_keys.items() if k == WALLET_ISS}}
+
+    def tier_a(n: int, prev: str | None, **fields: Any) -> str:
+        return make_receipt(key=EXEC, payload={"iss": EXECUTOR, "sub": PERSON, "seq": n, "prev": prev, "iat": NOW + n, "tool": "add_task",
+                            "tier": "A", "authority": {"kind": "tier"}, "action": action_digest(task), "outcome": "ok", "result": res,
+                            "undo": {"kind": "none"}, **fields})
+
+    # 8.4 completeness: six receipts, then the same export cut to four
+    rs: list[str] = []
+    for n in range(1, 7):
+        rs.append(tier_a(n, token_digest(rs[-1]) if rs else None, route="task-api", **({"policy": policy} if n % 2 else {})))
+
+    def seal(n: int, *, key: Any = USER, iss: str = SIGNER, **kw: Any) -> str:
+        return make_seal(key=key, iss=iss, sub=kw.pop("sub", PERSON), executor=kw.pop("executor", EXECUTOR), seq=n,
+                         head_token=kw.pop("head", rs[n - 1]), now=NOW + 20)
+
+    def report(first: int | None, last: int | None, proven: int | None, status: str, reason: str | None) -> dict[str, Any]:
+        return {"first": first, "last": last, "proven_to": proven, "status": status, "reason": reason}
+
+    def export(name: str, want: dict[str, Any], tokens: list[str], **change: Any) -> None:
+        inp = {"tokens": tokens, "keys": EXEC_KEYS, "executor": EXECUTOR, **change}
+        if "anchors" in change and "anchor_keys" not in change:
+            inp["anchor_keys"] = anchor_keys
+        c.append({"name": f"export: {name}", "op": "verify_export", "input": inp, "expect": want})
+
+    export("six receipts cut to four, no anchor: a valid prefix, not complete", report(1, 4, None, "prefix", "no_anchor"), rs[:4])
+    export("all six, no anchor: still only a prefix", report(1, 6, None, "prefix", "no_anchor"), rs)
+    export("cut to four, but an anchor says the chain reached 6", err("chain_truncated"), rs[:4], anchors=[seal(6)])
+    export("cut to four, anchor at 3: proven to 3, the tail is not", report(1, 4, 3, "prefix", "unanchored_tail"), rs[:4], anchors=[seal(3)])
+    export("cut to four, anchor at 4: complete", report(1, 4, 4, "complete", None), rs[:4], anchors=[seal(4)])
+    export("all six, anchor at 6: complete", report(1, 6, 6, "complete", None), rs, anchors=[seal(6)])
+    export("two anchors: the latest counts", report(1, 4, 4, "complete", None), rs[:4], anchors=[seal(3), seal(4)])
+    export("a witness other than the person's signer can anchor", report(1, 4, 4, "complete", None), rs[:4],
+           anchors=[seal(4, key=WALLET, iss=WALLET_ISS)])
+    export("an anchor signed by the executor's own key", err("anchor_not_independent"), rs[:4],
+           anchors=[seal(4, key=EXEC, iss=EXECUTOR)], anchor_keys=EXEC_KEYS)
+    export("an anchor under another name but signed with the executor's key", err("anchor_not_independent"), rs[:4],
+           anchors=[seal(4, key=EXEC, iss="https://notary.example")], anchor_keys={"https://notary.example": [EXEC.jwk]})
+    export("no anchors given (null)", report(1, 4, None, "prefix", "no_anchor"), rs[:4], anchors=None, anchor_keys=None)
+    export("anchors must be a list", err("malformed"), rs[:4], anchors="x")
+    export("anchors must be a list of tokens", err("malformed"), rs[:4], anchors=[5])
+    export("no tokens given (null)", report(None, None, None, "prefix", "no_anchor"), None)
+    export("tokens must be a list", err("malformed"), "x")
+    export("an anchor whose head is another receipt's", err("seal_mismatch"), rs[:4], anchors=[seal(3, head=rs[3])])
+    export("an anchor for another executor", err("seal_mismatch"), rs[:4], anchors=[seal(4, executor=OTHER_EXECUTOR)])
+    export("an anchor for another person", err("subject_mismatch"), rs[:4], anchors=[seal(4, sub="person:other")])
+    export("an anchor from an unknown key", err("unknown_key"), rs[:4], anchors=[seal(4, key=ATTACKER)])
+    export("an anchor given without the signer's keys", err("malformed"), rs[:4], anchors=[seal(4)], anchor_keys=None)
+    export("an anchor cannot rescue a broken chain", err("chain_seq"), [rs[0], rs[1], rs[3]], anchors=[seal(4)])
+    export("an export from seq 3, anchored at 2 and 4: complete", report(3, 4, 4, "complete", None), rs[2:4], anchors=[seal(2), seal(4)])
+    export("an export from seq 3, anchored only at 4: the start is unproven", report(3, 4, 4, "prefix", "unanchored_start"), rs[2:4],
+           anchors=[seal(4)])
+    export("an export from seq 3, anchored only at 2: the tail is unproven", report(3, 4, 2, "prefix", "unanchored_tail"), rs[2:4],
+           anchors=[seal(2)])
+    export("an export from seq 3 whose start anchor is the wrong head", err("seal_mismatch"), rs[2:4], anchors=[seal(2, head=rs[2]), seal(4)])
+    export("an anchor older than the export's start proves nothing about it", report(3, 4, None, "prefix", "no_anchor"), rs[2:4],
+           anchors=[seal(1)])
+    export("an empty export with an anchor", err("chain_truncated"), [], anchors=[seal(4)])
+    export("an empty export without one", report(None, None, None, "prefix", "no_anchor"), [])
+    export("the verifier's own count is past the end", err("chain_truncated"), rs[:4], expect={"seq": 6})
+    export("the verifier's own count and head match the end", report(1, 4, None, "prefix", "no_anchor"), rs[:4],
+           expect={"seq": 4, "head": token_digest(rs[3])})
+    export("the verifier's own head is not the receipt's", err("seal_mismatch"), rs[:4], expect={"seq": 4, "head": token_digest(rs[2])})
+    export("the verifier's own count inside the export, no head", report(1, 4, None, "prefix", "no_anchor"), rs[:4], expect={"seq": 2})
+    export("the verifier's own count must be a positive integer", err("malformed"), rs[:4], expect={"seq": 0})
+    export("a receipt may carry a route and a policy", report(1, 1, None, "prefix", "no_anchor"), rs[:1])
+    export("an empty route is refused", err("malformed"), [sign(payload_of(rs[0]) | {"route": ""}, EXEC, RECEIPT_TYP)])
+    export("a policy that is not a digest is refused", err("malformed"), [sign(payload_of(rs[0]) | {"policy": "p1"}, EXEC, RECEIPT_TYP)])
+
+    # 8.5 assess: route, decision and effect, then the verdict
+    def watcher(receipt: str, effect: str, **kw: Any) -> str:
+        return make_observation(key=kw.pop("key", provider), iss=kw.pop("iss", provider_iss), sub=kw.pop("sub", PERSON),
+                                executor=kw.pop("executor", EXECUTOR), receipt_token=receipt, effect=effect, now=kw.pop("now", NOW + 30), **kw)
+
+    def rcpt(**fields: Any) -> str:
+        return make_receipt(key=EXEC, payload={"iss": EXECUTOR, "sub": PERSON, "seq": 1, "prev": None, "iat": NOW, "tool": "add_task", "tier": "A",
+                            "authority": {"kind": "tier"}, "action": action_digest(task), "outcome": "ok", "result": res,
+                            "undo": {"kind": "none"}, **fields})
+
+    def assessed(name: str, want: dict[str, Any], receipt: str, *obs: str, **change: Any) -> None:
+        inp: dict[str, Any] = {"receipt_token": receipt, "keys": EXEC_KEYS, "executor": EXECUTOR, **change}
+        if obs:
+            inp |= {"observations": list(obs), "observer_keys": obs_keys, **change}
+        c.append({"name": f"assess: {name}", "op": "assess", "input": inp, "expect": want})
+
+    def verdict(route: str | None, decision: str, effect: str, v: str) -> dict[str, Any]:
+        return {"route": route, "decision": decision, "effect": effect, "verdict": v}
+
+    t = rcpt()
+    assessed("an allowance nobody checked", verdict(None, "tier", "cannot_establish", "cannot_establish"), t)
+    assessed("an allowance an independent reader saw", verdict(None, "tier", "observed", "pass"), t, watcher(t, "seen"))
+    assessed("an allowance an independent reader did not see", verdict(None, "tier", "not_observed", "fail"), t, watcher(t, "not_seen"))
+    assessed("one reader saw it, another did not: they conflict", verdict(None, "tier", "contradicted", "fail"), t, watcher(t, "not_seen"),
+             watcher(t, "seen", subject=digest({"id": 1})))
+    assessed("a conflict on an unknown outcome", verdict(None, "tier", "contradicted", "fail"), rcpt(outcome="unknown"),
+             watcher(rcpt(outcome="unknown"), "not_seen"), watcher(rcpt(outcome="unknown"), "seen"))
+    assessed("a look taken more than 60 s before the receipt does not count", verdict(None, "tier", "cannot_establish", "cannot_establish"), t,
+             watcher(t, "seen", now=NOW - 61))
+    assessed("a look taken exactly 60 s before the receipt counts", verdict(None, "tier", "observed", "pass"), t, watcher(t, "seen", now=NOW - 60))
+    assessed("a stale not_seen does not fail an allowance", verdict(None, "tier", "observed", "pass"), t, watcher(t, "not_seen", now=NOW - 500),
+             watcher(t, "seen"))
+    assessed("no observations given at all (null)", verdict(None, "tier", "cannot_establish", "cannot_establish"), t, observations=None,
+             observer_keys=None)
+    assessed("observations must be a list", err("malformed"), t, observations="x", observer_keys=obs_keys)
+    assessed("observations must be a list of tokens", err("malformed"), t, observations=[5], observer_keys=obs_keys)
+    assessed("a reader that could not check counts as nobody", verdict(None, "tier", "cannot_establish", "cannot_establish"), t,
+             watcher(t, "uncheckable", vantage="provider"))
+    assessed("one decision, two effects with different subjects", verdict(None, "tier", "duplicate", "fail"), t,
+             watcher(t, "seen", subject=digest({"id": 1})), watcher(t, "seen", subject=digest({"id": 2}), vantage="third_party"))
+    assessed("two sightings of the same subject are one effect", verdict(None, "tier", "observed", "pass"), t,
+             watcher(t, "seen", subject=digest({"id": 1})), watcher(t, "seen", subject=digest({"id": 1}), vantage="person"))
+    assessed("the route comes from the receipt", verdict("task-api", "tier", "observed", "pass"), rcpt(route="task-api"), watcher(rcpt(route="task-api"), "seen"))
+    denied = rcpt(outcome="failed")
+    assessed("a denial nobody contradicted is absent", verdict(None, "tier", "absent", "pass"), denied)
+    assessed("a denial a reader confirms is absent", verdict(None, "tier", "absent", "pass"), denied, watcher(denied, "not_seen"))
+    assessed("a denial whose effect a reader saw", verdict(None, "tier", "contradicted", "fail"), denied, watcher(denied, "seen"))
+    unsure = rcpt(outcome="unknown")
+    assessed("an unknown outcome nobody checked", verdict(None, "tier", "cannot_establish", "cannot_establish"), unsure)
+    assessed("an unknown outcome a reader saw", verdict(None, "tier", "observed", "pass"), unsure, watcher(unsure, "seen"))
+    assessed("an unknown outcome a reader did not see stays unknown", verdict(None, "tier", "cannot_establish", "cannot_establish"), unsure,
+             watcher(unsure, "not_seen"))
+    assessed("the executor cannot observe its own effect", err("observer_not_independent"), t,
+             watcher(t, "seen", key=EXEC, iss=EXECUTOR), observer_keys=EXEC_KEYS)
+    assessed("an observer under another name but with the executor's key", err("observer_not_independent"), t,
+             watcher(t, "seen", key=EXEC), observer_keys={provider_iss: [EXEC.jwk]})
+    assessed("an observation of another receipt", err("receipt_mismatch"), t, watcher(denied, "seen"))
+    assessed("an observation about another person", err("subject_mismatch"), t, watcher(t, "seen", sub="person:other"))
+    assessed("an observation for another executor", err("executor_mismatch"), t, watcher(t, "seen", executor=OTHER_EXECUTOR))
+    assessed("an observation from an unknown key", err("unknown_key"), t, watcher(t, "seen", key=ATTACKER))
+    assessed("an observation with a bad effect", err("malformed"), t, sign(payload_of(watcher(t, "seen")) | {"effect": "maybe"}, provider,
+             "oac-observation+jws"))
+    assessed("observations without the observer's keys", err("malformed"), t, watcher(t, "seen"), observer_keys=None)
+    other = make_receipt(key=OTHER_EXEC, payload=payload_of(t) | {"iss": OTHER_EXECUTOR})
+    assessed("a receipt from another executor", err("chain_issuer"), other, keys={**EXEC_KEYS})
+    assessed("a receipt that breaks the receipt rules", err("receipt_invalid"),
+             sign(payload_of(t) | {"tier": "C"}, EXEC, RECEIPT_TYP))
+
+    # the decision: the digest of the exact token, and the token's own binding to this action and preview
+    book = ACTIONS["book"]
+    book_preview = pv(book, "Book Nobu Boston")
+    book_consent = consent([book_preview])
+    jti = "n_consent_0000000001"
+
+    def decided(authority: dict[str, Any], **fields: Any) -> str:
+        return rcpt(tool="book_table", tier="C", authority=authority, action=action_digest(book), preview=digest(book_preview),
+                    undo={"kind": "compensate", "until": NOW + 86400}, route="booking-api", policy=policy, **fields)
+
+    good = decided({"kind": "consent", "ref": jti, "digest": token_digest(book_consent)})
+    base = {"authority_token": book_consent, "authority_keys": USER_KEYS}
+    assessed("a consent that covers this action and preview", verdict("booking-api", "bound", "observed", "pass"), good,
+             watcher(good, "seen"), **base)
+    assessed("a decision no one was given the token for", verdict("booking-api", "unverified", "observed", "cannot_establish"), good,
+             watcher(good, "seen"))
+    assessed("an unverified decision does not hide a missing effect", verdict("booking-api", "unverified", "not_observed", "fail"), good,
+             watcher(good, "not_seen"))
+    assessed("a bound decision with no observation is not a pass", verdict("booking-api", "bound", "cannot_establish", "cannot_establish"),
+             good, **base)
+    assessed("the token given is not the one the receipt names", err("authority_mismatch"), good,
+             authority_token=consent([book_preview], jti="n_consent_0000000009"), authority_keys=USER_KEYS)
+    mail_consent = consent([pv(mail(1), "Email sam1@example.com")], jti="n_consent_0000000002")
+    assessed("a consent for another action", err("authority_mismatch"),
+             decided({"kind": "consent", "ref": "n_consent_0000000002", "digest": token_digest(mail_consent)}),
+             authority_token=mail_consent, authority_keys=USER_KEYS)
+    assessed("the receipt's ref is not the consent's jti", err("authority_mismatch"),
+             decided({"kind": "consent", "ref": "n_consent_0000000077", "digest": token_digest(book_consent)}), **base)
+    forged = consent([book_preview], key=ATTACKER)
+    assessed("a consent signed by an unknown key", err("unknown_key"),
+             decided({"kind": "consent", "ref": jti, "digest": token_digest(forged)}), authority_token=forged, authority_keys=USER_KEYS)
+    def bound_to(token: str) -> str:
+        return decided({"kind": "consent", "ref": jti, "digest": token_digest(token)})
+
+    for what, change in [("another person", {"sub": "person:other"}), ("another executor", {"aud": "https://other.example/oac"}),
+                         ("a time after the receipt", {"iat": NOW + 500, "exp": NOW + 700})]:
+        moved = resign(book_consent, change)
+        assessed(f"a consent made for {what}", err("authority_mismatch"), bound_to(moved), authority_token=moved, authority_keys=USER_KEYS)
+    assessed("a token given without its signer's keys", err("malformed"), good, authority_token=book_consent)
+    md = make_mandate(key=USER, payload={
+        "id": "md_lunch_1", "iss": SIGNER, "sub": PERSON, "holder": {"type": "agent", "id": "lunch-bot"}, "goal": "Reply to lunch plans.",
+        "tools": ["send_email"], "bounds": {"calls": {"per_day": 5}, "recipients": ["@example.com"]},
+        "iat": NOW - 3600, "exp": NOW + 86400, "signer": {"kind": "custodial"}})
+
+    def by_mandate(ref: str) -> str:
+        return rcpt(tool="send_email", tier="C", authority={"kind": "mandate", "ref": ref, "digest": token_digest(md)}, action=action_digest(mail(1)))
+
+    assessed("a mandate that is the one named", verdict(None, "bound", "observed", "pass"), by_mandate("md_lunch_1"),
+             watcher(by_mandate("md_lunch_1"), "seen"), authority_token=md, authority_keys=USER_KEYS)
+    for what, change in [("another person", {"sub": "person:other"}), ("a window that ended before the receipt", {"exp": NOW - 61, "iat": NOW - 3600}),
+                         ("a window that starts after the receipt", {"iat": NOW + 61, "exp": NOW + 3600}), ("another tool", {"tools": ["add_task"]})]:
+        moved = resign(md, change, typ="oac-mandate+jws")
+        recd = rcpt(tool="send_email", tier="C", authority={"kind": "mandate", "ref": "md_lunch_1", "digest": token_digest(moved)}, action=action_digest(mail(1)))
+        assessed(f"a mandate for {what}", err("authority_mismatch"), recd, authority_token=moved, authority_keys=USER_KEYS)
+    assessed("a mandate with another id", err("authority_mismatch"), by_mandate("md_other"), authority_token=md, authority_keys=USER_KEYS)
+    original = rcpt(tool="add_task", tier="B", undo={"kind": "native", "until": NOW + 600, "token": "undo_7Qx"})
+    request = make_undo(key=USER, iss=SIGNER, sub=PERSON, aud=EXECUTOR, receipt_token=original, mode="native", now=NOW + 30,
+                        jti="n_undo_00000000000001")
+
+    def by_undo(undoes: str) -> str:
+        return rcpt(tier="B", authority={"kind": "undo", "ref": "n_undo_00000000000001", "digest": token_digest(request)}, undoes=undoes)
+
+    assessed("an undo request for the receipt it undoes", verdict(None, "bound", "observed", "pass"), by_undo(token_digest(original)),
+             watcher(by_undo(token_digest(original)), "seen"), authority_token=request, authority_keys=USER_KEYS)
+    for what, change in [("another person", {"sub": "person:other"}), ("another executor", {"aud": "https://other.example/oac"})]:
+        moved = resign(request, change, typ="oac-undo+jws")
+        recd = rcpt(tier="B", authority={"kind": "undo", "ref": "n_undo_00000000000001", "digest": token_digest(moved)}, undoes=token_digest(original))
+        assessed(f"an undo request for {what}", err("authority_mismatch"), recd, authority_token=moved, authority_keys=USER_KEYS)
+    assessed("an undo request for another receipt", err("authority_mismatch"), by_undo(digest({"other": 1})), authority_token=request,
+             authority_keys=USER_KEYS)
+
+    # 13.2 coverage: four results, never one score
+    def row(effect: str, routes: list[str], records: str = "durable") -> dict[str, Any]:
+        return {"effect": effect, "key": f"{effect} credential", "held_by": "executor only", "records": records,
+                "routes": [{"route": r, "credential": "staff login", "control": "people only"} for r in routes]}
+
+    def tried(effect: str, route: str, occurred: str = "no", decision: str = "exists") -> dict[str, Any]:
+        return {"effect": effect, "route": route, "decision": decision, "effect_occurred": occurred, "observed_by": "provider log"}
+
+    def cov(name: str, expect: Any, statement: list[dict[str, Any]], attempts: list[dict[str, Any]]) -> None:
+        c.append({"name": f"coverage: {name}", "op": "coverage", "input": {"statement": statement, "attempts": attempts}, "expect": expect})
+
+    def out(result: str, wrong: bool, **effects: str) -> dict[str, Any]:
+        return {"result": result, "statement_wrong": wrong, "effects": effects}
+
+    both = [row("send_email", ["admin-console"]), row("pay_order", ["direct-api"])]
+    refused = [tried("send_email", "tool-server-b"), tried("send_email", "admin-console", decision="none"), tried("pay_order", "direct-api")]
+    cov("every listed route tried, nothing happened", out("covered", False, send_email="covered", pay_order="covered"), both, refused)
+    cov("no attempts", out("not_checked", False, send_email="not_checked", pay_order="not_checked"), both, [])
+    cov("nothing stated, nothing tried", out("not_checked", False), [], [])
+    cov("a listed route was never tried", out("incomplete", False, send_email="incomplete", pay_order="covered"), both,
+        [tried("send_email", "tool-server-b"), tried("pay_order", "direct-api")])
+    cov("an attempt whose outcome could not be told", out("incomplete", False, send_email="incomplete", pay_order="covered"), both,
+        [tried("send_email", "tool-server-b", "cannot_tell"), refused[1], refused[2]])
+    cov("records kept in memory", out("incomplete", False, send_email="incomplete", pay_order="covered"),
+        [row("send_email", ["admin-console"], "memory"), row("pay_order", ["direct-api"])], refused)
+    cov("one effect checked, one not", out("incomplete", False, send_email="covered", pay_order="not_checked"), both, refused[:2])
+    cov("the effect happened on a listed route", out("bypass", False, send_email="bypass", pay_order="covered"), both,
+        [tried("send_email", "admin-console", "yes", "none"), refused[0], refused[2]])
+    cov("the effect happened though a decision existed for it", out("bypass", False, send_email="bypass", pay_order="covered"), both,
+        [tried("send_email", "admin-console", "yes", "exists"), refused[0], refused[2]])
+    cov("the effect happened on a route the statement does not list", out("bypass", True, send_email="bypass", pay_order="covered"), both,
+        [tried("send_email", "nightly-job", "yes", "none"), *refused])
+    cov("an effect the statement does not list happened", out("bypass", True, send_email="covered", pay_order="covered", delete_row="bypass"), both,
+        [*refused, tried("delete_row", "tool-server-b", "yes", "none")])
+    cov("a route nobody listed was tried and refused", out("covered", False, send_email="covered", pay_order="covered"), both,
+        [*refused, tried("send_email", "nightly-job")])
+    cov("a bypass beside an unchecked effect", out("bypass", False, send_email="bypass", pay_order="not_checked"), both,
+        [tried("send_email", "admin-console", "yes", "none")])
+    cov("an effect listed twice", err("malformed"), [row("send_email", ["a"]), row("send_email", ["a"])], [])
+    cov("a row with no route", err("malformed"), [row("send_email", [])], [])
+    cov("an effect named __proto__ is an ordinary name", out("bypass", False, **{"__proto__": "bypass"}), [row("__proto__", ["api"])],
+        [tried("__proto__", "api", "yes", "none")])
+    cov("no statement and no attempts (null)", out("not_checked", False), None, None)
+    cov("attempts must be a list", err("malformed"), both, {})
+    cov("a statement must be a list", err("malformed"), "x", [])
+    cov("a route listed twice", err("malformed"), [row("send_email", ["a", "a"])], [])
+    cov("an attempt that says nothing about a decision", err("malformed"), both, [{**refused[0], "decision": "maybe"}])
+    return c
+
+
 def main() -> int:
     out = ROOT / "vectors"
     out.mkdir(exist_ok=True)
     groups = {"basics": basics(), "consent": consents(), "mandate": mandates(), "receipts-undo": receipts_and_undo(),
-              "status-keys-seals": gap_closers()}
+              "status-keys-seals": gap_closers(), "evidence": evidence()}
     bad = 0
     for name, cases in groups.items():
         for case in cases:

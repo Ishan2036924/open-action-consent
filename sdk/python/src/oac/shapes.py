@@ -18,6 +18,11 @@ HOLDERS = ("agent", "client", "run")
 SIGNERS = ("custodial", "device")
 AUTHORITIES = ("consent", "mandate", "tier", "undo")
 OUTCOMES = ("ok", "failed", "unknown")
+OBSERVED = ("seen", "not_seen", "uncheckable")
+VANTAGES = ("provider", "third_party", "person")
+RECORDS = ("durable", "memory")
+DECISIONS = ("exists", "none")
+OCCURRED = ("yes", "no", "cannot_tell")
 PREVIEW_MAX_S = 900
 YEAR_S = 366 * 86400
 
@@ -355,11 +360,80 @@ def receipt(v: Any) -> dict[str, Any]:
             "payment": (False, _obj(payment, "payment")),
             "occurrence": (False, _re(_OCCURRENCE)),
             "occurrence_scope": (False, _re(_OCCURRENCE)),
+            "route": (False, _str(1, 128)),
+            "policy": (False, DIGEST),
         },
         "receipt",
     )
     if "occurrence_scope" in v and "occurrence" not in v:
         raise OACError("malformed", "receipt: an occurrence scope needs an occurrence")
+    return v
+
+
+def observation(v: Any) -> dict[str, Any]:
+    check(
+        v,
+        {
+            "oac": (True, _const(VERSION)),
+            "type": (True, _const("observation")),
+            "iss": (True, ID),
+            "sub": (True, ID),
+            "executor": (True, ID),
+            "receipt": (True, DIGEST),
+            "effect": (True, _enum(*OBSERVED)),
+            "subject": (False, DIGEST),
+            "route": (False, _str(1, 128)),
+            "vantage": (False, _enum(*VANTAGES)),
+            "iat": (True, TIME),
+        },
+        "observation",
+    )
+    return v
+
+
+def expectation(v: Any) -> dict[str, Any]:
+    """The verifier's own count of an export's end (spec 8.4)."""
+    check(v, {"seq": (True, _int(1)), "head": (False, DIGEST)}, "expect")
+    return v
+
+
+def token_list(v: Any, what: str) -> list[str]:
+    """Tokens a caller hands over; none given (null or missing) is an empty list."""
+    if v is None:
+        return []
+    if not isinstance(v, (list, tuple)) or not all(isinstance(t, str) for t in v):
+        raise OACError("malformed", f"{what} must be a list of tokens")
+    return v
+
+
+def coverage_statement(v: Any) -> list[dict[str, Any]]:
+    route = {"route": (True, _str(1, 128)), "credential": (True, _str(1, 256)), "control": (True, _str(1, 256))}
+    row = {
+        "effect": (True, TOOL),
+        "key": (True, _str(1, 256)),
+        "held_by": (True, _str(1, 256)),
+        "routes": (True, _list(_obj(route, "route"), 1, 50)),
+        "records": (True, _enum(*RECORDS)),
+    }
+    v = [] if v is None else v
+    if not isinstance(v, list) or not all(_obj(row, "coverage row")(r) for r in v):
+        raise OACError("malformed", "coverage statement must be a list of rows")
+    if len({r["effect"] for r in v}) != len(v) or any(len({x["route"] for x in r["routes"]}) != len(r["routes"]) for r in v):
+        raise OACError("malformed", "coverage statement: an effect or a route is listed twice")
+    return v
+
+
+def coverage_attempts(v: Any) -> list[dict[str, Any]]:
+    attempt = {
+        "effect": (True, TOOL),
+        "route": (True, _str(1, 128)),
+        "decision": (True, _enum(*DECISIONS)),
+        "effect_occurred": (True, _enum(*OCCURRED)),
+        "observed_by": (True, _str(1, 256)),
+    }
+    v = [] if v is None else v
+    if not isinstance(v, list) or not all(_obj(attempt, "coverage attempt")(a) for a in v):
+        raise OACError("malformed", "coverage attempts must be a list of attempts")
     return v
 
 

@@ -13,7 +13,9 @@ from oac.jcs import canonical, parse
 from oac.jws import KeySet, digest, sign
 from oac.mandate import check_mandate, loosens
 from oac.preview import check_binding
-from oac.receipts import verify_chain
+from oac.coverage import coverage
+from oac.evidence import assess
+from oac.receipts import verify_chain, verify_export
 from oac import shapes
 from oac.testing import vector_key
 from oac.tiers import tier_for
@@ -71,6 +73,21 @@ def _chain(i: Mapping[str, Any]) -> Any:
     return {"ok": True}
 
 
+def _keys(i: Mapping[str, Any], name: str) -> KeySet | None:
+    return None if i.get(name) is None else KeySet(i[name])
+
+
+def _export(i: Mapping[str, Any]) -> Any:
+    return verify_export(i.get("tokens"), keys=KeySet(i["keys"]), executor=i["executor"], sub=i.get("sub"), anchors=i.get("anchors"),
+                         anchor_keys=_keys(i, "anchor_keys"), expect=i.get("expect"))
+
+
+def _assess(i: Mapping[str, Any]) -> Any:
+    return assess(i["receipt_token"], keys=KeySet(i["keys"]), executor=i["executor"], observations=i.get("observations"),
+                  observer_keys=_keys(i, "observer_keys"), authority_token=i.get("authority_token"),
+                  authority_keys=_keys(i, "authority_keys"))
+
+
 def _undo(i: Mapping[str, Any]) -> Any:
     check_undo(
         i["token"],
@@ -110,6 +127,9 @@ OPS: dict[str, Callable[[Mapping[str, Any]], Any]] = {
     "check_mandate": _mandate,
     "loosens": lambda i: {"reasons": sorted(loosens(i["old"], i["new"]))},
     "verify_chain": _chain,
+    "verify_export": _export,
+    "assess": _assess,
+    "coverage": lambda i: coverage(i.get("statement"), i.get("attempts")),
     "check_undo": _undo,
     "claim_occurrence": _occurrence,
     "status_bit": lambda i: {"revoked": bit(decode(i["encoded_list"]), i["index"])},

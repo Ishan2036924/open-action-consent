@@ -1,7 +1,7 @@
 # How OAC maps to other work
 
-Informative. Facts as read on 2026-11-04 from the linked pages; these projects move fast, so check the source before
-relying on a row.
+Informative. Facts as read on 2026-11-04 from the linked pages (the SCITT, C2SP, SEP-2848, OpenID4VP and Sensitive
+References rows: 2026-11-20); these projects move fast, so check the source before relying on a row.
 
 ## Payment and commerce
 
@@ -20,7 +20,7 @@ relying on a row.
 | Other | Its object | OAC counterpart | How they meet |
 |---|---|---|---|
 | MCP 2026-07-28 ([spec](https://modelcontextprotocol.io/specification/2026-07-28)) | URL-mode elicitation (accept/decline/cancel, unsigned); tool annotations (hints) | Consent (signed); Action Profile | `mcp-extension.md` |
-| MCP SEP-2848 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848)) | async approval via Tasks; args digest; unsigned | Consent as the approval evidence | `mcp-extension.md` section 8 |
+| MCP SEP-2848 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848)), draft, no sponsor | async approval via Tasks; optional args digest; unsigned; the approval protocol stays on the server | Consent as the approval material the server stores | `mcp-extension.md` section 8; field table below |
 | MCP SEP-2793 ([PR](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2793)) | `reversibility` auto/manual/none, `approvalRecommendation` | `undo.kind` native/compensate/none; tiers | one to one for reversibility; OAC tiers are computed, not recommended |
 | A2A v1.0 ([spec](https://a2a-protocol.org/latest/specification/), Apache-2.0) | `INPUT_REQUIRED` task state; extensions; JWS over JCS for Agent Cards | Preview / Consent | carry the Preview when a task is `INPUT_REQUIRED` for approval, and the Consent and Receipt as extension data; same JWS + JCS building blocks |
 | OpenAI Agents SDK (`needs_approval`), LangGraph (`interrupt`) | in-process approvals and interrupts, unsigned | Consent | `oac.openai_agents`, `oac.langgraph`: the pause carries the Preview; the tool runs only with a verified Consent |
@@ -36,7 +36,10 @@ relying on a row.
 | ISO/IEC TS 27560 | consent record for personal-data processing | Consent / Mandate | a Mandate can be summarized as a 27560 record for privacy records |
 | W3C Bitstring Status List ([REC, 2025-05-15](https://www.w3.org/TR/vc-bitstring-status-list/)) | `encodedList` (GZIP + multibase base64url), `statusListIndex` | status list `encoded_list`, Mandate `status.index` | same bitstring encoding and bit order; an OAC list can be re-wrapped as a BitstringStatusListCredential |
 | RFC 8414 (OAuth server metadata) | `/.well-known/oauth-authorization-server` with path insertion | `/.well-known/oac-issuer` | same location rule; OAC lists keys inline |
-| IETF SCITT | transparency log of signed statements | seal + receipt | register seals as signed statements for third-party proof of time |
+| IETF SCITT, RFC 9943 ([RFC](https://www.rfc-editor.org/rfc/rfc9943)); COSE Receipts, RFC 9942 ([RFC](https://www.rfc-editor.org/rfc/rfc9942)) | transparency service for signed statements (COSE_Sign1); a Receipt is a signed inclusion proof | seal + receipt | a seal is a Signed Statement; the Transparent Statement's Receipt shows when the head existed. A registration shows the statement was logged, not that nothing was removed from the executor's own store: that is what an anchor held by someone else gives (spec 8.4). OAC does not export COSE Receipts yet |
+| C2SP witness cosigning ([tlog-witness](https://c2sp.org/tlog-witness), [tlog-cosignature](https://c2sp.org/tlog-cosignature)) | a witness cosigns a log checkpoint only if it extends the last one the witness saw | anchor issuer | a witness is an independent anchor issuer (spec 8.4: a seal signed by a key that is not the executor's). OAC's chain is linear, not a Merkle tree, so it uses the idea, not the C2SP protocol |
+| OpenID4VP 1.0 ([spec](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html)) | `transaction_data_hashes`: the wallet's signed digest of the transaction data it was asked to display | Consent item `preview` | the Preview is the render model the client shows, and its digest is what the person signs (spec 6.2) |
+| Sensitive References, Concept 0.7 ([repo](https://github.com/Sprinterli/mcp-sensitive-references)), not an MCP standard | `⟦sref:kind:id⟧` references a server resolves for a host under a scoped grant | none | boundary only: OAC does not resolve `sref` values, and a Preview shows the reference, never the value |
 | Web Bot Auth (IETF WG) | the agent's HTTP message signatures to websites | executor key | the executor may publish one key directory for both |
 | RFC 9396 RAR, OpenID CIBA | typed authorization details; out-of-band approval with a short binding message | Preview fields; URL-mode consent | an authorization server can render a Preview and return a Consent instead of only a token |
 
@@ -52,3 +55,17 @@ stands in for the other. A pinned native-binding profile, proposed by the EP dra
 
 Which EP field carries the digest, and which inputs each side must trust, follow the EP draft and are still being
 settled with its author. Shared vectors for the bridge come with the first implementation.
+
+### SEP-2848 fields and where OAC meets them
+
+As read on 2026-11-20 from the SEP text; the SEP is a draft, so these rows may change.
+
+| SEP-2848 | OAC | Note |
+|---|---|---|
+| immutable call binding: tool name, complete arguments, originating authorization context | Action `{tool, args}`; Consent `items[].action` | the executor already checks the action against the Preview (spec 6.3) |
+| optional digest over a canonical serialization (for example JCS, SHA-256), scope unspecified | `action` digest: SHA-256 over JCS of `{tool, args}` (spec 3.2) | a comment on the PR proposes a `callBinding` over `{method, params}` without `_meta` and the request id: a different input, so a different value. Shared vectors for both forms are not written yet; neither is claimed as adopted |
+| approval material (backend binding, approval object), never on the wire | Consent, signed by the person's signer | stays off the wire; see `mcp-extension.md` section 8 |
+| approval expiry, submission generation | Consent `exp`, single-use `jti` | |
+| policy id and version, recorded for audit | receipt `policy` (a digest) | optional, spec 8.1 |
+| `tool-approval-disposition` in the Task result `_meta` | receipt `outcome` | `ok`, `unknown` map; `failed` does not map to `execution-error` |
+| "effect independently auditable", no protocol object | anchor (spec 8.4), observation (spec 8.5) | optional evidence, a reference in the result rather than a new wire member |

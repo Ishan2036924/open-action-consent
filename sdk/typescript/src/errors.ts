@@ -13,6 +13,8 @@ export const CODES = new Set([
   "wrong_issuer", "undeclared_argument", "revoked", "already_undone", "compensation_mismatch",
   // status lists and seals
   "status_unknown", "seal_mismatch",
+  // completeness anchors and observations
+  "chain_truncated", "anchor_not_independent", "authority_mismatch", "observer_not_independent",
   // device proofs (WebAuthn)
   "device_proof_missing", "device_proof_mismatch", "unknown_credential", "challenge_mismatch", "wrong_origin",
   "rp_mismatch", "user_not_present", "user_not_verified", "not_device_bound",

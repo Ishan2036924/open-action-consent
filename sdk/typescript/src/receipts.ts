@@ -3,7 +3,8 @@
 import { scope } from "./occurrence.ts";
 import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";
-import { KeySet, sign, tokenDigest, verify, type SigningKey } from "./jws.ts";
+import { b64urlDecode, KeySet, sign, tokenDigest, verify, type SigningKey } from "./jws.ts";
+import { parse } from "./jcs.ts";
 
 export const TYP = "oac-receipt+jws";
 export const SEAL_TYP = "oac-seal+jws";
@@ -72,4 +73,49 @@ export function verifyChain(tokens: string[], o: { keys: KeySet; executor: strin
     }
   }
   return out;
+}
+
+/** A witness of the executor must not be the executor, by name or by key (spec 8.4, 8.5). */
+export function independent(token: string, iss: string, executor: string, executorKeys: KeySet, code: string): void {
+  if (iss === executor || executorKeys.get((parse(b64urlDecode(token.split(".")[0])) as Record<string, any>).kid) !== undefined) throw new OACError(code, "the executor cannot vouch for itself");
+}
+
+/** Check a head claimed at `seq` against the export. True when the export reaches back to it. */
+function place(chain: Record<string, any>[], tokens: string[], seq: number, head: string | null | undefined): boolean {
+  if (!chain.length || seq > chain[chain.length - 1].seq) throw new OACError("chain_truncated", `the export ends before seq ${seq}`);
+  const first = chain[0].seq;
+  if (seq < first - 1) return false;
+  const want = seq === first - 1 ? chain[0].prev : tokenDigest(tokens[seq - first]);
+  if (head !== undefined && head !== null && head !== want) throw new OACError("seal_mismatch", `the head at seq ${seq} is not the one claimed`);
+  return true;
+}
+
+/** verifyChain, then say how much of the export is proven complete by anchors the executor does not hold (spec 8.4). */
+export function verifyExport(tokens: string[], o: {
+  keys: KeySet; executor: string; sub?: string | null; anchors?: string[] | null; anchorKeys?: KeySet | null; expect?: Record<string, any> | null;
+}): Record<string, any> {
+  tokens = shapes.tokenList(tokens, "tokens");
+  const anchors = shapes.tokenList(o.anchors, "anchors");
+  const chain = verifyChain(tokens, { keys: o.keys, executor: o.executor, sub: o.sub });
+  const first = chain.length ? chain[0].seq : null, last = chain.length ? chain[chain.length - 1].seq : null;
+  if (anchors.length && !o.anchorKeys) throw new OACError("malformed", "anchors need the signer's keys");
+  let proven: number | null = null, start = first === 1;
+  for (const token of anchors) {
+    const a = verify(token, o.anchorKeys!, SEAL_TYP);
+    shapes.seal(a);
+    independent(token, a.iss, o.executor, o.keys, "anchor_not_independent");
+    if ((o.sub || (chain.length ? chain[0].sub : a.sub)) !== a.sub) throw new OACError("subject_mismatch");
+    if (a.executor !== o.executor) throw new OACError("seal_mismatch", "the anchor is for another executor");
+    if (place(chain, tokens, a.seq, a.head)) {
+      start = start || a.seq === first - 1;
+      proven = Math.max(proven ?? 0, a.seq);
+    }
+  }
+  if (o.expect !== undefined && o.expect !== null) {
+    shapes.expectation(o.expect);
+    place(chain, tokens, o.expect.seq, o.expect.head);
+  }
+  const complete = proven !== null && proven === last && start;
+  const reason = complete ? null : proven === null ? "no_anchor" : proven < last! ? "unanchored_tail" : "unanchored_start";
+  return { first, last, proven_to: proven, status: complete ? "complete" : "prefix", reason };
 }

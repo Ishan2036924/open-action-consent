@@ -10,7 +10,9 @@ import { tierFor } from "./tiers.ts";
 import { checkBinding } from "./preview.ts";
 import { MemoryNonces, verifyConsent } from "./consent.ts";
 import { checkMandate, loosens } from "./mandate.ts";
-import { verifyChain } from "./receipts.ts";
+import { verifyChain, verifyExport } from "./receipts.ts";
+import { assess } from "./evidence.ts";
+import { coverage } from "./coverage.ts";
 import { checkUndo } from "./undo.ts";
 import { vectorKey } from "./testing.ts";
 import { bit, decode } from "./status.ts";
@@ -18,6 +20,7 @@ import { keysetFrom, metadataUrl } from "./discovery.ts";
 import { claim, MemoryOccurrences, type OccurrenceKey } from "./occurrence.ts";
 
 const OK = { ok: true };
+const keysOf = (v: unknown) => (v === null || v === undefined ? null : new KeySet(v as any));
 const OPS: Record<string, (i: any) => unknown> = {
   jcs: (i) => ({ canonical: canonical(i.value) }),
   parse: (i) => ({ canonical: canonical(parse(i.text)) }),
@@ -38,6 +41,12 @@ const OPS: Record<string, (i: any) => unknown> = {
   loosens: (i) => ({ reasons: loosens(i.old, i.new).sort() }),
   verify_chain: (i) => (verifyChain(i.tokens, { keys: new KeySet(i.keys), executor: i.executor, sub: i.sub, seals: i.seals ?? [],
     sealKeys: i.seal_keys ? new KeySet(i.seal_keys) : null }), OK),
+  verify_export: (i) => verifyExport(i.tokens, { keys: new KeySet(i.keys), executor: i.executor, sub: i.sub, anchors: i.anchors,
+    anchorKeys: keysOf(i.anchor_keys), expect: i.expect }),
+  assess: (i) => assess(i.receipt_token, { keys: new KeySet(i.keys), executor: i.executor, observations: i.observations,
+    observerKeys: keysOf(i.observer_keys), authorityToken: i.authority_token,
+    authorityKeys: keysOf(i.authority_keys) }),
+  coverage: (i) => coverage(i.statement, i.attempts),
   check_undo: (i) => (checkUndo(i.token, {
     keys: new KeySet(i.keys), executor: i.executor, receiptToken: i.receipt_token, receiptKeys: new KeySet(i.receipt_keys),
     now: i.now, nonces: new MemoryNonces(i.seen_nonces ?? []), undone: i.undone ?? [], compensation: i.compensation,
