@@ -46,9 +46,14 @@ def _observed(r: Mapping[str, Any], token: str, observations: Sequence[str] | No
             raise OACError("executor_mismatch")
         if o["receipt"] != token_digest(token):
             raise OACError("receipt_mismatch", "the observation is about another receipt")
-        if o["iat"] >= r["iat"] - SKEW_S:  # a look taken well before the action says nothing about it
-            out.append(o)
+        out.append(o)
     return out
+
+
+def _receipt_time_false(r: Mapping[str, Any], observed: Sequence[Mapping[str, Any]]) -> bool:
+    """An observation names this receipt's digest, so it was made after the receipt existed. One dated more than
+    SKEW_S before the receipt shows that the executor's own time on the receipt is false (spec 8.5)."""
+    return any(o["iat"] < r["iat"] - SKEW_S for o in observed)
 
 
 def _binds(r: Mapping[str, Any], p: Mapping[str, Any]) -> bool:
@@ -109,7 +114,8 @@ def assess(
     check_semantics(r)
     if r["iss"] != executor:
         raise OACError("chain_issuer")
-    effect = _effect(r["outcome"], _observed(r, receipt_token, observations, observer_keys, executor, keys))
+    observed = _observed(r, receipt_token, observations, observer_keys, executor, keys)
+    effect = "contradicted" if _receipt_time_false(r, observed) else _effect(r["outcome"], observed)
     decision = _decision(r, authority_token, authority_keys)
     if effect in ("not_observed", "contradicted", "duplicate"):
         verdict = "fail"

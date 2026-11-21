@@ -232,12 +232,20 @@ def test_none_and_wrong_types_are_read_the_same_way_everywhere() -> None:
     assert code(assess, rec, keys=KEYS, executor=EX, observations=[5], observer_keys=SEER_KEYS) == "malformed"
 
 
-def test_a_stale_look_does_not_count_and_sixty_seconds_does() -> None:
+def test_an_observation_older_than_its_receipt_shows_the_receipt_time_is_false() -> None:
     rec = receipt(5)  # iat NOW + 5
     old = make_observation(key=SEER, iss=PROVIDER, sub=PERSON, executor=EX, receipt_token=rec, effect="seen", now=NOW + 5 - 61)
     edge = make_observation(key=SEER, iss=PROVIDER, sub=PERSON, executor=EX, receipt_token=rec, effect="seen", now=NOW + 5 - 60)
-    assert judge(rec, old)["effect"] == "cannot_establish"
+    assert judge(rec, old)["effect"] == "contradicted"
     assert judge(rec, edge)["effect"] == "observed"
+
+
+def test_a_future_dated_denial_cannot_hide_an_effect_that_was_seen() -> None:
+    # The executor dates a denial an hour ahead so that a real sighting looks stale. In 0.5.0 that passed.
+    rec = receipt(1, outcome="failed", iat=NOW + 3600)
+    seen = make_observation(key=SEER, iss=PROVIDER, sub=PERSON, executor=EX, receipt_token=rec, effect="seen", now=NOW + 30)
+    got = judge(rec, seen)
+    assert (got["effect"], got["verdict"]) == ("contradicted", "fail")
 
 
 def test_the_authority_token_must_be_for_this_person_executor_and_time() -> None:

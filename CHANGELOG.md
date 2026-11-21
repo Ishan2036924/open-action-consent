@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1 (2026-11-21)
+
+- Security fix in `assess` (spec 8.5). In 0.5.0 an observation dated more than 60 seconds before its receipt was
+  dropped as stale. The executor writes the receipt's time, so an executor that dated a denial an hour ahead could make
+  a real sighting of the effect look stale: the effect became `absent` and the verdict `pass`. An observation names the
+  receipt's digest, so it cannot come before the receipt; one dated more than 60 seconds earlier now shows that the
+  receipt's time is false, and the effect is `contradicted` (verdict `fail`). Found in a review after release. Four new
+  vectors (353 in all); 0.5.0 fails them. Upgrade if you use `assess`.
+
 ## 0.5.0 (2026-11-20)
 
 Adds completeness anchors, independent observations and a checkable coverage result. Everything is additive: objects
