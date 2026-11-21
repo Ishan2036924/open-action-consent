@@ -200,6 +200,16 @@
     "occurrence_scope": {
       "description": "The profile's occurrence scope, when it names one. Chain checks compare occurrences within a scope (the tool's own scope when absent).",
       "$ref": "urn:oac:0.2:common#/$defs/occurrence"
+    },
+    "route": {
+      "description": "The route id from the coverage statement (spec 13.2) that the action took, recorded by the executor at the point of effect. A verifier older than 0.5 refuses a receipt that carries it.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "policy": {
+      "description": "Digest of the policy in force when the executor decided. A verifier older than 0.5 refuses a receipt that carries it.",
+      "$ref": "urn:oac:0.2:common#/$defs/digest"
     }
   },
   "dependentRequired": {

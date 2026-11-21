@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oac:0.2:coverage",
+  "title": "OAC 0.2 coverage statement and bypass-check attempts (not signed)",
+  "description": "Input of the coverage check (spec 13.2): the deployment's statement, one row per effect, and the attempts made by the bypass check. Rules beyond the schema: an effect is listed once; a route is listed once per effect.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "statement",
+    "attempts"
+  ],
+  "properties": {
+    "statement": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/attempt"
+      }
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effect",
+        "key",
+        "held_by",
+        "routes",
+        "records"
+      ],
+      "properties": {
+        "effect": {
+          "$ref": "urn:oac:0.2:common#/$defs/tool"
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "held_by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "routes": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "route",
+              "credential",
+              "control"
+            ],
+            "properties": {
+              "route": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "credential": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "control": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          }
+        },
+        "records": {
+          "enum": [
+            "durable",
+            "memory"
+          ]
+        }
+      }
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effect",
+        "route",
+        "decision",
+        "effect_occurred",
+        "observed_by"
+      ],
+      "properties": {
+        "effect": {
+          "$ref": "urn:oac:0.2:common#/$defs/tool"
+        },
+        "route": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "decision": {
+          "description": "Whether a decision exists for that exact action.",
+          "enum": [
+            "exists",
+            "none"
+          ]
+        },
+        "effect_occurred": {
+          "enum": [
+            "yes",
+            "no",
+            "cannot_tell"
+          ]
+        },
+        "observed_by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    }
+  }
+}
