@@ -50,6 +50,14 @@ object):
   `hypothesis` joins the `test` extra; fast-check is a pinned dev dependency.
 - CI lints the Python SDK, tests, tools and examples with ruff (from the hash lock; `ruff.toml`); the six findings
   were four unused imports and two lambdas assigned to names, fixed without a behaviour change.
+- Security fix in the LiteLLM guardrail, before release: it took the person from the request (`user_api_key_user_id`
+  or `user_api_key_team_id` in the hook's `data` or its `metadata`) instead of from the key LiteLLM authenticated.
+  `data` is request material that a caller or an earlier guardrail can fill, so a call could act, and be approved and
+  receipted, as another person. The person now comes only from the hook's `user_api_key_dict` (`user_id`, or `team_id`
+  with `person_from: team_id`), and a key without one is refused (403, `code: malformed`). In LiteLLM 1.108.2 that is
+  the `UserAPIKeyAuth` the MCP route's key check produced, passed through `pre_call_hook`. A planted test reads the
+  person from the request again and shows a caller acting as someone else; the fuzzing now checks that receipts only
+  ever name the key's person.
 - `CONTRIBUTING.md` says how a change lands (pull request against `main`, required checks green); `SECURITY.md` says
   GitHub private vulnerability reporting is enabled.
 
