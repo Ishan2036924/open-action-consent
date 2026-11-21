@@ -1,9 +1,33 @@
 # Changelog
 
-## 0.5.2 (2026-11-21)
+## 0.6.0 (2026-11-21)
 
-Robustness fixes found by new property-based fuzzing; no change to the spec, the vectors or any valid object.
+A LiteLLM integration: OAC gates MCP tool calls that pass through the LiteLLM proxy's MCP gateway, from a few lines
+of `config.yaml`, for MCP servers that know nothing about OAC. No change to the spec's objects or the vectors (353,
+all unchanged); the TypeScript SDK gets only the fuzzing fixes below.
 
+- **LiteLLM guardrail** (`oac.litellm.OACGuardrail`, extra `[litellm]`, `guides/litellm.md`, binding note
+  `spec/mcp-extension.md` 7.1): profiles keyed by `server/tool`; unprofiled tools, undeclared arguments and tier D
+  refused; tier C refused with the Preview until the person's Consent arrives (intake endpoint, `x-oac-consent`
+  header, or `accept_consent`), then run once; the arguments that will run are the ones checked and are pinned, and
+  every call is refused while another `pre_mcp_call` guardrail is registered after OAC; the person comes from
+  LiteLLM's key check (`user_id` or `team_id`), never the request; each attempt is closed from LiteLLM's outcome
+  events with a hash-chained receipt (`ok`, `failed` when stopped before the tool ran, otherwise `unknown` for tools
+  with occurrences), attempts with no outcome are closed after `ticket_timeout_s`, and `receipts_dir` keeps one chain
+  per person across restarts. Tested with LiteLLM 1.108.x, end to end through the real proxy and a stdio MCP server
+  whose send tool writes to a file, with planted-defect tests for the guardrail-order check and the taint default.
+- `Gate.begin` and `Gate.finish` (with `Ticket`): authorize an action that runs somewhere the gate does not call, and
+  close it with its receipt. `Gate.run` and `Gate.arun` now use them; their behaviour is unchanged.
+- `Gate` keeps at most `max_pending` (default 1000) unanswered Previews, so an agent asking again and again cannot
+  grow memory without bound.
+
+Also in 0.6.0, robustness fixes found by new property-based fuzzing (no change to the spec, the vectors or any valid
+object):
+
+- The gate (and so the LiteLLM guardrail) refuses a person that cannot be a receipt's `sub` (1 to 256 printable ASCII
+  characters) before anything runs. A tier A or B call for a person such as `"alice smith"` ran and then failed to write
+  its receipt, so the action happened with no record; with `person_from="end_user_id"` the caller chooses that value.
+  TypeScript also records a tool result holding a lone surrogate by its well-formed text instead of failing the receipt.
 - Key sets refuse a broken key document with `malformed`. A JWK missing a member (`{"kty": "OKP"}`), one key where a
   list was expected, or a non-object key raised `KeyError`, `ValueError` or `TypeError` (Python) and `TypeError`
   (TypeScript) instead of an `OACError`. Issuer keys come from the network (`keyset_from`), so a hostile issuer could
@@ -13,11 +37,13 @@ Robustness fixes found by new property-based fuzzing; no change to the spec, the
   so `digest` and `sign` could cover something other than what the caller meant.
 - Fuzzing: Hypothesis (Python) and fast-check (TypeScript) properties over strict JSON and JCS (round trip,
   idempotence, deep nesting), compact JWS on hostile and edited tokens, hostile keys, the receipt, seal and observation
-  shapes, `verify_export`, `verify_chain` seals and `assess` (including payloads signed by a trusted key): each must
-  refuse with `OACError` and a known code, never another exception. A seeded corpus checks that Python and TypeScript
-  JCS agree byte for byte, refusals included. They run in the normal test suites (100 examples each) and in a new
-  `fuzz` CI job (1,000); `OAC_FUZZ_EXAMPLES` sets the budget. `hypothesis` joins the `test` extra; fast-check is a
-  pinned dev dependency.
+  shapes, `verify_export`, `verify_chain` seals, `assess` (including payloads signed by a trusted key), the gate (an
+  action is refused before it runs or gets a receipt; `accept_consent` never raises) and the LiteLLM guardrail's hooks
+  (hostile tool names, arguments, metadata, headers and outcome events: an HTTP refusal with a code, never another
+  exception, and nothing runs unpinned). Each must refuse with `OACError` and a known code, never another exception. A
+  seeded corpus checks that Python and TypeScript JCS agree byte for byte, refusals included. They run in the normal
+  test suites (100 examples each) and in a new `fuzz` CI job (1,000); `OAC_FUZZ_EXAMPLES` sets the budget.
+  `hypothesis` joins the `test` extra; fast-check is a pinned dev dependency.
 - CI lints the Python SDK, tests, tools and examples with ruff (from the hash lock; `ruff.toml`); the six findings
   were four unused imports and two lambdas assigned to names, fixed without a behaviour change.
 - `CONTRIBUTING.md` says how a change lands (pull request against `main`, required checks green); `SECURITY.md` says

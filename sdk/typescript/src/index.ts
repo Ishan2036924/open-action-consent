@@ -15,4 +15,4 @@ export { checkUndo, makeUndo } from "./undo.ts";
 export { ActionFailed, Gate, NeedsConsent, type DevicePolicy, type ProfileSpec } from "./gate.ts";
 export { MemoryOccurrences, type OccurrenceStore } from "./occurrence.ts";
 export { verifyDeviceProof, type DeviceCheck } from "./webauthn.ts";
-export const VERSION = "0.5.2";
+export const VERSION = "0.6.0";

@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "open-action-consent"
-version = "0.5.2"
-description = "Open Action Consent: a verifiable yes for actions AI agents take for people. Core SDK plus MCP, browser, approval page, OpenAI Agents and LangGraph integrations."
+version = "0.6.0"
+description = "Open Action Consent: a verifiable yes for actions AI agents take for people. Core SDK plus MCP, browser, approval page, OpenAI Agents, LangGraph and LiteLLM integrations."
 readme = "README.md"
 license = "Apache-2.0"
 authors = [{ name = "Ishan Srivastava" }]
 requires-python = ">=3.10"
-keywords = ["ai-agents", "consent", "mcp", "agent-payments", "jws", "open-standard"]
+keywords = ["ai-agents", "consent", "mcp", "litellm", "agent-payments", "jws", "open-standard"]
 dependencies = ["cryptography>=42"]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -26,6 +26,7 @@ browser = ["mcp>=2.3,<3", "playwright>=1.50"]
 approver = ["starlette>=0.40", "uvicorn>=0.30"]
 openai-agents = ["openai-agents>=0.24,<0.30"]
 langgraph = ["langgraph>=1.2,<2"]
+litellm = ["litellm[proxy]>=1.108,<2"]  # not in `all`: the LiteLLM proxy pins many packages of its own
 all = ["mcp>=2.3,<3", "playwright>=1.50", "starlette>=0.40", "uvicorn>=0.30", "openai-agents>=0.24,<0.30", "langgraph>=1.2,<2"]
 test = ["pytest>=8", "anyio>=4", "hypothesis>=6.100"]
 
