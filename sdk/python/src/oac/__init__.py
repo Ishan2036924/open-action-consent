@@ -4,7 +4,7 @@ from oac.consent import MemoryNonces, make_consent, verify_consent
 from oac.coverage import coverage
 from oac.errors import CODES, OACError
 from oac.evidence import assess, make_observation
-from oac.gate import ActionFailed, Gate, NeedsConsent
+from oac.gate import ActionFailed, Gate, NeedsConsent, Ticket
 from oac.jcs import canonical, parse
 from oac.jws import KeySet, SigningKey, digest, generate, sign, token_digest, verify
 from oac.mandate import check_mandate, loosens, make_mandate
@@ -15,7 +15,7 @@ from oac.tiers import tier_for
 from oac.undo import check_undo, make_undo
 from oac.webauthn import DeviceCheck, verify_device_proof
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 __all__ = [
     "CODES",
     "ActionFailed",

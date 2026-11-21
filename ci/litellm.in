@@ -1,0 +1,9 @@
+# CI "litellm" job: core SDK, [litellm], [mcp] and [test] extras, the guardrail tests through the real LiteLLM MCP gateway.
+# Mirrors sdk/python/pyproject.toml (checked by tools/check_ci_locks.py). Relock: uv pip compile --universal --python-version 3.13 --generate-hashes ci/litellm.in -o ci/litellm.txt
+# extras: litellm, mcp, test
+cryptography>=42
+litellm[proxy]==1.108.2
+mcp==2.3.0
+pytest>=8
+anyio>=4
+setuptools>=77
