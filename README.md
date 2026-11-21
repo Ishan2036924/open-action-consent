@@ -65,6 +65,34 @@ verify_consent(consent, keys=KeySet({"signer.example": [user_key.jwk]}), executo
                now=1793836810, nonces=MemoryNonces())
 ```
 
+## Complete? Did it happen?
+
+A receipt chain proves order, not completeness: a chain of six receipts cut to four still verifies. And a receipt is
+the executor's word about itself. 0.5.0 keeps these questions apart (spec 8.4 and 8.5):
+
+- `verify_export` checks an export against **anchors**: seals signed by someone other than the executor (the
+  person's signer, a witness), or the verifier's own count. Its report says `complete`, or `prefix` with the reason
+  (`no_anchor`, `unanchored_tail`, `unanchored_start`). An anchor past the end of the export is `chain_truncated`;
+  an anchor signed by the executor is `anchor_not_independent`.
+- `assess` takes one receipt plus observations signed by a reader other than the executor, and returns `route`,
+  `decision`, `effect` and a `verdict` as separate answers. An allowance has to be seen to pass; one decision with two
+  different effects fails; no observer gives `cannot_establish`, never a pass.
+- `coverage` turns a deployment's coverage statement and bypass-check attempts into `covered`, `bypass`, `incomplete`
+  or `not_checked` per effect, never one score (spec 13.2).
+
+```python
+from oac import verify_export, assess, coverage
+
+report = verify_export(tokens, keys=executor_keys, executor=EX, anchors=[seal], anchor_keys=signer_keys)
+# {"first": 1, "last": 4, "proven_to": 4, "status": "complete", "reason": None}
+verdict = assess(receipt, keys=executor_keys, executor=EX, observations=[seen], observer_keys=provider_keys)
+# {"route": "booking-api", "decision": "tier", "effect": "observed", "verdict": "pass"}
+```
+
+Receipts may now carry `route` and `policy`; a verifier older than 0.5 refuses those, so see the
+[changelog](CHANGELOG.md) before adding them. This follows ceyptoslim's write-up on
+[MCP SEP-2848](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262).
+
 ## What is here
 
 | Path | What |
@@ -74,7 +102,7 @@ verify_consent(consent, keys=KeySet({"signer.example": [user_key.jwk]}), executo
 | [spec/mappings.md](spec/mappings.md) | AP2, Verifiable Intent, Stripe, ACP, UCP, A2A, IETF receipt drafts |
 | [spec/profiles/dispute.md](spec/profiles/dispute.md) | Dispute Evidence Pack |
 | [schemas/](schemas/) | JSON Schema 2020-12 for every object |
-| [vectors/](vectors/) | 241 conformance cases: valid ones and planted defects (forged signature, changed arguments, hidden bcc, two addresses in one, replay, expired, revoked or widened mandate, one signer speaking for another, signature twins, broken receipt chain, rewritten history under a seal, revoked bit, double undo, a passkey proof from the wrong origin or without user verification, the same order paid twice, ...) |
+| [vectors/](vectors/) | 323 conformance cases: valid ones and planted defects (forged signature, changed arguments, hidden bcc, two addresses in one, replay, expired, revoked or widened mandate, one signer speaking for another, signature twins, broken receipt chain, rewritten history under a seal, revoked bit, double undo, a passkey proof from the wrong origin or without user verification, the same order paid twice, ...) |
 | [sdk/python/](sdk/python/) | reference SDK (needs `cryptography`) |
 | [sdk/typescript/](sdk/typescript/) | reference SDK (no dependencies, Node 23.6+) |
 | [conformance/](conformance/) | vector format and how to run it |
@@ -95,7 +123,7 @@ and confirm a vector fails, so a check that quietly stops working is caught.
 
 ## Status
 
-Spec draft 0.2, packages 0.4.0 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback,
+Spec draft 0.2, packages 0.5.0 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback,
 implementations and reviews are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), and report vulnerabilities privately
 as described in [SECURITY.md](SECURITY.md).
 
