@@ -164,7 +164,29 @@ fills in the proof that came with the Consent.
 
 ## 8. Relation to SEP-2848
 
-SEP-2848 turns a denied call into a Task that resolves when someone approves out of band, and binds the approval to a
-canonical digest of the arguments. OAC supplies what it leaves open: the approval as a signed, portable object bound
-to a Preview, and a receipt afterwards. If SEP-2848 is adopted, section 3 can use its task handle instead of
-`input_required`, and an OAC Consent becomes the evidence its binding record stores.
+Status as read on 2026-11-20: SEP-2848 is a draft pull request with no sponsor, and MCP's maintainers asked that it go
+through the Authorization Interest Group first. Nothing here says it, or any part of it, has been adopted.
+
+SEP-2848 turns a denied call into a Task that resolves when someone approves out of band. The server keeps an immutable
+binding of the call (tool name, complete arguments, and optionally a digest over a canonical serialization), and the
+approval is an input to a new decision, never a standing grant. The approval protocol stays on the server's side and
+never crosses the MCP wire. OAC supplies what the SEP leaves open: the approval as a signed, portable object bound to
+a Preview, and a receipt afterwards. If SEP-2848 is adopted, section 3 can use its task handle instead of
+`input_required`, and an OAC Consent becomes the approval material its server-side binding stores. The Consent stays
+off the wire; a client that carries `_meta["com.atlasiw/oac-consent"]` (3.2) is an optional path for clients that sign.
+
+Outcome mapping. The SEP's disposition in the Task result `_meta` and the OAC receipt's `outcome` (spec 8.1) answer
+nearly the same question, with one exception:
+
+| OAC `outcome` | SEP-2848 disposition | Note |
+|---|---|---|
+| `ok` | `approved-executed` | |
+| `unknown` | `outcome-unknown` | |
+| `failed` | not `execution-error` | `execution-error` says a side effect may have occurred; OAC `failed` says it surely did not (3.4). Keep both fields. |
+| no receipt | `denied-not-executed` | OAC receipts are one per executed action, so a denial has no receipt today |
+
+The receipt travels in the result `_meta` (3.3). The SEP's own limitation, that a deployment needs "a durable consumer
+or an effect that is independently auditable", has no protocol object in the SEP. The OAC pieces that could fill it are
+the receipt chain with an anchor (spec 8.4) and an observation by a reader other than the executor (spec 8.5); both are
+optional evidence, not new wire members. ceyptoslim's write-up in the SEP thread
+([comment](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262)) is the origin of 8.4, 8.5 and the recording rule of 13.2.

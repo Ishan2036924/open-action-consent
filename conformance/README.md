@@ -24,11 +24,18 @@ op-specific value. Ops:
 | `check_mandate` | `token`, `keys`, `action`, `profile`, `holder`, `sub`, `now`, `tainted`, `usage`, `revoked` | ok / error |
 | `loosens` | `old`, `new` (mandate payloads) | `{"reasons": [sorted]}` |
 | `verify_chain` | `tokens`, `keys`, `executor`, `sub` | ok / error |
+| `verify_export` | `tokens`, `keys`, `executor`, `sub`, `anchors`, `anchor_keys`, `expect` | the report `{"first", "last", "proven_to", "status", "reason"}` (spec 8.4) / error |
+| `assess` | `receipt_token`, `keys`, `executor`, `observations`, `observer_keys`, `authority_token`, `authority_keys` | `{"route", "decision", "effect", "verdict"}` (spec 8.5) / error |
+| `coverage` | `statement`, `attempts` (`schemas/coverage.schema.json`) | `{"result", "statement_wrong", "effects": {effect: result}}` (spec 13.2) / error |
 | `check_undo` | `token`, `keys`, `executor`, `receipt_token`, `receipt_keys`, `now`, `seen_nonces`, `undone`, `compensation` | ok / error |
 | `claim_occurrence` | `state` (`null`, `running`, `failed`, `unknown` or `ok`: the last attempt's state) | ok / error |
 | `status_bit` | `encoded_list`, `index` | `{"revoked": bool}` |
 | `metadata_url` | `iss` | `{"url": string}` |
 | `keyset_from` | `docs` ([[iss, metadata], ...]), `kid` | `{"issuer": string}` |
+
+`verify_export` takes anchors (seals signed by someone other than the executor) and `expect`, the verifier's own
+`{"seq", "head"?}`; `assess` takes observations and, to check the decision, the authority token. Their `expect` is the
+result object itself, not `{"ok": true}`. `vectors/evidence.json` holds these cases.
 
 `check_mandate` also takes `status_lists` ({list id: token}); `verify_chain` takes `seals` and `seal_keys`.
 `verify_consent`'s optional `device` is `{"proof": <device proof or null>, "credentials": {id: JWK}, "rp_id", "origins", "device_bound"?}`
