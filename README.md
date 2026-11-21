@@ -1,6 +1,6 @@
 # Open Action Consent (OAC)
 
-[![ci](https://github.com/Ishan2036924/open-action-consent/actions/workflows/ci.yml/badge.svg)](https://github.com/Ishan2036924/open-action-consent/actions/workflows/ci.yml)
+[![ci](https://github.com/Ishan2036924/open-action-consent/actions/workflows/ci.yml/badge.svg)](https://github.com/Ishan2036924/open-action-consent/actions/workflows/ci.yml) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Ishan2036924/open-action-consent/badge)](https://scorecard.dev/viewer/?uri=github.com/Ishan2036924/open-action-consent)
 
 **A verifiable "yes" for things AI agents do for people.**
 
