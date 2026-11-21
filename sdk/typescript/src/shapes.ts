@@ -12,6 +12,11 @@ const HOLDERS = ["agent", "client", "run"];
 const SIGNERS = ["custodial", "device"];
 const AUTHORITIES = ["consent", "mandate", "tier", "undo"];
 const OUTCOMES = ["ok", "failed", "unknown"];
+const OBSERVED = ["seen", "not_seen", "uncheckable"];
+const VANTAGES = ["provider", "third_party", "person"];
+const RECORDS = ["durable", "memory"];
+const DECISIONS = ["exists", "none"];
+const OCCURRED = ["yes", "no", "cannot_tell"];
 export const PREVIEW_MAX_S = 900;
 const YEAR_S = 366 * 86400;
 
@@ -219,9 +224,46 @@ export function receipt(v: any): Record<string, any> {
     authority: [true, obj(authority, "authority")], action: [true, DIGEST], preview: [false, DIGEST],
     outcome: [true, oneOf(...OUTCOMES)], result: [true, DIGEST], undo: [true, obj(undo, "undo")],
     undoes: [false, DIGEST], payment: [false, obj(payment, "payment")], occurrence: [false, OCCURRENCE],
-    occurrence_scope: [false, OCCURRENCE],
+    occurrence_scope: [false, OCCURRENCE], route: [false, strCp(1, 128)], policy: [false, DIGEST],
   }, "receipt");
   if (has(v, "occurrence_scope") && !has(v, "occurrence")) throw new OACError("malformed", "receipt: an occurrence scope needs an occurrence");
+  return v;
+}
+
+export function observation(v: any): Record<string, any> {
+  check(v, {
+    oac: [true, constant(VERSION)], type: [true, constant("observation")], iss: [true, ID], sub: [true, ID], executor: [true, ID],
+    receipt: [true, DIGEST], effect: [true, oneOf(...OBSERVED)], subject: [false, DIGEST], route: [false, strCp(1, 128)],
+    vantage: [false, oneOf(...VANTAGES)], iat: [true, TIME],
+  }, "observation");
+  return v;
+}
+
+/** The verifier's own count of an export's end (spec 8.4). */
+export function expectation(v: any): Record<string, any> {
+  check(v, { seq: [true, int(1)], head: [false, DIGEST] }, "expect");
+  return v;
+}
+
+export function coverageStatement(v: any): Record<string, any>[] {
+  const route: Fields = { route: [true, strCp(1, 128)], credential: [true, strCp(1, 256)], control: [true, strCp(1, 256)] };
+  const row: Fields = {
+    effect: [true, TOOL], key: [true, strCp(1, 256)], held_by: [true, strCp(1, 256)],
+    routes: [true, list(obj(route, "route"), 0, 50)], records: [true, oneOf(...RECORDS)],
+  };
+  if (!Array.isArray(v) || !v.every((r) => obj(row, "coverage row")(r))) throw new OACError("malformed", "coverage statement must be a list of rows");
+  if (new Set(v.map((r) => r.effect)).size !== v.length || v.some((r) => new Set(r.routes.map((x: any) => x.route)).size !== r.routes.length)) {
+    throw new OACError("malformed", "coverage statement: an effect or a route is listed twice");
+  }
+  return v;
+}
+
+export function coverageAttempts(v: any): Record<string, any>[] {
+  const attempt: Fields = {
+    effect: [true, TOOL], route: [true, strCp(1, 128)], decision: [true, oneOf(...DECISIONS)],
+    effect_occurred: [true, oneOf(...OCCURRED)], observed_by: [true, strCp(1, 256)],
+  };
+  if (!Array.isArray(v) || !v.every((a) => obj(attempt, "coverage attempt")(a))) throw new OACError("malformed", "coverage attempts must be a list of attempts");
   return v;
 }
 
