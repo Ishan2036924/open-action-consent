@@ -102,7 +102,7 @@ Receipts may now carry `route` and `policy`; a verifier older than 0.5 refuses t
 | [spec/mappings.md](spec/mappings.md) | AP2, Verifiable Intent, Stripe, ACP, UCP, A2A, IETF receipt drafts |
 | [spec/profiles/dispute.md](spec/profiles/dispute.md) | Dispute Evidence Pack |
 | [schemas/](schemas/) | JSON Schema 2020-12 for every object |
-| [vectors/](vectors/) | 323 conformance cases: valid ones and planted defects (forged signature, changed arguments, hidden bcc, two addresses in one, replay, expired, revoked or widened mandate, one signer speaking for another, signature twins, broken receipt chain, rewritten history under a seal, revoked bit, double undo, a passkey proof from the wrong origin or without user verification, the same order paid twice, ...) |
+| [vectors/](vectors/) | 351 conformance cases: valid ones and planted defects (forged signature, changed arguments, hidden bcc, two addresses in one, replay, expired, revoked or widened mandate, one signer speaking for another, signature twins, broken receipt chain, rewritten history under a seal, revoked bit, double undo, a passkey proof from the wrong origin or without user verification, the same order paid twice, ...) |
 | [sdk/python/](sdk/python/) | reference SDK (needs `cryptography`) |
 | [sdk/typescript/](sdk/typescript/) | reference SDK (no dependencies, Node 23.6+) |
 | [conformance/](conformance/) | vector format and how to run it |

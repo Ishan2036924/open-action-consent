@@ -27,7 +27,16 @@ for verifiers that know them.
 - Mappings: SCITT is RFC 9943 and COSE Receipts RFC 9942; C2SP witnesses as anchor issuers; a SEP-2848 field table and
   outcome mapping (`ok` to `approved-executed`, `unknown` to `outcome-unknown`, `failed` is not `execution-error`).
   SEP-2848 is a draft with no sponsor; nothing says it is adopted.
-- Conformance: new ops `verify_export`, `assess`, `coverage` and `vectors/evidence.json` (82 cases), 323 in all.
+- Independence is by key as well as by name: an anchor or observation signed with any key the verifier holds for the
+  executor is refused, whatever issuer name it carries. A custodial signer run by the executor's operator is not
+  independent; use a witness.
+- `assess` binds the authority token more tightly: person (`sub`), executor (`aud`), time, and for a Mandate the tool.
+  Seen and not seen from independent readers is `contradicted` (fail), and a look taken more than 60 s before the
+  receipt does not count. `duplicate` needs `subject`.
+- Inputs: a null or missing list of anchors, observations, statement rows or attempts is empty in both SDKs, and a
+  wrong type is `malformed`. The TypeScript `coverage` no longer loses an effect named `__proto__`. A coverage row must
+  list at least one route.
+- Conformance: new ops `verify_export`, `assess`, `coverage` and `vectors/evidence.json` (110 cases), 351 in all.
 - Deployment coverage (13.2): each bypass attempt records the route, whether a decision exists for that exact action,
   and whether the effect occurred as separate fields; the coverage statement lists every other route to an effect
   with the credential it holds and the control it passes through; an effect on an unlisted route breaks the whole claim; and

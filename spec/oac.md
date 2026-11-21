@@ -511,10 +511,13 @@ check of 8.2 still passes: a chain of six receipts cut to four verifies clean. c
 wrote that completeness needs an anchor the writer does not hold
 ([write-up](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262)). So "verified" and "complete" are two results, and a verifier MUST NOT merge them.
 
-An **anchor** is a seal (8.2) used for this, with one more rule: it MUST be signed by a key whose issuer is not the
-executor (`anchor_not_independent`). The person's signer, a witness, or a seal registered in a SCITT transparency
-service all qualify. The executor's own seal does not, because an executor that cuts its chain can sign a fresh head
-for the shorter one.
+An **anchor** is a seal (8.2) used for this, with one more rule: it MUST NOT be signed by the executor, by name or by
+key (`anchor_not_independent`). Independence is by key: an anchor is refused when its issuer is the executor, and also
+when its signing key is any key the verifier holds for the executor, whatever issuer name the anchor carries. The
+person's signer, a witness, or a seal registered in a SCITT transparency service qualify. The executor's own seal does
+not, because an executor that cuts its chain can sign a fresh head for the shorter one. A custodial signer run by the
+same operator as the executor is not independent in substance either, whatever its keys are called, so use a witness
+the operator does not control.
 
 Verifying an export with anchors (`verify_export`) first runs every check of 8.2 on the receipts. Then, for each
 anchor, in order: the signature under the anchor keys; the issuer is not the executor (`anchor_not_independent`); the
@@ -564,13 +567,17 @@ without (ceyptoslim, [write-up](https://github.com/modelcontextprotocol/modelcon
 
 `effect` is `seen`, `not_seen` or `uncheckable` (the reader could not check; it counts as no observation).
 `subject` is the digest of what was observed (the provider's record id, the sent message). `route` and `vantage`
-(`provider`, `third_party` or `person`) are optional. `iss` MUST NOT be the executor (`observer_not_independent`): an
-executor's statement that it did something is a claim about itself.
+(`provider`, `third_party` or `person`) are optional. The observer MUST NOT be the executor, by name or by key
+(`observer_not_independent`): `iss` is not the executor and the signing key is none of the keys the verifier holds for
+it. An executor's statement that it did something is a claim about itself. As with anchors, an observer run by the
+executor's own operator is not independent in substance.
 
 **Assessing a receipt** (`assess`) takes the receipt, any observations with the observer's keys, and optionally the
 token the receipt names as its authority with its signer's keys. It verifies the receipt (8.1, `chain_issuer`) and each
-observation: signature, `iss` not the executor, the same person (`subject_mismatch`), this executor
-(`executor_mismatch`), and `receipt` equal to the `token_digest` of this receipt (`receipt_mismatch`). It returns:
+observation: signature, not the executor by name or key (`observer_not_independent`), the same person
+(`subject_mismatch`), this executor (`executor_mismatch`), and `receipt` equal to the `token_digest` of this receipt
+(`receipt_mismatch`). An observation whose `iat` is more than 60 seconds before the receipt's `iat` does not count, as if
+it were `uncheckable`: a look taken before the action says nothing about it. It returns:
 
 | member | values |
 |---|---|
@@ -579,27 +586,35 @@ observation: signature, `iss` not the executor, the same person (`subject_mismat
 | `effect` | see below |
 | `verdict` | `pass`, `fail` or `cannot_establish` |
 
-A token that is given but does not match is an error, `authority_mismatch`, not a quiet `unverified`. It matches when:
-for a Consent, its `jti` is the receipt's `authority.ref` and one item has `preview` equal to the receipt's `preview` and
-`action` equal to the receipt's `action` (so the decision was bound to the digest of what the approver was shown, 6.2);
-for a Mandate, its `id` is the `ref`; for an Undo request, its `jti` is the `ref` and its `receipt` is the receipt's
-`undoes`.
+A token that is given but does not match is an error, `authority_mismatch`, not a quiet `unverified`. Every kind needs
+its `sub` to equal the receipt's `sub`. A Consent matches when also its `aud` is the receipt's `iss`, its `jti` is the
+receipt's `authority.ref`, its `iat` is not more than 60 seconds after the receipt's `iat`, and one item has `preview`
+equal to the receipt's `preview` and `action` equal to the receipt's `action` (so the decision was bound to the digest
+of what the approver was shown, 6.2). A Mandate matches when its `id` is the `ref`, the receipt's `tool` is one of its
+`tools`, and the receipt's `iat` lies between the Mandate's `iat` and `exp`, with 60 seconds of slack either way (a
+Mandate names no executor, so there is no audience to compare). An Undo request matches when its `aud` is the
+receipt's `iss`, its `jti` is the `ref`, and its `receipt` is the receipt's `undoes`.
 
 `effect` depends on the receipt's `outcome`, and an allowance and a denial are not symmetric:
 
 | outcome | observations | effect |
 |---|---|---|
-| `ok` (an allowance) | some `seen` | `observed` |
+| `ok` (an allowance) | some `seen`, none `not_seen` | `observed` |
 | `ok` | none `seen`, some `not_seen` | `not_observed` |
 | `ok` | neither (none, or only `uncheckable`) | `cannot_establish` |
 | `failed` (a denial) | none `seen` | `absent` |
 | `failed` | some `seen` | `contradicted` |
-| `unknown` | some `seen` | `observed` |
+| any | both `seen` and `not_seen` | `contradicted`: independent readers disagree |
+| `unknown` | some `seen`, none `not_seen` | `observed` |
 | `unknown` | none `seen` | `cannot_establish` |
 | any | `seen` observations whose `subject`s differ | `duplicate`: one decision, two effects |
 
+`duplicate` needs `subject`: two sightings without one cannot be told apart from one effect seen twice, so an observer
+that can tell effects apart SHOULD always carry it. Observations that do not count (stale, `uncheckable`) are left out
+before this table is read.
+
 An allowance has to be seen to count; a denial stands until someone sees the effect. `verdict` is `fail` for
-`not_observed`, `contradicted` and `duplicate`, whatever the decision. It is `pass` when the decision is `tier` or
+`not_observed`, `contradicted` (a conflict is never a pass) and `duplicate`, whatever the decision. It is `pass` when the decision is `tier` or
 `bound` and the effect is `observed` (an allowance) or `absent` (a denial). Anything else is `cannot_establish`: for
 example an effect no one checked, or an observed effect whose decision was never verified.
 
@@ -666,9 +681,10 @@ points to it or exports to it (`mappings.md`).
 - **Truncation.** A chain verifies the same after its last receipts are cut off. Only an anchor the executor does not
   hold (8.4) shows that the end is missing, and records written after the latest anchor are not protected: the
   verifier reports a `prefix`, never `complete`, until a later anchor covers them.
-- **The executor's word.** A receipt is the executor's statement about itself. That an effect happened, or did not,
-  is shown by an observation from a reader other than the executor (8.5), and a missing observation is
-  `cannot_establish`, not a pass.
+- **The executor's word.** A receipt is the executor's statement about itself. That an effect happened is shown by an
+  observation from a reader other than the executor (8.5): for an allowance a missing observation is
+  `cannot_establish`, not a pass. A denial (outcome `failed`) stands until a reader reports seeing the effect, and then
+  it is `contradicted`.
 - **One way in.** The checks protect an effect only if nothing reaches that effect without them. A second tool server
   with write access to the same database, a script with the same API key, or an admin console can send the mail or
   move the money with no Preview and no Consent, while every Receipt stays consistent. The defence is to guard the
@@ -696,7 +712,9 @@ A deployment that claims OAC protects an effect (an action of tier C) MUST meet 
    every credential found there. The effect MUST NOT happen. The check runs again whenever a key, tool server or
    route is added. Each attempt is recorded in three separate fields: the route, whether a decision exists for that
    exact action, and whether the effect occurred. One combined field can report a pass for an action that ran twice,
-   once with a decision and once without. The three fields and the coverage statement have a schema
+   once with a decision and once without. In a bypass check the Consent is never presented, so any effect that occurred
+   is a `bypass` whatever `decision` says; `decision` is kept so the record shows whether a verified Consent existed
+   for that action (a bypass with one is worse than a bypass with none). The three fields and the coverage statement have a schema
    (`schemas/coverage.schema.json`), and the `coverage` check of the conformance vectors turns them into the results
    below. The recording rule is ceyptoslim's
    ([write-up](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2848#issuecomment-6903646262)).
@@ -706,7 +724,9 @@ A deployment that claims OAC protects an effect (an action of tier C) MUST meet 
    lets a used Consent run again, resets a Mandate's limits, or makes a paid order look new. The reference SDKs'
    stores live in memory; passing the vectors does not show that a deployment keeps its records.
 
-The deployment SHOULD publish a coverage statement, one row per effect: the key and who holds it; every other route
+The deployment SHOULD publish a coverage statement, one row per effect (`routes` lists every route the check tried, at
+least one: when the executor is the only other way in, list the direct one, the credential an agent could use on its
+own, with its control): the key and who holds it; every other route
 that can reach the effect (other interfaces, batch and repair jobs, internal callers), with the credential it holds and
 the control it passes through, or that it passes through none; where its records are kept (rule 4); and the bypass
 check result. For example:
