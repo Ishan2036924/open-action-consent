@@ -193,12 +193,14 @@ class OACGuardrail(CustomGuardrail):
         if not isinstance(args, Mapping):
             raise _refuse(403, "oac_refused", "arguments are not an object", code="malformed")
         args = json.loads(json.dumps(args))  # a private copy: what is approved is what is pinned below
-        person = data.get(self.person_field) or (data.get("metadata") or {}).get(self.person_field)
+        metadata = data.get("metadata") if isinstance(data.get("metadata"), Mapping) else {}
+        person = data.get(self.person_field) or metadata.get(self.person_field)
         if not isinstance(person, str) or not person:
-            raise _refuse(403, "oac_refused", "no person: the calling key has no " + self.person_field.split("_key_")[1])
+            raise _refuse(403, "oac_refused", "no person: the calling key has no " + self.person_field.split("_key_")[1],
+                          code="malformed")
         person = f"{self.person_field.split('_key_')[1]}:{person}"
         self._load_chain(person)
-        headers = (data.get("metadata") or {}).get("headers") or {}
+        headers = metadata.get("headers") if isinstance(metadata.get("headers"), Mapping) else {}
         token = next((v for k, v in headers.items() if str(k).lower() == CONSENT_HEADER), None)
         try:
             with self._lock:
@@ -231,6 +233,8 @@ class OACGuardrail(CustomGuardrail):
     def _take(self, kwargs: Mapping[str, Any]) -> Ticket | None:
         with self._lock:
             ticket_id = kwargs.get("oac_ticket")
+            if not isinstance(ticket_id, str):  # only this guardrail writes it, as a hex string
+                ticket_id = None
             call_id = str(kwargs.get("litellm_call_id") or "")
             ids = self.by_call.get(call_id, [])
             if ticket_id is None and len(ids) == 1:

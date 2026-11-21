@@ -143,3 +143,16 @@ test("gate: after a restart, a tool with its own records cannot take a scope", a
   // a fresh store (nothing kept) never blocks a first registration with a scope
   new Gate({ executor: EX, key: generate(), signers: new KeySet({}) }).profile("pay_order", pay("stripe:acct_1"));
 });
+
+test("gate: a person that cannot be a receipt's sub is refused before anything runs (found by fuzz.test.ts)", async () => {
+  const gate = new Gate({ executor: EX, key: generate(), signers: new KeySet({}) });
+  gate.profile("add_task", { effect: "write", undo: "native", windowS: 600, binds: { title: "title" } });
+  for (const person of ["", " ", "alice smith", "jörg", "x".repeat(257), "tab\there"]) {
+    const ran: unknown[] = [];
+    await assert.rejects(gate.run("add_task", { title: "x" }, (a) => ran.push(a), { person, tainted: false }), (e: any) => e instanceof OACError && e.code === "malformed");
+    assert.deepEqual(ran, []);
+  }
+  // a result JSON cannot hold, even a lone surrogate, still gets a receipt
+  const [, receipt] = await gate.run("add_task", { title: "x" }, () => "\ud800", { person: PERSON, tainted: false });
+  assert.equal(verifyChain([receipt], { keys: new KeySet({ [EX]: [gate.key.jwk] }), executor: EX }).length, 1);
+});
