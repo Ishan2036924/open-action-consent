@@ -13,7 +13,7 @@ from __future__ import annotations
 import inspect
 import secrets
 import time
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 
@@ -48,6 +48,20 @@ class ActionFailed(Exception):
     """Raise from a tool when the action surely did not happen. Other errors count as unknown."""
 
 
+@dataclass(frozen=True)
+class Ticket:
+    """An authorized action that has not finished yet. `Gate.begin` makes one; `Gate.finish` closes it with a receipt.
+    For hosts where the action runs somewhere the gate does not call itself (a gateway such as LiteLLM)."""
+
+    person: str
+    tool: str
+    args: Mapping[str, Any]
+    tier: str
+    authority: Mapping[str, Any]
+    preview_digest: str | None
+    claimed: Key | None
+
+
 class Gate:
     def __init__(
         self,
@@ -58,6 +72,7 @@ class Gate:
         nonces: NonceStore | None = None,
         occurrences: OccurrenceStore | None = None,
         policy_floor: str = "A",
+        max_pending: int = 1000,
         summarize: Callable[[Mapping[str, Any]], str] | None = None,
         clock: Callable[[], int] = lambda: int(time.time()),
         device: Callable[[str, Mapping[str, Any]], DeviceCheck | None] | None = None,
@@ -69,6 +84,7 @@ class Gate:
         self.nonces = nonces or MemoryNonces()
         self.occurrences = occurrences or MemoryOccurrences()
         self.policy_floor, self._clock = policy_floor, clock
+        self.max_pending = max_pending
         self._summarize = summarize or (lambda a: f"{a['tool']}: " + ", ".join(f"{k}={a['args'][k]}" for k in sorted(a["args"]))[:480])
         self.profiles: dict[str, dict[str, Any]] = {}
         self.pending: dict[tuple[str, str], dict[str, Any]] = {}  # (person, action digest) -> preview
@@ -114,7 +130,10 @@ class Gate:
             p = build_preview(profile=self._profile(tool), action=action, executor=self.executor, sub=person,
                               summary=self._summarize(action), now=now, preview_id="pv_" + secrets.token_urlsafe(12),
                               evidence=evidence)
+            self.pending.pop(key, None)
             self.pending[key] = p
+            while len(self.pending) > self.max_pending:  # an agent asking again and again cannot grow this forever
+                self.pending.pop(next(iter(self.pending)))
         return p
 
     def preview_by_id(self, preview_id: str) -> dict[str, Any] | None:
@@ -179,26 +198,39 @@ class Gate:
             self.occurrences.finish(claimed, outcome)
         return outcome
 
+    def begin(self, tool: str, args: Mapping[str, Any], *, person: str, tainted: bool = True) -> Ticket:
+        """Authorize an action that will run elsewhere. Raises NeedsConsent or OACError instead of authorizing.
+        Every Ticket must reach `finish`, whatever happens, or its occurrence stays claimed."""
+        tier, authority, pd, claimed = self._authorize(tool, args, person, tainted)
+        return Ticket(person, tool, dict(args), tier, authority, pd, claimed)
+
+    def finish(self, ticket: Ticket, result: Any = None, error: BaseException | None = None) -> str:
+        """Close a Ticket and return its signed receipt. `error` is what went wrong, or None when the action ran:
+        ActionFailed means it surely did not happen; any other error leaves the outcome unknown."""
+        outcome = self._outcome(ticket.claimed, error)
+        return self._receipt(ticket.person, ticket.tool, ticket.args, ticket.tier, dict(ticket.authority),
+                             ticket.preview_digest, None if error else result, outcome)
+
     def run(self, tool: str, args: Mapping[str, Any], fn: Callable[..., Any], *, person: str,
             tainted: bool = True) -> tuple[Any, str]:
-        tier, authority, pd, claimed = self._authorize(tool, args, person, tainted)
+        ticket = self.begin(tool, args, person=person, tainted=tainted)
         try:
             result = fn(**dict(args))
         except BaseException as e:
-            self._receipt(person, tool, args, tier, authority, pd, None, self._outcome(claimed, e))
+            self.finish(ticket, error=e)
             raise
-        return result, self._receipt(person, tool, args, tier, authority, pd, result, self._outcome(claimed, None))
+        return result, self.finish(ticket, result)
 
     async def arun(self, tool: str, args: Mapping[str, Any], fn: Callable[..., Awaitable[Any] | Any], *, person: str,
                    tainted: bool = True) -> tuple[Any, str]:
-        tier, authority, pd, claimed = self._authorize(tool, args, person, tainted)
+        ticket = self.begin(tool, args, person=person, tainted=tainted)
         try:
             out = fn(**dict(args))
             result = await out if inspect.isawaitable(out) else out
         except BaseException as e:  # a cancelled call may still have happened
-            self._receipt(person, tool, args, tier, authority, pd, None, self._outcome(claimed, e))
+            self.finish(ticket, error=e)
             raise
-        return result, self._receipt(person, tool, args, tier, authority, pd, result, self._outcome(claimed, None))
+        return result, self.finish(ticket, result)
 
     def resolve(self, tool: str, occurrence: str, *, person: str, outcome: str) -> None:
         """Record what the provider says happened to an unknown attempt: ok or failed."""
