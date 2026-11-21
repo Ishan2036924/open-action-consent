@@ -20,7 +20,7 @@ V = {name: Draft202012Validator(s, registry=registry) for name, s in schemas.ite
 BEYOND_SCHEMA = {"a read that claims an undo", "an argument both bound and listed as other",
                  "an occurrence argument the tool does not declare"}
 TYP = {"oac-consent+jws": "consent", "oac-mandate+jws": "mandate", "oac-receipt+jws": "receipt", "oac-undo+jws": "undo",
-       "oac-status+jws": "status-list", "oac-seal+jws": "seal"}
+       "oac-status+jws": "status-list", "oac-seal+jws": "seal", "oac-observation+jws": "observation"}
 
 
 def part(token: str, i: int) -> dict:
@@ -29,15 +29,16 @@ def part(token: str, i: int) -> dict:
 
 
 def tokens(inp: dict) -> list[str]:
-    out = [inp[k] for k in ("token", "receipt_token") if isinstance(inp.get(k), str)]
-    return out + list(inp.get("tokens", [])) + list(inp.get("seals", [])) + list(inp.get("status_lists", {}).values())
+    out = [inp[k] for k in ("token", "receipt_token", "authority_token") if isinstance(inp.get(k), str)]
+    out += list(inp.get("tokens", [])) + list(inp.get("seals", [])) + list(inp.get("status_lists", {}).values())
+    return out + list(inp.get("anchors", [])) + list(inp.get("observations", []))
 
 
 checked, errors = 0, []
 for path in sorted((ROOT / "vectors").glob("*.json")):
     for case in json.loads(path.read_text())["cases"]:
         inp = case["input"]
-        ok = case["expect"] == {"ok": True} or (case["op"] == "keyset_from" and "error" not in case["expect"])
+        ok = case["expect"] == {"ok": True} or (case["op"] in ("keyset_from", "verify_export", "assess", "coverage") and "error" not in case["expect"])
         objs: list[tuple[str, dict]] = []
         if ok:
             objs += [("preview", p) for p in inp.get("previews", [])]
@@ -47,6 +48,8 @@ for path in sorted((ROOT / "vectors").glob("*.json")):
             objs += [("issuer-metadata", d[1]) for d in inp.get("docs", [])]
             if (inp.get("device") or {}).get("proof"):
                 objs.append(("device-proof", inp["device"]["proof"]))
+            if case["op"] == "coverage":
+                objs.append(("coverage", inp))
             for t in tokens(inp):
                 objs.append((TYP[part(t, 0)["typ"]], part(t, 1)))
         for name, obj in objs:
