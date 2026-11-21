@@ -21,6 +21,7 @@ pytest.importorskip("hypothesis")
 from fastapi import HTTPException  # noqa: E402
 from hypothesis import HealthCheck, given, settings  # noqa: E402
 from hypothesis import strategies as st  # noqa: E402
+from litellm.proxy._types import UserAPIKeyAuth  # noqa: E402
 
 from oac import CODES, KeySet, generate, make_consent, verify_chain  # noqa: E402
 from oac.gate import Gate  # noqa: E402
@@ -77,7 +78,8 @@ def consent_for(g: OACGuardrail, person: str) -> str:
 
 
 @st.composite
-def calls(draw) -> tuple[dict, str]:
+def calls(draw) -> tuple[dict, str, Any]:
+    """A request (with person fields a caller may forge), its call type, and the key LiteLLM authenticated."""
     data: dict[str, Any] = {}
     for field, value in (("mcp_server_name", names), ("mcp_tool_name", names), ("mcp_arguments", args),
                          ("modified_arguments", st.none() | args), ("user_api_key_user_id", people)):
@@ -95,7 +97,9 @@ def calls(draw) -> tuple[dict, str]:
         data["metadata"] = draw(json_values | st.fixed_dictionaries({"headers": json_values}))
     data["litellm_logging_obj"] = draw(st.sampled_from([None, "x", SimpleNamespace(model_call_details={}, litellm_call_id="c1")]))
     call_type = draw(st.sampled_from(["call_mcp_tool", "call_mcp_tool", "list_mcp_tools", "acompletion"]))
-    return data, call_type
+    user = draw(st.none() | st.sampled_from(["alice", "team-7"]))
+    key = draw(st.sampled_from([None, UserAPIKeyAuth(api_key="hashed-test-key", user_id=user)]))
+    return data, call_type, key
 
 
 def refusal(e: HTTPException) -> None:
@@ -107,23 +111,23 @@ def refusal(e: HTTPException) -> None:
 
 @FUZZ
 @given(calls(), st.booleans(), st.booleans())
-def test_pre_call_hook_refuses_or_pins(call: tuple[dict, str], tainted: bool, consent_first: bool) -> None:
-    data, call_type = call
+def test_pre_call_hook_refuses_or_pins(call: tuple[dict, str, Any], tainted: bool, consent_first: bool) -> None:
+    data, call_type, key = call
     g = build(tainted)
     authorized = 0
     if consent_first:  # ask once so a Preview is pending, then answer it in the header
         try:
-            asyncio.run(g.async_pre_call_hook(None, None, dict(data), call_type))
+            asyncio.run(g.async_pre_call_hook(key, None, dict(data), call_type))
             authorized += call_type == "call_mcp_tool"
         except HTTPException:
             pass
-        person = data.get("user_api_key_user_id")
+        person = getattr(key, "user_id", None)
         meta = data.get("metadata")
         if isinstance(person, str) and isinstance(meta, dict) and isinstance(meta.get("headers"), dict):
             meta["headers"] = {k: (consent_for(g, f"user_id:{person}") if v == "CONSENT" else v) for k, v in meta["headers"].items()}
     expected = copy.deepcopy(data.get("modified_arguments") or data.get("mcp_arguments") or {})
     try:
-        out = asyncio.run(g.async_pre_call_hook(None, None, data, call_type))
+        out = asyncio.run(g.async_pre_call_hook(key, None, data, call_type))
     except HTTPException as e:
         refusal(e)
         return
@@ -139,6 +143,7 @@ def test_pre_call_hook_refuses_or_pins(call: tuple[dict, str], tainted: bool, co
     g.test_clock.now += g.ticket_timeout_s
     g._sweep()
     chains = list(g.gate.receipts.values())
+    assert set(g.gate.receipts) <= {f"user_id:{getattr(key, 'user_id', None)}"}  # only ever the key's person
     assert sum(len(c) for c in chains) == authorized  # every authorized attempt has exactly one receipt
     for chain in chains:
         assert verify_chain(chain, keys=KeySet({EX: [EXEC.jwk]}), executor=EX)
@@ -161,7 +166,8 @@ def test_outcome_events_never_raise(kwargs: dict, response: Any, success: bool) 
     g = build(False)
     data = {"mcp_server_name": "tasks", "mcp_tool_name": "add_task", "mcp_arguments": {"title": "Call"},
             "user_api_key_user_id": "alice", "litellm_logging_obj": SimpleNamespace(model_call_details={}, litellm_call_id="c1")}
-    asyncio.run(g.async_pre_call_hook(None, None, data, "call_mcp_tool"))
+    asyncio.run(g.async_pre_call_hook(UserAPIKeyAuth(api_key="hashed-test-key", user_id="alice"), None, data,
+                                      "call_mcp_tool"))
     event = g.async_log_success_event if success else g.async_log_failure_event
     asyncio.run(event(kwargs, response, 0, 1))
     assert sum(len(c) for c in g.gate.receipts.values()) <= 1
