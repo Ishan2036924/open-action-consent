@@ -17,7 +17,7 @@ try:
 except ImportError as e:  # the optional dependency is not installed
     raise ImportError('oac.approver needs Starlette: pip install "open-action-consent[approver]"') from e
 
-from oac import KeySet, OACError, digest, shapes, verify
+from oac import KeySet, OACError, shapes, verify
 from oac.discovery import metadata_url
 
 PAGE_JS = (Path(__file__).parent / "page.js").read_text()

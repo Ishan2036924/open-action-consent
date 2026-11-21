@@ -125,7 +125,9 @@ def _undo_rule(u: Mapping[str, Any], what: str) -> None:
 
 
 def profile(v: Any) -> dict[str, Any]:
-    binds = lambda b: isinstance(b, dict) and all(k in PREVIEW_FIELDS and _re(_ARG)(a) for k, a in b.items())
+    def binds(b: Any) -> bool:
+        return isinstance(b, dict) and all(k in PREVIEW_FIELDS and _re(_ARG)(a) for k, a in b.items())
+
     others = _list(_re(_ARG), 1, 64)
     check(
         v,
@@ -184,7 +186,9 @@ def action(v: Any) -> dict[str, Any]:
 
 
 def preview(v: Any) -> dict[str, Any]:
-    fields = lambda f: isinstance(f, dict) and all(k in PREVIEW_FIELDS and PREVIEW_FIELDS[k](x) for k, x in f.items())
+    def fields(f: Any) -> bool:
+        return isinstance(f, dict) and all(k in PREVIEW_FIELDS and PREVIEW_FIELDS[k](x) for k, x in f.items())
+
     check(
         v,
         {

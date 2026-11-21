@@ -27,7 +27,7 @@ approver = ["starlette>=0.40", "uvicorn>=0.30"]
 openai-agents = ["openai-agents>=0.24,<0.30"]
 langgraph = ["langgraph>=1.2,<2"]
 all = ["mcp>=2.3,<3", "playwright>=1.50", "starlette>=0.40", "uvicorn>=0.30", "openai-agents>=0.24,<0.30", "langgraph>=1.2,<2"]
-test = ["pytest>=8", "anyio>=4"]
+test = ["pytest>=8", "anyio>=4", "hypothesis>=6.100"]
 
 [project.scripts]
 oac-gated-browser = "oac.browser.__main__:main"

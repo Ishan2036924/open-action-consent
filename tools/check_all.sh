@@ -12,3 +12,4 @@ if "$PY" -c "import jsonschema" 2>/dev/null; then "$PY" tools/check_schemas.py; 
 "$PY" tools/test_fetch_published.py 2>&1 | tail -1  # release signing takes only bytes matching the registries' digests
 if "$PY" -c "import tomllib" 2>/dev/null; then "$PY" tools/check_ci_locks.py && "$PY" tools/test_check_ci_locks.py 2>&1 | tail -1; else echo "skip: CI lock check (Python 3.11+)"; fi
 "$PY" examples/mcp-server/demo.py > /dev/null && echo "demo: ok"
+if "$PY" -m ruff --version > /dev/null 2>&1; then "$PY" -m ruff check . && echo "ruff: ok"; else echo "skip: ruff (pip install --require-hashes -r ci/test.txt)"; fi

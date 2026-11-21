@@ -13,7 +13,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.shared.exceptions import MCPError
 from mcp_types import ElicitResult
 
-from oac import DeviceCheck, KeySet, generate, make_consent, token_digest, verify, verify_chain
+from oac import DeviceCheck, KeySet, generate, make_consent, verify, verify_chain
 from oac.mcp import ID, PREVIEW_KEY, RECEIPT_KEY, OACExtension
 from oac.testing import passkey_proof
 
