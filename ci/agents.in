@@ -1,0 +1,9 @@
+# CI "agent-frameworks" job: [openai-agents], [langgraph] and [test] extras.
+# Mirrors sdk/python/pyproject.toml (checked by tools/check_ci_locks.py). Relock: uv pip compile --universal --python-version 3.10 --generate-hashes ci/agents.in -o ci/agents.txt
+# extras: openai-agents, langgraph, test
+cryptography>=42
+openai-agents==0.24.0
+langgraph==1.2.16
+pytest>=8
+anyio>=4
+setuptools>=77
