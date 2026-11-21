@@ -26,8 +26,12 @@ object):
 
 - The gate (and so the LiteLLM guardrail) refuses a person that cannot be a receipt's `sub` (1 to 256 printable ASCII
   characters) before anything runs. A tier A or B call for a person such as `"alice smith"` ran and then failed to write
-  its receipt, so the action happened with no record; with `person_from="end_user_id"` the caller chooses that value.
+  its receipt, so the action happened with no record. A LiteLLM `user_id` or `team_id` can be any string an admin set.
   TypeScript also records a tool result holding a lone surrogate by its well-formed text instead of failing the receipt.
+- The LiteLLM guardrail ignores `metadata` and `headers` that are not mappings and forged non-string `oac_ticket`
+  values instead of raising `AttributeError` or `TypeError`, and its no-person refusal now carries `code: malformed`
+  like every other `oac_refused`. Its regexes: none; the shape regexes it relies on stay under 1 ms on 50,000-character
+  hostile input.
 - Key sets refuse a broken key document with `malformed`. A JWK missing a member (`{"kty": "OKP"}`), one key where a
   list was expected, or a non-object key raised `KeyError`, `ValueError` or `TypeError` (Python) and `TypeError`
   (TypeScript) instead of an `OACError`. Issuer keys come from the network (`keyset_from`), so a hostile issuer could
