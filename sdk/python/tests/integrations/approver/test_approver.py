@@ -15,7 +15,7 @@ pytest.importorskip("playwright")
 import uvicorn
 from playwright.sync_api import sync_playwright
 
-from oac import KeySet, MemoryNonces, verify, verify_consent
+from oac import MemoryNonces, verify, verify_consent
 from oac.discovery import keyset_from, metadata_url
 from oac.preview import build_preview
 from oac.approver import Approver

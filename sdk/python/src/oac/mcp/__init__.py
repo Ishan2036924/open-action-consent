@@ -6,7 +6,7 @@ import inspect as _inspect
 import json
 import time
 from dataclasses import replace
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Callable, Mapping
 from typing import Any
 
 try:

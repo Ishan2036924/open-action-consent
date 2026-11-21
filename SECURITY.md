@@ -2,8 +2,9 @@
 
 OAC is a security protocol, so reports are very welcome.
 
-**Please do not open a public issue for a vulnerability.** Email **support@atlasiw.com** with "OAC security" in the
-subject, or use GitHub's private "Report a vulnerability" button on this repository if it is shown. Include:
+**Please do not open a public issue for a vulnerability.** Use GitHub's private vulnerability reporting: the
+"Report a vulnerability" button on this repository's Security tab is enabled. Or email **support@atlasiw.com** with
+"OAC security" in the subject. Include:
 
 - what breaks (which promise of the spec: a check that can be bypassed, two SDKs that disagree, a crash);
 - a minimal input or script that shows it;

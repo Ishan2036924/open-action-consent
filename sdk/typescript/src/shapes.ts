@@ -50,7 +50,7 @@ export function check(v: unknown, fields: Fields, what: string): void {
   }
 }
 
-const ID = re(/^[\x21-\x7e]{1,256}$/);
+export const ID = re(/^[\x21-\x7e]{1,256}$/);
 const TOOL = re(/^[A-Za-z0-9_.:/-]{1,128}$/);
 const ARG = re(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/);
 const DIGEST = re(/^sha-256:[A-Za-z0-9_-]{43}$/);

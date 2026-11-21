@@ -21,8 +21,12 @@ export function canonical(v: unknown, depth = 0): string {
   }
   if (typeof v === "string") return str(v);
   if (typeof v === "object" && depth >= MAX_DEPTH) throw new OACError("malformed", "nested too deeply");
-  if (Array.isArray(v)) return "[" + v.map((x) => canonical(x, depth + 1)).join(",") + "]";
+  // Array.from visits holes as undefined, which is refused; map would skip them and write "[1,,2]"
+  if (Array.isArray(v)) return "[" + Array.from(v, (x) => canonical(x, depth + 1)).join(",") + "]";
   if (typeof v === "object") {
+    // a Date, Map, Set, typed array or boxed string is not a JSON object, though Object.keys would make it look like one
+    const tag = Object.prototype.toString.call(v);
+    if (tag !== "[object Object]") throw new OACError("malformed", `type ${tag.slice(8, -1)} cannot be canonicalized`);
     const o = v as Record<string, unknown>;
     const keys = Object.keys(o).map((k) => [k, str(k)] as const); // Unicode check before sorting
     return "{" + keys.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([k, s]) => s + ":" + canonical(o[k], depth + 1)).join(",") + "}";

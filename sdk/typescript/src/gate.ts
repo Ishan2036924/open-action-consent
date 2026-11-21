@@ -114,6 +114,8 @@ export class Gate {
 
   private authorize(tool: string, args: Record<string, unknown>, person: string,
     tainted: boolean): [string, Record<string, unknown>, string | null, OccurrenceKey | null] {
+    // checked first: an action must never run when its receipt cannot be written
+    if (!shapes.ID(person)) throw new OACError("malformed", "person must be 1 to 256 printable ASCII characters (a receipt's sub)");
     const tier = this.tier(tool, args, tainted);
     if (tier === "D") throw new OACError("tier_d", "this action never runs");
     const occurrence = occurrenceKey(person, this.profiles[tool], args);
@@ -179,7 +181,8 @@ export class Gate {
       if (undo.kind === "native") undo.token = "u_" + crypto.randomBytes(12).toString("base64url");
     }
     let rd: string;
-    try { rd = digest(result ?? null); } catch { rd = digest(String(result)); }
+    // a non-JSON result is recorded by its text form; toWellFormed so a lone surrogate cannot stop the receipt
+    try { rd = digest(result ?? null); } catch { rd = digest(String(result).toWellFormed()); }
     const payload: Record<string, unknown> = { iss: this.executor, sub: person, seq: chain.length + 1, prev: chain.length ? tokenDigest(chain[chain.length - 1]) : null,
       iat: now, tool, tier, authority, action: actionDigest({ tool, args: { ...args } }), outcome, result: rd, undo };
     if (pd) payload.preview = pd;

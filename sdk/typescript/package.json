@@ -58,11 +58,12 @@
     }
   },
   "devDependencies": {
-    "typescript": "7.0.2",
-    "@types/node": "24.19.2",
-    "@modelcontextprotocol/server": "2.4.0",
     "@modelcontextprotocol/client": "2.4.0",
-    "ai": "7.0.148"
+    "@modelcontextprotocol/server": "2.4.0",
+    "@types/node": "24.19.2",
+    "ai": "7.0.148",
+    "fast-check": "4.10.2",
+    "typescript": "7.0.2"
   },
   "keywords": [
     "ai-agents",

@@ -4,7 +4,7 @@
 
 A LiteLLM integration: OAC gates MCP tool calls that pass through the LiteLLM proxy's MCP gateway, from a few lines
 of `config.yaml`, for MCP servers that know nothing about OAC. No change to the spec's objects or the vectors (353,
-all unchanged); the TypeScript SDK only moves its version.
+all unchanged); the TypeScript SDK gets only the fuzzing fixes below.
 
 - **LiteLLM guardrail** (`oac.litellm.OACGuardrail`, extra `[litellm]`, `guides/litellm.md`, binding note
   `spec/mcp-extension.md` 7.1): profiles keyed by `server/tool`; unprofiled tools, undeclared arguments and tier D
@@ -20,6 +20,38 @@ all unchanged); the TypeScript SDK only moves its version.
   close it with its receipt. `Gate.run` and `Gate.arun` now use them; their behaviour is unchanged.
 - `Gate` keeps at most `max_pending` (default 1000) unanswered Previews, so an agent asking again and again cannot
   grow memory without bound.
+
+Also in 0.6.0, robustness fixes found by new property-based fuzzing (no change to the spec, the vectors or any valid
+object):
+
+- The gate (and so the LiteLLM guardrail) refuses a person that cannot be a receipt's `sub` (1 to 256 printable ASCII
+  characters) before anything runs. A tier A or B call for a person such as `"alice smith"` ran and then failed to write
+  its receipt, so the action happened with no record. A LiteLLM `user_id` or `team_id` can be any string an admin set.
+  TypeScript also records a tool result holding a lone surrogate by its well-formed text instead of failing the receipt.
+- The LiteLLM guardrail ignores `metadata` and `headers` that are not mappings and forged non-string `oac_ticket`
+  values instead of raising `AttributeError` or `TypeError`, and its no-person refusal now carries `code: malformed`
+  like every other `oac_refused`. Its regexes: none; the shape regexes it relies on stay under 1 ms on 50,000-character
+  hostile input.
+- Key sets refuse a broken key document with `malformed`. A JWK missing a member (`{"kty": "OKP"}`), one key where a
+  list was expected, or a non-object key raised `KeyError`, `ValueError` or `TypeError` (Python) and `TypeError`
+  (TypeScript) instead of an `OACError`. Issuer keys come from the network (`keyset_from`), so a hostile issuer could
+  crash a verifier that only expects `OACError`.
+- TypeScript `canonical` refuses values JSON cannot hold, as Python already did. An array with holes was written as
+  `[1,,2]` (not JSON), and a `Date`, `Map`, `Set`, typed array or boxed string became `{}` or an object of index keys,
+  so `digest` and `sign` could cover something other than what the caller meant.
+- Fuzzing: Hypothesis (Python) and fast-check (TypeScript) properties over strict JSON and JCS (round trip,
+  idempotence, deep nesting), compact JWS on hostile and edited tokens, hostile keys, the receipt, seal and observation
+  shapes, `verify_export`, `verify_chain` seals, `assess` (including payloads signed by a trusted key), the gate (an
+  action is refused before it runs or gets a receipt; `accept_consent` never raises) and the LiteLLM guardrail's hooks
+  (hostile tool names, arguments, metadata, headers and outcome events: an HTTP refusal with a code, never another
+  exception, and nothing runs unpinned). Each must refuse with `OACError` and a known code, never another exception. A
+  seeded corpus checks that Python and TypeScript JCS agree byte for byte, refusals included. They run in the normal
+  test suites (100 examples each) and in a new `fuzz` CI job (1,000); `OAC_FUZZ_EXAMPLES` sets the budget.
+  `hypothesis` joins the `test` extra; fast-check is a pinned dev dependency.
+- CI lints the Python SDK, tests, tools and examples with ruff (from the hash lock; `ruff.toml`); the six findings
+  were four unused imports and two lambdas assigned to names, fixed without a behaviour change.
+- `CONTRIBUTING.md` says how a change lands (pull request against `main`, required checks green); `SECURITY.md` says
+  GitHub private vulnerability reporting is enabled.
 
 ## 0.5.1 (2026-11-21)
 

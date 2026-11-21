@@ -32,10 +32,13 @@ export function digest(value: unknown): string {
 }
 
 export function thumbprint(jwk: Jwk): string {
-  let members: Record<string, unknown>;
-  if (jwk.kty === "OKP") members = { crv: jwk.crv, kty: jwk.kty, x: jwk.x };
-  else if (jwk.kty === "EC") members = { crv: jwk.crv, kty: jwk.kty, x: jwk.x, y: jwk.y };
+  if (jwk === null || typeof jwk !== "object" || Array.isArray(jwk)) throw new OACError("malformed", "a key is a JSON object");
+  let names: (keyof Jwk)[];
+  if (jwk.kty === "OKP") names = ["crv", "kty", "x"];
+  else if (jwk.kty === "EC") names = ["crv", "kty", "x", "y"];
   else throw new OACError("malformed", "unsupported key type");
+  if (!names.every((k) => Object.hasOwn(jwk, k))) throw new OACError("malformed", "key is missing a member");
+  const members = Object.fromEntries(names.map((k) => [k, jwk[k]]));
   return b64url(crypto.createHash("sha256").update(canonicalBytes(members)).digest());
 }
 
@@ -81,6 +84,7 @@ export class KeySet {
       throw new OACError("malformed", "keys are grouped by issuer: {iss: [jwk, ...]}");
     }
     for (const [iss, jwks] of Object.entries(byIssuer)) {
+      if (!Array.isArray(jwks)) throw new OACError("malformed", "keys are grouped by issuer: {iss: [jwk, ...]}");
       for (const jwk of jwks) {
         const kid = thumbprint(jwk);
         if (jwk.kid !== undefined && jwk.kid !== kid) throw new OACError("malformed", "kid is not the key's thumbprint");

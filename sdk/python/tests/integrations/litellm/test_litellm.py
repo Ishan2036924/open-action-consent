@@ -385,3 +385,20 @@ async def test_intake_endpoint_takes_a_consent_from_the_signer():
     g.intake.should_exit = True
     await run(g, call("mail", "send_email", MAIL))
     assert receipts(g)[0]["authority"]["kind"] == "consent"
+
+
+@pytest.mark.anyio
+async def test_hostile_call_fields_are_refused_with_a_code_never_a_crash():
+    # found by test_litellm_fuzz.py: each of these raised AttributeError, TypeError or KeyError, or ran with no receipt
+    g, _, _ = build()
+    for data in (call("notes", "read_note", {"title": "x"}, user=None, metadata=True),
+                 call("notes", "read_note", {"title": "x"}, user="alice smith")):
+        with pytest.raises(HTTPException) as exc:
+            await g.async_pre_call_hook(None, None, data, "call_mcp_tool")
+        assert refused(exc)["code"] == "malformed"
+    assert g.gate.receipts == {} and g.tickets == {}
+    # headers that are not a mapping carry no Consent; the read still runs, pinned
+    data = call("notes", "read_note", {"title": "x"}, metadata={"headers": ["x-oac-consent"]})
+    out = await g.async_pre_call_hook(None, None, data, "call_mcp_tool")
+    await g.async_log_failure_event({"call_type": "call_mcp_tool", "oac_ticket": [None], "litellm_call_id": "zz"}, None, 0, 1)
+    assert out["modified_arguments"] == {"title": "x"} and len(g.tickets) == 1  # a forged event closes nothing

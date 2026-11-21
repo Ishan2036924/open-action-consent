@@ -271,3 +271,13 @@ def test_after_a_restart_a_tool_with_its_own_records_cannot_take_a_scope() -> No
     assert code_of(lambda: gate.run("pay_order", PAY, lambda **a: "paid", person=PERSON)) == "duplicate_occurrence"
     # a fresh store (nothing kept) never blocks a first registration with a scope
     Gate(executor=EX, key=generate(), signers=KeySet({})).profile("pay_order", **pay_profile, occurrence_scope="stripe:acct_1")
+
+
+@pytest.mark.parametrize("person", ["", " ", "alice smith", "jörg", "x" * 257, "tab\there"])
+def test_a_person_that_cannot_be_a_receipt_sub_is_refused_before_anything_runs(person: str) -> None:
+    # found by tests/test_fuzz.py: tier A and B ran the action, then failed to write its receipt
+    gate, _ = world()
+    ran: list[str] = []
+    with pytest.raises(OACError) as e:
+        gate.run("add_task", {"title": "x"}, lambda title: ran.append(title), person=person, tainted=False)
+    assert e.value.code == "malformed" and ran == []

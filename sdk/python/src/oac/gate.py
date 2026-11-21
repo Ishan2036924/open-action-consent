@@ -159,6 +159,8 @@ class Gate:
 
     def _authorize(self, tool: str, args: Mapping[str, Any], person: str,
                    tainted: bool) -> tuple[str, dict[str, Any], str | None, Key | None]:
+        if not shapes.ID(person):  # checked first: an action must never run when its receipt cannot be written
+            raise OACError("malformed", "person must be 1 to 256 printable ASCII characters (a receipt's sub)")
         tier = self.tier(tool, args, tainted=tainted)
         if tier == "D":
             raise OACError("tier_d", "this action never runs")
