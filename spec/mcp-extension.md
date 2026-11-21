@@ -162,6 +162,17 @@ its own state) implement this binding and are tested end to end through each SDK
 and device proofs: the server's `device` option returns the passkey check an action needs (or none), and the plug-in
 fills in the proof that came with the Consent.
 
+### 7.1 Gateways
+
+A gateway in front of MCP servers that do not speak OAC (for example `oac.litellm` in the LiteLLM proxy) is the
+executor for the calls it forwards, and obtains consent through a channel of its own (section 6). It decides on the
+arguments that will reach the server, after any rewrite by components before it, and nothing after it may change
+them. A tool's profile is keyed by server and tool name together (`server/tool`), so the same tool name on two
+servers is two tools. The person comes from the gateway's own authentication of the caller, never from the request.
+A call it refuses runs nothing; for a tier C call without a Consent the refusal carries the Preview, and the same call
+retried after a valid Consent has arrived runs once. A call stopped after approval but before the server could run
+it gets a receipt with outcome `failed`.
+
 ## 8. Relation to SEP-2848
 
 Status as read on 2026-11-20: SEP-2848 is a draft pull request with no sponsor, and MCP's maintainers asked that it go

@@ -39,6 +39,7 @@ OAC sits **next to** MCP, A2A, AP2 and ACP, not on top of them. See [spec/mappin
 | Approval page | `pip install "open-action-consent[approver]"` → `oac.approver` | |
 | OpenAI Agents SDK | `pip install "open-action-consent[openai-agents]"` → `oac.openai_agents` | |
 | LangGraph | `pip install "open-action-consent[langgraph]"` → `oac.langgraph` | |
+| LiteLLM MCP gateway | `pip install "open-action-consent[litellm]"` → `oac.litellm` | |
 | Vercel AI SDK | | `open-action-consent/vercel-ai` (+ `ai`) |
 | Everything | `pip install "open-action-consent[all]"` | |
 
@@ -106,10 +107,32 @@ Receipts may now carry `route` and `policy`; a verifier older than 0.5 refuses t
 | [sdk/python/](sdk/python/) | reference SDK (needs `cryptography`) |
 | [sdk/typescript/](sdk/typescript/) | reference SDK (no dependencies, Node 23.6+) |
 | [conformance/](conformance/) | vector format and how to run it |
-| [sdk/python/src/oac/](sdk/python/src/oac/) `mcp`, `browser`, `approver`, `openai_agents`, `langgraph` | the optional parts of the Python package (see the install table above) |
+| [sdk/python/src/oac/](sdk/python/src/oac/) `mcp`, `browser`, `approver`, `openai_agents`, `langgraph`, `litellm` | the optional parts of the Python package (see the install table above) |
 | [sdk/typescript/src/](sdk/typescript/src/) `mcp/`, `vercel-ai/` | the optional parts of the npm package |
-| [guides/](guides/) | one short guide per part: MCP (Python, TypeScript), Gated Browser, Approver, OpenAI Agents, LangGraph, Vercel AI |
+| [guides/](guides/) | one short guide per part: MCP (Python, TypeScript), Gated Browser, Approver, OpenAI Agents, LangGraph, LiteLLM, Vercel AI |
 | [examples/mcp-server/](examples/mcp-server/) | a small dependency-free MCP server using the extension, and a demo with attacks that fail |
+
+## MCP servers you do not control: LiteLLM
+
+Running MCP servers behind a [LiteLLM](https://github.com/BerriAI/litellm) proxy? Add one guardrail to its
+`config.yaml` and every tool call through it is gated: unprofiled tools and tier D refused, tier C held until the
+person's signed Consent for exactly those arguments arrives, and a hash-chained receipt for each outcome. The MCP
+servers need no change.
+
+```yaml
+guardrails:
+  - guardrail_name: oac
+    litellm_params:
+      guardrail: oac.litellm.OACGuardrail
+      mode: [pre_mcp_call]
+      default_on: true
+      executor: https://gateway.example/oac
+      key_file: /etc/oac/executor.pem
+      signers_file: /etc/oac/signers.json
+      profiles_file: /etc/oac/profiles.json
+```
+
+Setup, how the Consent reaches the gateway, outcomes and limits: [guides/litellm.md](guides/litellm.md).
 
 ## Check everything
 
@@ -123,7 +146,7 @@ and confirm a vector fails, so a check that quietly stops working is caught.
 
 ## Status
 
-Spec draft 0.2, packages 0.5.0 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback,
+Spec draft 0.2, packages 0.6.0 ([changelog](CHANGELOG.md)). Not endorsed by any standards body. Feedback,
 implementations and reviews are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), and report vulnerabilities privately
 as described in [SECURITY.md](SECURITY.md).
 

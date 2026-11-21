@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.6.0 (2026-11-21)
+
+A LiteLLM integration: OAC gates MCP tool calls that pass through the LiteLLM proxy's MCP gateway, from a few lines
+of `config.yaml`, for MCP servers that know nothing about OAC. No change to the spec's objects or the vectors (353,
+all unchanged); the TypeScript SDK only moves its version.
+
+- **LiteLLM guardrail** (`oac.litellm.OACGuardrail`, extra `[litellm]`, `guides/litellm.md`, binding note
+  `spec/mcp-extension.md` 7.1): profiles keyed by `server/tool`; unprofiled tools, undeclared arguments and tier D
+  refused; tier C refused with the Preview until the person's Consent arrives (intake endpoint, `x-oac-consent`
+  header, or `accept_consent`), then run once; the arguments that will run are the ones checked and are pinned, and
+  every call is refused while another `pre_mcp_call` guardrail is registered after OAC; the person comes from
+  LiteLLM's key check (`user_id` or `team_id`), never the request; each attempt is closed from LiteLLM's outcome
+  events with a hash-chained receipt (`ok`, `failed` when stopped before the tool ran, otherwise `unknown` for tools
+  with occurrences), attempts with no outcome are closed after `ticket_timeout_s`, and `receipts_dir` keeps one chain
+  per person across restarts. Tested with LiteLLM 1.108.x, end to end through the real proxy and a stdio MCP server
+  whose send tool writes to a file, with planted-defect tests for the guardrail-order check and the taint default.
+- `Gate.begin` and `Gate.finish` (with `Ticket`): authorize an action that runs somewhere the gate does not call, and
+  close it with its receipt. `Gate.run` and `Gate.arun` now use them; their behaviour is unchanged.
+- `Gate` keeps at most `max_pending` (default 1000) unanswered Previews, so an agent asking again and again cannot
+  grow memory without bound.
+
 ## 0.5.1 (2026-11-21)
 
 - Security fix in `assess` (spec 8.5). In 0.5.0 an observation dated more than 60 seconds before its receipt was
