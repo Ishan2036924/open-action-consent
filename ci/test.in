@@ -1,0 +1,10 @@
+# CI "python" job: core SDK, [mcp] and [test] extras, schema checks and the package build.
+# Mirrors sdk/python/pyproject.toml (checked by tools/check_ci_locks.py). Relock: uv pip compile --universal --python-version 3.10 --generate-hashes ci/test.in -o ci/test.txt
+# extras: mcp, test
+cryptography>=42
+mcp==2.3.0
+pytest>=8
+anyio>=4
+jsonschema>=4.18
+build>=1.2
+setuptools>=77
