@@ -184,10 +184,17 @@ test("null and wrong types are read the same way everywhere", () => {
   assert.equal(code(() => assess(rec, { keys: KEYS, executor: EX, observations: [5] as any, observerKeys: SEER_KEYS })), "malformed");
 });
 
-test("a stale look does not count and sixty seconds does", () => {
+test("an observation older than its receipt shows the receipt time is false", () => {
   const rec = receipt(5);
-  assert.equal(judge(rec, [watch(rec, "seen", { now: NOW + 5 - 61 })]).effect, "cannot_establish");
+  assert.equal(judge(rec, [watch(rec, "seen", { now: NOW + 5 - 61 })]).effect, "contradicted");
   assert.equal(judge(rec, [watch(rec, "seen", { now: NOW + 5 - 60 })]).effect, "observed");
+});
+
+test("a future-dated denial cannot hide an effect that was seen", () => {
+  // The executor dates a denial an hour ahead so that a real sighting looks stale. In 0.5.0 that passed.
+  const rec = receipt(1, null, { outcome: "failed", iat: NOW + 3600 });
+  const got = judge(rec, [watch(rec, "seen", { now: NOW + 30 })]);
+  assert.deepEqual([got.effect, got.verdict], ["contradicted", "fail"]);
 });
 
 test("the authority token must be for this person, executor and time", () => {

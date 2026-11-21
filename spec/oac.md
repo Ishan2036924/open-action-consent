@@ -576,8 +576,11 @@ executor's own operator is not independent in substance.
 token the receipt names as its authority with its signer's keys. It verifies the receipt (8.1, `chain_issuer`) and each
 observation: signature, not the executor by name or key (`observer_not_independent`), the same person
 (`subject_mismatch`), this executor (`executor_mismatch`), and `receipt` equal to the `token_digest` of this receipt
-(`receipt_mismatch`). An observation whose `iat` is more than 60 seconds before the receipt's `iat` does not count, as if
-it were `uncheckable`: a look taken before the action says nothing about it. It returns:
+(`receipt_mismatch`). An observation names the `token_digest` of the receipt, so it was made after the receipt existed.
+An observation whose `iat` is more than 60 seconds before the receipt's `iat` therefore shows that the receipt's own time
+is false (the executor chose it), and the effect is `contradicted`, whatever the observation says. Version 0.5.0 dropped
+such an observation instead, so an executor that dated a denial in the future could hide an effect that was seen
+(found in review after release; fixed in 0.5.1). It returns:
 
 | member | values |
 |---|---|
@@ -610,8 +613,8 @@ receipt's `iss`, its `jti` is the `ref`, and its `receipt` is the receipt's `und
 | any | `seen` observations whose `subject`s differ | `duplicate`: one decision, two effects |
 
 `duplicate` needs `subject`: two sightings without one cannot be told apart from one effect seen twice, so an observer
-that can tell effects apart SHOULD always carry it. Observations that do not count (stale, `uncheckable`) are left out
-before this table is read.
+that can tell effects apart SHOULD always carry it. An observation dated more than 60 seconds before its receipt makes
+the effect `contradicted` before this table is read; otherwise `uncheckable` observations are left out first.
 
 An allowance has to be seen to count; a denial stands until someone sees the effect. `verdict` is `fail` for
 `not_observed`, `contradicted` (a conflict is never a pass) and `duplicate`, whatever the decision. It is `pass` when the decision is `tier` or
