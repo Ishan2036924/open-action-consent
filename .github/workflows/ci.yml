@@ -127,6 +127,8 @@ jobs:
         run: python -m pip wheel --no-deps --no-build-isolation --wheel-dir dist ./sdk/python && python -m pip install --no-deps dist/*.whl
       - name: guardrail unit tests and end to end through the real LiteLLM MCP gateway (local stdio server)
         run: cd sdk/python && python -m pytest -q -rs tests/integrations/litellm
+      - name: the guardrail's hook fuzzing, ten times longer (hostile tool names, arguments, metadata, headers, events)
+        run: cd sdk/python && OAC_FUZZ_EXAMPLES=1000 python -m pytest -q tests/integrations/litellm/test_litellm_fuzz.py
 
   typescript:
     runs-on: ubuntu-latest

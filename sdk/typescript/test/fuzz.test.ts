@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fc from "fast-check";
 import {
-  assess, canonical, CODES, digest, KeySet, makeObservation, makeReceipt, makeSeal, OACError, parse, shapes, sign, tokenDigest,
+  assess, canonical, Gate, NeedsConsent, CODES, digest, KeySet, makeObservation, makeReceipt, makeSeal, OACError, parse, shapes, sign, tokenDigest,
   verify, verifyChain, verifyExport,
 } from "../src/index.ts";
 import { checkSemantics } from "../src/receipts.ts";
@@ -214,5 +214,57 @@ test("fuzz: assess with a trusted but hostile authority", () => {
     const auth = sign(withIss(SIGNER)(payload) as Record<string, unknown>, USER, typ);
     const rec = receipt(1, null, { tier: "C", authority: { kind, ref: "r-1", digest: tokenDigest(auth) }, ...(kind === "undo" ? { undoes: RES } : {}) });
     refused(() => assess(rec, { keys: KEYS, executor: EX, authorityToken: auth, authorityKeys: USER_KEYS }));
+  }), OPTS);
+});
+
+// The gate: what an agent or a gateway hands it is untrusted
+
+const GATE_PROFILES: Record<string, Parameters<Gate["profile"]>[1]> = {
+  "notes/read_note": { effect: "read", binds: { title: "title" } },
+  "tasks/add_task": { effect: "write", undo: "native", windowS: 600, binds: { title: "title" } },
+  "mail/send_email": { effect: "send", binds: { to: "to", title: "subject" }, otherArgs: ["body"] },
+  "files/wipe_drive": { effect: "delete", tierFloor: "D", binds: { title: "drive" } },
+  "shop/order": { effect: "write", undo: "native", windowS: 60, binds: { title: "item" }, otherArgs: ["order_id"], occurrence: "order_id", occurrenceScope: "shop" },
+};
+const ARG_NAMES = ["title", "to", "subject", "body", "drive", "item", "order_id", "x", "__proto__", "constructor", ""];
+
+function gate(): Gate {
+  const g = new Gate({ executor: EX, key: EXEC, signers: USER_KEYS, clock: () => NOW });
+  for (const [tool, p] of Object.entries(GATE_PROFILES)) g.profile(tool, p);
+  return g;
+}
+
+const hostileArgs = fc.oneof(
+  fc.constantFrom({ title: "Call" }, { to: ["pat@example.org"], subject: "Hi", body: "x" }, { item: "tea", order_id: "o-1" }, { drive: "C" }),
+  fc.dictionary(fc.oneof(fc.constantFrom(...ARG_NAMES), fc.string({ maxLength: 6 })), jsonValue, { maxKeys: 5, noNullPrototype: true }),
+  fc.record({ title: fc.string({ maxLength: 30 }), order_id: jsonValue, to: jsonValue, subject: jsonValue, item: jsonValue, body: jsonValue },
+    { requiredKeys: ["title"] }),
+);
+const hostileResult = fc.oneof(jsonValue, fc.anything({ maxDepth: 2, withBigInt: true, withDate: true, withMap: true }), fc.double(),
+  fc.constantFrom("\ud800", undefined, () => 1));
+
+test("fuzz: the gate refuses before running, or runs and writes a receipt", async () => {
+  await fc.assert(fc.asyncProperty(fc.oneof(fc.constantFrom(...Object.keys(GATE_PROFILES)), fc.string({ maxLength: 12 })), hostileArgs,
+    fc.oneof(fc.constantFrom(PERSON, "user_id:alice"), fc.string({ unit: "binary", maxLength: 12 })), fc.boolean(), hostileResult,
+    async (tool, args, person, tainted, result) => {
+      const g = gate(), ran: unknown[] = [];
+      let out: [unknown, string];
+      try {
+        out = await g.run(tool, args as Record<string, unknown>, (a) => { ran.push(a); return result; }, { person, tainted });
+      } catch (e) {
+        if (e instanceof NeedsConsent) { assert.equal(ran.length, 0); shapes.preview(e.preview); return; }
+        if (e instanceof OACError) { assert.equal(ran.length, 0); assert.ok(CODES.has(e.code)); return; }
+        throw e;
+      }
+      assert.equal(ran.length, 1);
+      assert.equal(verifyChain([out[1]], { keys: KEYS, executor: EX })[0].sub, person);
+    }), OPTS);
+});
+
+test("fuzz: gate acceptConsent never throws", () => {
+  fc.assert(fc.property(fc.oneof(anyToken, jsonValue), fc.oneof(fc.constant(null), jsonValue), (token, proof) => {
+    const g = gate();
+    g.preview("mail/send_email", { to: ["pat@example.org"], subject: "Hi", body: "x" }, PERSON);
+    assert.ok([true, false].includes(g.acceptConsent(token as string, proof as never)));
   }), OPTS);
 });

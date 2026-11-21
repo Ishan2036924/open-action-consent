@@ -28,6 +28,7 @@ __all__ = [
     "OccurrenceStore",
     "OACError",
     "SigningKey",
+    "Ticket",
     "action_digest",
     "assess",
     "build_preview",

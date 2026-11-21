@@ -401,3 +401,62 @@ def test_python_and_typescript_agree_on_jcs(tmp_path: Path) -> None:
             ours = "ERR:" + e.code
         assert ours == theirs, raw
     assert accepted > n // 4  # the corpus exercises the accepting path, not only refusals
+
+
+# The gate: what an agent, a gateway (LiteLLM) or a page hands it is untrusted
+
+
+GATE_PROFILES = {
+    "notes/read_note": {"effect": "read", "binds": {"title": "title"}},
+    "tasks/add_task": {"effect": "write", "undo": "native", "window_s": 600, "binds": {"title": "title"}},
+    "mail/send_email": {"effect": "send", "binds": {"to": "to", "title": "subject"}, "other_args": ["body"]},
+    "files/wipe_drive": {"effect": "delete", "tier_floor": "D", "binds": {"title": "drive"}},
+    "shop/order": {"effect": "write", "undo": "native", "window_s": 60, "binds": {"title": "item"},
+                   "other_args": ["order_id"], "occurrence": "order_id", "occurrence_scope": "shop"},
+}
+ARG_NAMES = ["title", "to", "subject", "body", "drive", "item", "order_id", "x", "__proto__", ""]
+
+
+def _gate():
+    from oac.gate import Gate
+
+    gate = Gate(executor=EX, key=EXEC, signers=USER_KEYS, clock=lambda: NOW)
+    for tool, p in GATE_PROFILES.items():
+        gate.profile(tool, **p)
+    return gate
+
+
+hostile_args = st.sampled_from([{"title": "Call"}, {"to": ["pat@example.org"], "subject": "Hi", "body": "x"},
+                                {"item": "tea", "order_id": "o-1"}, {"drive": "C"}]) | st.dictionaries(st.sampled_from(ARG_NAMES) | st.text(max_size=6), python_values, max_size=5) | st.fixed_dictionaries(
+    {"title": st.text(max_size=30)}, optional={"order_id": json_values, "to": json_values, "subject": json_values,
+                                               "item": json_values, "body": json_values})
+
+
+@FUZZ
+@given(st.sampled_from(sorted(GATE_PROFILES)) | st.text(max_size=12), hostile_args,
+       st.sampled_from([PERSON, "user_id:alice"]) | st.text(max_size=12), st.booleans(), python_values)
+def test_gate_refuses_before_running_or_writes_a_receipt(tool: str, args: dict, person: str, tainted: bool,
+                                                         result: Any) -> None:
+    # an action either is refused before it runs, or runs and gets a receipt: never runs without one
+    from oac.gate import NeedsConsent
+
+    gate, ran = _gate(), []
+    try:
+        out, receipt_token = gate.run(tool, args, lambda **kw: ran.append(kw) or result, person=person, tainted=tainted)
+    except NeedsConsent as ask:
+        assert not ran and shapes.preview(ask.preview)
+        return
+    except OACError as e:
+        assert not ran and e.code in CODES
+        return
+    assert ran and out is result
+    assert verify_chain([receipt_token], keys=KEYS, executor=EX)[0]["sub"] == person
+
+
+@FUZZ
+@given(any_token | python_values, st.none() | json_values | python_values)
+def test_gate_accept_consent_never_raises(token: Any, proof: Any) -> None:
+    # the LiteLLM intake endpoint and the x-oac-consent header hand these over as they arrive
+    gate = _gate()
+    gate.preview("mail/send_email", {"to": ["pat@example.org"], "subject": "Hi", "body": "x"}, person=PERSON)
+    assert gate.accept_consent(token, proof) in (True, False)
