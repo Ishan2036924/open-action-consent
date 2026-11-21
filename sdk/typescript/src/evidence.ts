@@ -27,23 +27,31 @@ export function makeObservation(o: {
   return sign(shapes.observation(doc), o.key, TYP);
 }
 
-function observed(r: Record<string, any>, token: string, observations: string[], keys: KeySet | null | undefined, executor: string): Record<string, any>[] {
+const SKEW_S = 60;
+
+function observed(r: Record<string, any>, token: string, obs: string[] | null | undefined, keys: KeySet | null | undefined, executor: string,
+  executorKeys: KeySet): Record<string, any>[] {
+  const observations = shapes.tokenList(obs, "observations");
   if (observations.length && !keys) throw new OACError("malformed", "observations need the observer's keys");
-  return observations.map((t) => {
+  const out: Record<string, any>[] = [];
+  for (const t of observations) {
     const o = verify(t, keys!, TYP);
     shapes.observation(o);
-    independent(o.iss, executor, "observer_not_independent");
+    independent(t, o.iss, executor, executorKeys, "observer_not_independent");
     if (o.sub !== r.sub) throw new OACError("subject_mismatch");
     if (o.executor !== executor) throw new OACError("executor_mismatch");
     if (o.receipt !== tokenDigest(token)) throw new OACError("receipt_mismatch", "the observation is about another receipt");
-    return o;
-  });
+    if (o.iat >= r.iat - SKEW_S) out.push(o); // a look taken well before the action says nothing about it
+  }
+  return out;
 }
 
 function binds(r: Record<string, any>, p: Record<string, any>): boolean {
   const { kind, ref } = r.authority;
-  if (kind === "consent") return p.jti === ref && p.items.some((i: any) => i.preview === r.preview && i.action === r.action);
-  if (kind === "mandate") return p.id === ref;
+  if (p.sub !== r.sub) return false;
+  if (kind === "mandate") return p.id === ref && p.tools.includes(r.tool) && p.iat - SKEW_S <= r.iat && r.iat <= p.exp + SKEW_S;
+  if (p.aud !== r.iss) return false;
+  if (kind === "consent") return p.jti === ref && p.iat <= r.iat + SKEW_S && p.items.some((i: any) => i.preview === r.preview && i.action === r.action);
   return p.jti === ref && p.receipt === r.undoes;
 }
 
@@ -61,20 +69,20 @@ function decide(r: Record<string, any>, token: string | null | undefined, keys: 
 function effectOf(outcome: string, obs: Record<string, any>[]): string {
   const seen = obs.filter((o) => o.effect === "seen");
   if (new Set(seen.filter((o) => Object.hasOwn(o, "subject")).map((o) => o.subject)).size > 1) return "duplicate";
-  if (seen.length) return outcome === "failed" ? "contradicted" : "observed";
+  if (seen.length) return outcome === "failed" || obs.some((o) => o.effect === "not_seen") ? "contradicted" : "observed";
   if (outcome === "failed") return "absent";
   return outcome === "ok" && obs.some((o) => o.effect === "not_seen") ? "not_observed" : "cannot_establish";
 }
 
 /** Route, decision and effect of one receipt as three separate answers, then a verdict (spec 8.5). */
 export function assess(receiptToken: string, o: {
-  keys: KeySet; executor: string; observations?: string[]; observerKeys?: KeySet | null; authorityToken?: string | null; authorityKeys?: KeySet | null;
+  keys: KeySet; executor: string; observations?: string[] | null; observerKeys?: KeySet | null; authorityToken?: string | null; authorityKeys?: KeySet | null;
 }): Record<string, any> {
   const r = verify(receiptToken, o.keys, RECEIPT_TYP);
   shapes.receipt(r);
   checkSemantics(r);
   if (r.iss !== o.executor) throw new OACError("chain_issuer");
-  const effect = effectOf(r.outcome, observed(r, receiptToken, o.observations ?? [], o.observerKeys, o.executor));
+  const effect = effectOf(r.outcome, observed(r, receiptToken, o.observations, o.observerKeys, o.executor, o.keys));
   const decision = decide(r, o.authorityToken, o.authorityKeys);
   let verdict = "cannot_establish";
   if (["not_observed", "contradicted", "duplicate"].includes(effect)) verdict = "fail";

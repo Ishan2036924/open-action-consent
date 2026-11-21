@@ -245,12 +245,20 @@ export function expectation(v: any): Record<string, any> {
   return v;
 }
 
+/** Tokens a caller hands over; none given (null or missing) is an empty list. */
+export function tokenList(v: any, what: string): string[] {
+  if (v === null || v === undefined) return [];
+  if (!Array.isArray(v) || !v.every((t) => typeof t === "string")) throw new OACError("malformed", `${what} must be a list of tokens`);
+  return v;
+}
+
 export function coverageStatement(v: any): Record<string, any>[] {
   const route: Fields = { route: [true, strCp(1, 128)], credential: [true, strCp(1, 256)], control: [true, strCp(1, 256)] };
   const row: Fields = {
     effect: [true, TOOL], key: [true, strCp(1, 256)], held_by: [true, strCp(1, 256)],
-    routes: [true, list(obj(route, "route"), 0, 50)], records: [true, oneOf(...RECORDS)],
+    routes: [true, list(obj(route, "route"), 1, 50)], records: [true, oneOf(...RECORDS)],
   };
+  v = v ?? [];
   if (!Array.isArray(v) || !v.every((r) => obj(row, "coverage row")(r))) throw new OACError("malformed", "coverage statement must be a list of rows");
   if (new Set(v.map((r) => r.effect)).size !== v.length || v.some((r) => new Set(r.routes.map((x: any) => x.route)).size !== r.routes.length)) {
     throw new OACError("malformed", "coverage statement: an effect or a route is listed twice");
@@ -263,6 +271,7 @@ export function coverageAttempts(v: any): Record<string, any>[] {
     effect: [true, TOOL], route: [true, strCp(1, 128)], decision: [true, oneOf(...DECISIONS)],
     effect_occurred: [true, oneOf(...OCCURRED)], observed_by: [true, strCp(1, 256)],
   };
+  v = v ?? [];
   if (!Array.isArray(v) || !v.every((a) => obj(attempt, "coverage attempt")(a))) throw new OACError("malformed", "coverage attempts must be a list of attempts");
   return v;
 }

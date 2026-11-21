@@ -3,7 +3,8 @@
 import { scope } from "./occurrence.ts";
 import * as shapes from "./shapes.ts";
 import { OACError } from "./errors.ts";
-import { KeySet, sign, tokenDigest, verify, type SigningKey } from "./jws.ts";
+import { b64urlDecode, KeySet, sign, tokenDigest, verify, type SigningKey } from "./jws.ts";
+import { parse } from "./jcs.ts";
 
 export const TYP = "oac-receipt+jws";
 export const SEAL_TYP = "oac-seal+jws";
@@ -74,9 +75,9 @@ export function verifyChain(tokens: string[], o: { keys: KeySet; executor: strin
   return out;
 }
 
-/** A witness of the executor must not be the executor (spec 8.4, 8.5). */
-export function independent(iss: string, executor: string, code: string): void {
-  if (iss === executor) throw new OACError(code, "the executor cannot vouch for itself");
+/** A witness of the executor must not be the executor, by name or by key (spec 8.4, 8.5). */
+export function independent(token: string, iss: string, executor: string, executorKeys: KeySet, code: string): void {
+  if (iss === executor || executorKeys.get((parse(b64urlDecode(token.split(".")[0])) as Record<string, any>).kid) !== undefined) throw new OACError(code, "the executor cannot vouch for itself");
 }
 
 /** Check a head claimed at `seq` against the export. True when the export reaches back to it. */
@@ -91,16 +92,18 @@ function place(chain: Record<string, any>[], tokens: string[], seq: number, head
 
 /** verifyChain, then say how much of the export is proven complete by anchors the executor does not hold (spec 8.4). */
 export function verifyExport(tokens: string[], o: {
-  keys: KeySet; executor: string; sub?: string | null; anchors?: string[]; anchorKeys?: KeySet | null; expect?: Record<string, any> | null;
+  keys: KeySet; executor: string; sub?: string | null; anchors?: string[] | null; anchorKeys?: KeySet | null; expect?: Record<string, any> | null;
 }): Record<string, any> {
+  tokens = shapes.tokenList(tokens, "tokens");
+  const anchors = shapes.tokenList(o.anchors, "anchors");
   const chain = verifyChain(tokens, { keys: o.keys, executor: o.executor, sub: o.sub });
   const first = chain.length ? chain[0].seq : null, last = chain.length ? chain[chain.length - 1].seq : null;
-  if (o.anchors?.length && !o.anchorKeys) throw new OACError("malformed", "anchors need the signer's keys");
+  if (anchors.length && !o.anchorKeys) throw new OACError("malformed", "anchors need the signer's keys");
   let proven: number | null = null, start = first === 1;
-  for (const token of o.anchors ?? []) {
+  for (const token of anchors) {
     const a = verify(token, o.anchorKeys!, SEAL_TYP);
     shapes.seal(a);
-    independent(a.iss, o.executor, "anchor_not_independent");
+    independent(token, a.iss, o.executor, o.keys, "anchor_not_independent");
     if ((o.sub || (chain.length ? chain[0].sub : a.sub)) !== a.sub) throw new OACError("subject_mismatch");
     if (a.executor !== o.executor) throw new OACError("seal_mismatch", "the anchor is for another executor");
     if (place(chain, tokens, a.seq, a.head)) {

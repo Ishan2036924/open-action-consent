@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   actionDigest, assess, buildPreview, coverage, digest, generate, KeySet, makeConsent, makeObservation, makeReceipt, makeSeal, OACError,
-  tokenDigest, verifyChain, verifyExport,
+  makeMandate, makeUndo, parse, sign, tokenDigest, verifyChain, verifyExport,
 } from "../src/index.ts";
 
 const EX = "https://shop.example/oac", SIGNER = "https://atlas.example/signer", PROVIDER = "https://provider.example", PERSON = "person:1", NOW = 1_800_000_000;
@@ -79,7 +79,8 @@ const EFFECTS: [string, [string, number | null][], string, string][] = [
   ["ok", [], "cannot_establish", "cannot_establish"],
   ["ok", [["seen", null]], "observed", "pass"],
   ["ok", [["not_seen", null]], "not_observed", "fail"],
-  ["ok", [["not_seen", null], ["seen", null]], "observed", "pass"],
+  ["ok", [["not_seen", null], ["seen", null]], "contradicted", "fail"],
+  ["unknown", [["not_seen", null], ["seen", null]], "contradicted", "fail"],
   ["ok", [["uncheckable", null]], "cannot_establish", "cannot_establish"],
   ["ok", [["seen", 1], ["seen", 2]], "duplicate", "fail"],
   ["ok", [["seen", 1], ["seen", 1]], "observed", "pass"],
@@ -135,12 +136,12 @@ const CASES: [any[], any[], string, boolean, Record<string, string>][] = [
   [[row("e", ["r"])], [tried("e", "x"), tried("e", "r")], "covered", false, { e: "covered" }],
   [[row("e", ["r"])], [], "not_checked", false, { e: "not_checked" }],
   [[row("e", ["r"])], [tried("e", "x")], "incomplete", false, { e: "incomplete" }],
-  [[row("e", [])], [tried("e", "x", "cannot_tell")], "incomplete", false, { e: "incomplete" }],
-  [[row("e", [], "memory")], [tried("e", "x")], "incomplete", false, { e: "incomplete" }],
+  [[row("e", ["x"])], [tried("e", "x", "cannot_tell")], "incomplete", false, { e: "incomplete" }],
+  [[row("e", ["x"], "memory")], [tried("e", "x")], "incomplete", false, { e: "incomplete" }],
   [[row("e", ["r"])], [tried("e", "r", "yes")], "bypass", false, { e: "bypass" }],
-  [[row("e", ["r"]), row("f", [])], [tried("e", "r"), tried("e", "z", "yes"), tried("f", "x")], "bypass", true, { e: "bypass", f: "covered" }],
-  [[row("e", [])], [tried("g", "z", "yes")], "bypass", true, { e: "not_checked", g: "bypass" }],
-  [[row("e", []), row("f", [])], [tried("e", "x")], "incomplete", false, { e: "covered", f: "not_checked" }],
+  [[row("e", ["r"]), row("f", ["x"])], [tried("e", "r"), tried("e", "z", "yes"), tried("f", "x")], "bypass", true, { e: "bypass", f: "covered" }],
+  [[row("e", ["x"])], [tried("g", "z", "yes")], "bypass", true, { e: "not_checked", g: "bypass" }],
+  [[row("e", ["x"]), row("f", ["x"])], [tried("e", "x")], "incomplete", false, { e: "covered", f: "not_checked" }],
   [[], [], "not_checked", false, {}],
 ];
 test("coverage results", () => {
@@ -149,8 +150,80 @@ test("coverage results", () => {
   }
 });
 
+test("coverage refuses a row without routes, reads none as empty, and takes any name", () => {
+  assert.equal(code(() => coverage([row("e", [])], [])), "malformed");
+  assert.deepEqual(coverage(null, undefined), { result: "not_checked", statement_wrong: false, effects: {} });
+  assert.equal(code(() => coverage([], {})), "malformed");
+  assert.equal(code(() => coverage("x", [])), "malformed");
+  const got = coverage([row("__proto__", ["api"])], [tried("__proto__", "api", "yes")]);
+  assert.equal(JSON.stringify(got), '{"result":"bypass","statement_wrong":false,"effects":{"__proto__":"bypass"}}');
+});
+
 test("coverage refuses a malformed statement", () => {
-  assert.equal(code(() => coverage([row("e", []), row("e", [])], [])), "malformed");
+  assert.equal(code(() => coverage([row("e", ["x"]), row("e", ["x"])], [])), "malformed");
   assert.equal(code(() => coverage([row("e", ["r", "r"])], [])), "malformed");
   assert.equal(code(() => coverage([], [{ ...tried("e", "r"), effect_occurred: "maybe" }])), "malformed");
+});
+
+test("independence is by key, not only by name", () => {
+  const renamed = makeSeal({ key: EXEC, iss: "https://notary.example", sub: PERSON, executor: EX, seq: 4, headToken: RS[3], now: NOW });
+  assert.equal(code(() => exp(RS.slice(0, 4), [renamed], { anchorKeys: new KeySet({ "https://notary.example": [EXEC.jwk] }) })), "anchor_not_independent");
+  const rec = receipt();
+  assert.equal(code(() => judge(rec, [watch(rec, "seen", { key: EXEC })], { observerKeys: new KeySet({ [PROVIDER]: [EXEC.jwk] }) })), "observer_not_independent");
+});
+
+test("null and wrong types are read the same way everywhere", () => {
+  const rec = receipt();
+  assert.equal(verifyExport(RS.slice(0, 4), { keys: KEYS, executor: EX, anchors: null, anchorKeys: null }).reason, "no_anchor");
+  assert.equal(verifyExport(null as any, { keys: KEYS, executor: EX }).first, null);
+  assert.equal(code(() => verifyExport(RS.slice(0, 4), { keys: KEYS, executor: EX, anchors: "x" as any })), "malformed");
+  assert.equal(code(() => verifyExport(RS.slice(0, 4), { keys: KEYS, executor: EX, anchors: [5] as any, anchorKeys: USER_KEYS })), "malformed");
+  assert.equal(code(() => verifyExport("x" as any, { keys: KEYS, executor: EX })), "malformed");
+  assert.equal(assess(rec, { keys: KEYS, executor: EX, observations: null }).verdict, "cannot_establish");
+  assert.equal(code(() => assess(rec, { keys: KEYS, executor: EX, observations: "x" as any, observerKeys: SEER_KEYS })), "malformed");
+  assert.equal(code(() => assess(rec, { keys: KEYS, executor: EX, observations: [5] as any, observerKeys: SEER_KEYS })), "malformed");
+});
+
+test("a stale look does not count and sixty seconds does", () => {
+  const rec = receipt(5);
+  assert.equal(judge(rec, [watch(rec, "seen", { now: NOW + 5 - 61 })]).effect, "cannot_establish");
+  assert.equal(judge(rec, [watch(rec, "seen", { now: NOW + 5 - 60 })]).effect, "observed");
+});
+
+test("the authority token must be for this person, executor and time", () => {
+  const profile = { oac: "0.2", type: "action-profile", tool: "add_task", effect: "write", undo: { kind: "native", window_s: 600 }, tier_floor: "A", binds: { title: "title" } };
+  const prev = buildPreview({ profile, action: TASK, executor: EX, sub: PERSON, summary: "Add", now: NOW });
+  const cons = makeConsent({ key: USER, iss: SIGNER, sub: PERSON, aud: EX, previews: [prev], now: NOW, jti: "n_consent_0000000001" });
+  const body = parse(Buffer.from(cons.split(".")[1], "base64url").toString());
+  const under = (t: string) => receipt(1, null, { tier: "C", authority: { kind: "consent", ref: "n_consent_0000000001", digest: tokenDigest(t) },
+    undo: { kind: "compensate", until: NOW + 99 }, preview: digest(prev) });
+  const ok = { authorityToken: cons, authorityKeys: USER_KEYS };
+  assert.equal(judge(under(cons), [], ok).decision, "bound");
+  for (const change of [{ sub: "person:2" }, { aud: "https://other.example/oac" }, { iat: NOW + 62, exp: NOW + 200 }]) {
+    const moved = sign({ ...(body as any), ...change }, USER, "oac-consent+jws");
+    assert.equal(code(() => judge(under(moved), [], { authorityToken: moved, authorityKeys: USER_KEYS })), "authority_mismatch");
+  }
+});
+
+test("a mandate must be for this person, tool and time", () => {
+  const mandate = (change: Record<string, any> = {}) => makeMandate(USER, { id: "md_1", iss: SIGNER, sub: PERSON, holder: { type: "agent", id: "bot" }, goal: "g",
+    tools: ["add_task"], bounds: { calls: { per_day: 5 } }, iat: NOW - 100, exp: NOW + 100, signer: { kind: "custodial" }, ...change });
+  const under = (t: string, fields: Record<string, any> = {}) => receipt(1, null, { tier: "C", authority: { kind: "mandate", ref: "md_1", digest: tokenDigest(t) }, ...fields });
+  const good = mandate();
+  assert.equal(judge(under(good), [], { authorityToken: good, authorityKeys: USER_KEYS }).decision, "bound");
+  const bad: [string, Record<string, any>][] = [[mandate({ sub: "person:2" }), {}], [mandate({ tools: ["send_email"] }), {}],
+    [mandate({ exp: NOW }), { iat: NOW + 61 }], [mandate({ iat: NOW + 100, exp: NOW + 200 }), { iat: NOW + 30 }]];
+  for (const [t, fields] of bad) assert.equal(code(() => judge(under(t, fields), [], { authorityToken: t, authorityKeys: USER_KEYS })), "authority_mismatch");
+});
+
+test("an undo request must be for this person and executor", () => {
+  const orig = receipt(1, null, { tier: "B", undo: { kind: "native", until: NOW + 600, token: "u1" } });
+  const request = (o: Record<string, any> = {}) => makeUndo({ key: USER, iss: SIGNER, sub: PERSON, aud: EX, receiptToken: orig, mode: "native", now: NOW, jti: "n_undo_00000000000001", ...o });
+  const under = (t: string) => receipt(1, null, { tier: "B", authority: { kind: "undo", ref: "n_undo_00000000000001", digest: tokenDigest(t) }, undoes: tokenDigest(orig) });
+  const good = request();
+  assert.equal(judge(under(good), [], { authorityToken: good, authorityKeys: USER_KEYS }).decision, "bound");
+  for (const o of [{ sub: "person:2" }, { aud: "https://other.example/oac" }]) {
+    const bad = request(o);
+    assert.equal(code(() => judge(under(bad), [], { authorityToken: bad, authorityKeys: USER_KEYS })), "authority_mismatch");
+  }
 });

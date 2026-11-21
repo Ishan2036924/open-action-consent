@@ -16,8 +16,9 @@ export function coverage(statement: unknown, attempts: unknown): Record<string, 
   const listed = new Map(rows.map((r) => [r.effect, new Set<string>(r.routes.map((x: any) => x.route))]));
   const happened = tried.filter((a) => a.effect_occurred === "yes");
   const effects: Record<string, string> = {};
-  for (const r of rows) effects[r.effect] = rowResult(r, tried.filter((a) => a.effect === r.effect));
-  for (const a of happened) if (!listed.has(a.effect)) effects[a.effect] = "bypass";
+  const put = (k: string, v: string) => Object.defineProperty(effects, k, { value: v, enumerable: true, writable: true, configurable: true }); // an effect may be named __proto__
+  for (const r of rows) put(r.effect, rowResult(r, tried.filter((a) => a.effect === r.effect)));
+  for (const a of happened) if (!listed.has(a.effect)) put(a.effect, "bypass");
   const kinds = new Set(Object.values(effects));
   let result = "incomplete";
   if (kinds.has("bypass")) result = "bypass";
