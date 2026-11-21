@@ -59,10 +59,10 @@
   },
   "devDependencies": {
     "typescript": "7.0.2",
-    "@types/node": "24.19.2",
+    "@types/node": "26.6.6",
     "@modelcontextprotocol/server": "2.4.0",
     "@modelcontextprotocol/client": "2.4.0",
-    "ai": "7.0.148"
+    "ai": "7.0.176"
   },
   "keywords": [
     "ai-agents",
