@@ -2,7 +2,7 @@
 # Mirrors sdk/python/pyproject.toml (checked by tools/check_ci_locks.py). Relock: uv pip compile --universal --python-version 3.13 --generate-hashes ci/litellm.in -o ci/litellm.txt
 # extras: litellm, mcp, test
 cryptography>=42
-litellm[proxy]==1.108.2
+litellm[proxy]==1.111.0
 mcp==2.3.0
 pytest>=8
 anyio>=4

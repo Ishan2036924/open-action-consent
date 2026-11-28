@@ -2,8 +2,8 @@
 # Mirrors sdk/python/pyproject.toml (checked by tools/check_ci_locks.py). Relock: uv pip compile --universal --python-version 3.10 --generate-hashes ci/agents.in -o ci/agents.txt
 # extras: openai-agents, langgraph, test
 cryptography>=42
-openai-agents==0.24.0
-langgraph==1.2.16
+openai-agents==0.26.0
+langgraph==1.2.24
 pytest>=8
 anyio>=4
 hypothesis>=6.100
