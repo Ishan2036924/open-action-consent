@@ -3,7 +3,7 @@
 # extras: browser, approver, test
 cryptography>=42
 mcp==2.3.0
-playwright==1.58.0
+playwright==1.65.2
 starlette>=0.40
 uvicorn>=0.30
 pytest>=8
